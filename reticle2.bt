@@ -1,0 +1,134 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+typedef struct 
+{
+    int   QuantityPixel: 10; // Number of consecutive points in one line, maximum value = 1023
+    int   DataY: 10;         // Pixel Coordinate Y, maximum value Y = 1023
+    int   DataX: 12;         // Pixel coordinate X, maximum value Y = 4095
+}tReticleData2;
+
+typedef struct
+{
+    uint32 offset;
+    uint32 quant;
+}header_2;
+
+struct tPXL4Header
+{
+ char   PXL2Id[4]<fgcolor=0x0000FF, bgcolor=cBlack>;
+ int32   NumberOfReticle<format=decimal>;
+ uint32  SizeOfAllDataPXL2<format=decimal>;
+
+ uint32  SmallReticlesCount<format=decimal, bgcolor=0x404040>;
+ uint32  OffsetSmallReticles<format=hex, fgcolor=cBlack, bgcolor=0x404040>;
+ uint32  SmallReticlesSize<format=decimal, bgcolor=0x404040>;
+
+ uint32  HoldOffReticlesCount<format=decimal, bgcolor=0x004000>;
+ uint32  OffsetHoldOffReticles<format=hex, fgcolor=cBlack, bgcolor=0x004000>;
+ uint32  HoldOffReticlesSize<format=decimal, bgcolor=0x004000>;
+ uint32  HoldOffReticlesCrc<format=hex, fgcolor=cGreen, bgcolor=0x004000>;
+
+ uint32  BaseReticlesCount<format=decimal, bgcolor=0x300000>;
+ uint32  OffsetBaseReticles<format=hex, fgcolor=cBlack, bgcolor=0x300000>;
+ uint32  BaseReticlesSize<format=decimal, bgcolor=0x300000>;
+
+ uint32  LrfReticlesCount<format=decimal, bgcolor=0x000060>;
+ uint32  OffsetLrfReticles<format=hex, fgcolor=cBlack, bgcolor=0x000060>;
+ uint32  LrfReticlesSize<format=decimal, bgcolor=0x000060>;
+
+} ;
+
+
+tPXL4Header header;
+local int i, j;
+
+for (i = 0; i < header.SmallReticlesCount; ++i){
+    header_2 sm_ret_z1<format=decimal, bgcolor=0x404040>;
+    header_2 sm_ret_z2<format=decimal, bgcolor=0x404040>;
+    header_2 sm_ret_z3<format=decimal, bgcolor=0x404040>;
+    header_2 sm_ret_z4<format=decimal, bgcolor=0x404040>;
+}
+for (i = 0; i < header.HoldOffReticlesCount; ++i){
+    header_2 ho_ret_z1<format=decimal, bgcolor=0x004000>;
+    header_2 ho_ret_z2<format=decimal, bgcolor=0x004000>;
+    header_2 ho_ret_z3<format=decimal, bgcolor=0x004000>;
+    header_2 ho_ret_z4<format=decimal, bgcolor=0x004000>;
+}
+for (i = 0; i < header.BaseReticlesCount; ++i){
+    header_2 bs_ret_z1<format=decimal, bgcolor=0x300000>;
+    header_2 bs_ret_z2<format=decimal, bgcolor=0x300000>;
+    header_2 bs_ret_z3<format=decimal, bgcolor=0x300000>;
+    header_2 bs_ret_z4<format=decimal, bgcolor=0x300000>;
+}
+for (i = 0; i < header.LrfReticlesCount; ++i){
+    header_2 lrf_ret_z1<format=decimal, bgcolor=0x000060>;
+    header_2 lrf_ret_z2<format=decimal, bgcolor=0x000060>;
+    header_2 lrf_ret_z3<format=decimal, bgcolor=0x000060>;
+    header_2 lrf_ret_z4<format=decimal, bgcolor=0x000060>;
+}
+for(i = 0; i < header.SmallReticlesCount; ++i){
+    for(j = 1; j < sm_ret_z1[i].quant; ++j){
+        tReticleData2 small_ret1<format=decimal, bgcolor=0x404040>;
+    }
+    for(j = 1; j < sm_ret_z2[i].quant; ++j){
+        tReticleData2 small_ret2<format=decimal, bgcolor=0x404040>;
+    }
+    for(j = 1; j < sm_ret_z3[i].quant; ++j){
+        tReticleData2 small_ret3<format=decimal, bgcolor=0x404040>;
+    }
+    for(j = 1; j < sm_ret_z4[i].quant; ++j){
+        tReticleData2 small_ret4<format=decimal, bgcolor=0x404040>;
+    }
+}
+for(i = 0; i < header.HoldOffReticlesCount; ++i){
+    for(j = 1; j < ho_ret_z1[i].quant; ++j){
+        tReticleData2 hold_off1<format=decimal, bgcolor=0x004000>;
+    }
+    for(j = 1; j < ho_ret_z2[i].quant; ++j){
+        tReticleData2 hold_off2<format=decimal, bgcolor=0x004000>;
+    }
+    for(j = 1; j < ho_ret_z3[i].quant; ++j){
+        tReticleData2 hold_off3<format=decimal, bgcolor=0x004000>;
+    }
+    for(j = 1; j < ho_ret_z1[i].quant; ++j){
+        tReticleData2 hold_off4<format=decimal, bgcolor=0x004000>;
+    }
+}
+for(i = 0; i < header.BaseReticlesCount; ++i){
+    for(j = 1; j < bs_ret_z1[i].quant; ++j){
+        tReticleData2 base_ret1<format=decimal, bgcolor=0x300000>;
+    }
+    for(j = 1; j < bs_ret_z2[i].quant; ++j){
+        tReticleData2 base_ret2<format=decimal, bgcolor=0x300000>;
+    }
+    for(j = 1; j < bs_ret_z3[i].quant; ++j){
+        tReticleData2 base_ret3<format=decimal, bgcolor=0x300000>;
+    }
+    for(j = 1; j < bs_ret_z4[i].quant; ++j){
+        tReticleData2 base_ret4<format=decimal, bgcolor=0x300000>;
+    }
+}
+for(i = 0; i < header.LrfReticlesCount; ++i){
+    for(j = 1; j < lrf_ret_z1[i].quant; ++j){
+        tReticleData2 lrf1<format=decimal, bgcolor=0x000060>;
+    }
+    for(j = 1; j < lrf_ret_z2[i].quant; ++j){
+        tReticleData2 lrf2<format=decimal, bgcolor=0x000060>;
+    }
+    for(j = 1; j < lrf_ret_z3[i].quant; ++j){
+        tReticleData2 lrf3<format=decimal, bgcolor=0x000060>;
+    }
+    for(j = 1; j < lrf_ret_z4[i].quant; ++j){
+        tReticleData2 lrf4<format=decimal, bgcolor=0x000060>;
+    }
+}

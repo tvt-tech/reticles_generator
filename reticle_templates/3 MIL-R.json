@@ -1,0 +1,119 @@
+{
+  "name": "3 MIL-R",
+  "multiplier": 10,
+  "template": [
+    {
+      "type": "cross",
+      "margin": 3,
+      "size": 2,
+      "mask": 15,
+      "bind": true,
+      "zoom": false,
+      "min_zoom": 1,
+      "max_zoom": 2,
+      "pen": 1
+    },
+    {
+      "type": "cross",
+      "margin": 0,
+      "size": 1.5,
+      "mask": 15,
+      "bind": true,
+      "zoom": false,
+      "min_zoom": 1,
+      "max_zoom": 2,
+      "pen": 1
+    },
+    {
+      "type": "hruler",
+      "a": -3,
+      "b": 3,
+      "step": 3,
+      "w": 1,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "dot",
+      "min_zoom": 1,
+      "max_zoom": 2,
+      "pen": 3
+    },
+    {
+      "type": "vruler",
+      "a": -3,
+      "b": 3,
+      "step": 3,
+      "w": 1,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "dot",
+      "min_zoom": 1,
+      "max_zoom": 2,
+      "pen": 3
+    },
+    {
+      "type": "cross",
+      "margin": 0.3,
+      "size": 0.5,
+      "mask": 15,
+      "bind": true,
+      "zoom": false,
+      "min_zoom": 2,
+      "max_zoom": 7,
+      "pen": 1
+    },
+    {
+      "type": "hruler",
+      "a": -2.5,
+      "b": 2.5,
+      "step": 1,
+      "w": 0.05,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "grid",
+      "min_zoom": 3,
+      "max_zoom": 7,
+      "pen": 1
+    },
+    {
+      "type": "hruler",
+      "a": -3,
+      "b": 3,
+      "step": 1,
+      "w": 1,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "dot",
+      "min_zoom": 2,
+      "max_zoom": 7,
+      "pen": 3,
+      "exclude_0": true
+    },
+    {
+      "type": "vruler",
+      "a": -1.5,
+      "b": 2.5,
+      "step": 1,
+      "w": 0.05,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "grid",
+      "min_zoom": 3,
+      "max_zoom": 7,
+      "pen": 1
+    },
+    {
+      "type": "vruler",
+      "a": -2,
+      "b": 3,
+      "step": 1,
+      "w": 1,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "dot",
+      "min_zoom": 2,
+      "max_zoom": 7,
+      "pen": 3,
+      "exclude_0": true
+    }
+  ]
+}
