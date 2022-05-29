@@ -1,9 +1,8 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPainter, QPixmap, QColor, QPen
-from PyQt5.QtCore import Qt, QPoint
 
 from .cross_edit import CrossLabel
 from .dot_edit import DotLabel
+
 
 class RulerEdit(QtWidgets.QDialog):
     def __init__(self, ruler):
