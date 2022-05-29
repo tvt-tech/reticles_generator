@@ -28,13 +28,13 @@ class Ui_MainWindow(object):
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
 
-        self.background = PixmapLayer(640, 480, Qt.gray)
+        self.background = PixmapLayer(self.width, self.height, Qt.gray)
         self.gridLayout.addWidget(self.background, 0, 0, 1, 3)
 
-        self.grid = GridLayer(640, 480, Qt.transparent)
+        self.grid = GridLayer(self.width, self.height, Qt.transparent)
         self.gridLayout.addWidget(self.grid, 0, 0, 1, 3)
 
-        self.watermark = Watermark(640, 480, Qt.transparent)
+        self.watermark = Watermark(self.width, self.height, Qt.transparent)
         self.gridLayout.addWidget(self.watermark, 0, 0, 1, 3)
 
         self.magnifier_back = QLabel()
@@ -115,14 +115,13 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setupUi(self)
-
-        self.title = "Reticle"
-
         self.top = 300
         self.left = 300
         self.width = 639
         self.height = 479
+        self.setupUi(self)
+
+        self.title = "Reticle"
 
         self.x0 = self.width / 2 + 1
         self.y0 = self.height / 2 + 1
@@ -353,7 +352,8 @@ class Window(QMainWindow, Ui_MainWindow):
             canvas.fill(Qt.transparent)
             self.label.setPixmap(canvas)
             painter = QPainter(self.label.pixmap())
-            highlighter_color = Qt.magenta
+            # highlighter_color = Qt.magenta
+            highlighter_color = QtGui.QColor('#3F57D2')
 
         else:
             painter = QPainter(canvas)
