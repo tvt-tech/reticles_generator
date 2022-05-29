@@ -228,6 +228,8 @@ class Window(QMainWindow, Ui_MainWindow):
                     self.combo.setItemData(self.combo.currentIndex(), self.reticle)
                     self.load_table()
                     self.draw_ret()
+        self.table.selectRow(index.row())
+        self.table_clicked(index)
 
     def load_templates(self):
         self.combo.addItem(DEFAULT_RET['name'], DEFAULT_RET)
