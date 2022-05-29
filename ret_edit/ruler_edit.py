@@ -82,8 +82,8 @@ class RulerEdit(QtWidgets.QDialog):
         self.mode.addItem('Values', 'ruler')
         self.gridLayout.addWidget(self.mode, 10, 1)
 
-        self.mirror_x = QtWidgets.QCheckBox(text='Flip horizontally')
-        self.mirror_y = QtWidgets.QCheckBox(text='Flip vertically')
+        self.mirror_x = QtWidgets.QCheckBox(text='Flip vertically')
+        self.mirror_y = QtWidgets.QCheckBox(text='Flip horizontally')
         self.exclude_0 = QtWidgets.QCheckBox(text='Skip center point')
 
         self.gridLayout.addWidget(self.mirror_x)
