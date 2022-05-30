@@ -33,19 +33,19 @@ class GridLayer(PixmapLayer):
 
         Cross(*defs, *cr)
 
-        g = [st, lxs*st, st, 0.5]
+        g = [st, lxs * st, st, 0.5]
         HRuler(*defs, *g, pen=pen)
         HRuler(*defs, *g, pen=pen, flip_y=True)
         VRuler(*defs, *g, pen=pen)
         VRuler(*defs, *g, pen=pen, flip_x=True)
 
-        g2 = [st*5, 50, st*5, 1]
+        g2 = [st * 5, 50, st * 5, 1]
         HRuler(*defs, *g2, pen=pen)
         HRuler(*defs, *g2, pen=pen, flip_y=True)
         VRuler(*defs, *g2, pen=pen)
         VRuler(*defs, *g2, pen=pen, flip_x=True)
 
-        n = [st*10, st*10*10, st*10, 0.75]
+        n = [st * 10, st * 10 * 5, st * 10, 0.75]
         nd = dict(mode='ruler', pen=pen)
 
         HRuler(*defs, *n, **nd, y_offset=3)
