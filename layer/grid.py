@@ -32,5 +32,5 @@ class GridLayer(PixmapLayer):
                mode='cross', x_offset=0, y_offset=0, pen=pen, cross=cross)
 
         for i in range(-lys, lys):
-            HRuler(painter, x0, y0, x1, y1, zoom, -lxs, lxs, st, 1,
+            HRuler(painter, x0, y0, x1, y1, zoom, -lxs, lxs, st, 0.5,
                    mode='dot', x_offset=0, y_offset=i, pen=pen)

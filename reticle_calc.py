@@ -144,11 +144,14 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.InitWindow()
 
+        self.grid_on.setChecked(True)
         self.load_table()
         self.draw_ret()
 
+        self.is_pressed = False
         self.magnifier_event = MagnifierEvent(self.x0, self.y0)
         self.draw_magnifier(self.magnifier_event, map=False)
+        self.resetMagnifierPos()
 
         self.combo.currentIndexChanged.connect(self.change_ret)
         self.grid_on.stateChanged.connect(self.enable_grid)
@@ -159,11 +162,6 @@ class Window(QMainWindow, Ui_MainWindow):
         self.table.doubleClicked.connect(self.table_double_clicked)
         self.table.clicked.connect(self.table_clicked)
         self.btn.clicked.connect(self.btn_zoom)
-
-    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
-            self.draw_magnifier(event)
-        return super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
@@ -203,9 +201,32 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.magnifier_event = MagnifierEvent(label_pos.x(), label_pos.y())
 
-        self.magnifier.move(label_pos.x()-64, label_pos.y()-64)
-        self.magnifier_grid.move(label_pos.x()-64, label_pos.y()-64)
-        self.magnifier_back.move(label_pos.x()-64, label_pos.y()-64)
+        if self.is_pressed:
+            self.setMagnifierPos(label_pos)
+        else:
+            self.resetMagnifierPos()
+
+    def resetMagnifierPos(self):
+        self.magnifier.move(self.width - 128, 0)
+        self.magnifier_grid.move(self.width - 128, 0)
+        self.magnifier_back.move(self.width - 128, 0)
+
+    def setMagnifierPos(self, index):
+        self.magnifier.move(index.x() - 64, index.y() - 64)
+        self.magnifier_grid.move(index.x() - 64, index.y() - 64)
+        self.magnifier_back.move(index.x() - 64, index.y() - 64)
+
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        self.is_pressed = False
+        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
+            self.draw_magnifier(event)
+        return super().mouseReleaseEvent(event)
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        self.is_pressed = True
+        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
+            self.draw_magnifier(event)
+        return super().mousePressEvent(event)
 
     def table_clicked(self, index):
 
