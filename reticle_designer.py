@@ -14,6 +14,9 @@ from layer import PixmapLayer, GridLayer, Watermark
 from ret_edit import CrossEdit, DotEdit, RulerEdit
 from reticle_types import Click, Cross, Dot, HRuler, VRuler
 
+from reticle2 import ImgMap, Reticle4z, SMALL_RETS, LRF_RETS, PXL4
+
+
 DEFAULT_RET = {"name": "Cross", "multiplier": 10, "template": [
     {"type": "cross", "margin": 0.5, "size": 1, "mask": 15, "bind": True, "zoom": True,
      "min_zoom": 1, "max_zoom": 7, "pen": 1}]}
@@ -445,7 +448,8 @@ class Window(QMainWindow, Ui_MainWindow):
                     self.draw_magnifier(MagnifierEvent(self.x0, self.y0))
 
     def dump_reticles(self):
-        from reticle2 import ImgMap, Reticle4z, SMALL_RETS, LRF_RETS, PXL4
+        self.setDisabled(True)
+
         base = []
 
         cur_zoom = self.zoom
@@ -459,10 +463,11 @@ class Window(QMainWindow, Ui_MainWindow):
             zooms = []
             for j in [1, 2, 3, 4]:
                 self.zoom = j
-                canvas = QPixmap(640, 480)
+                canvas = QPixmap(self.width, self.height)
                 canvas.fill(Qt.white)
                 self.draw_ret(canvas=canvas)
-                zooms.append(ImgMap(canvas.toImage()))
+                img = canvas.toImage()
+                zooms.append(ImgMap(img))
                 fmt_str = f'{self.reticle["name"]}, {j}X, %p%'
                 self.progress.setFormat(fmt_str)
                 self.progress.setValue(self.progress.value() + 1)
@@ -478,6 +483,9 @@ class Window(QMainWindow, Ui_MainWindow):
         self.progress.setValue(0)
         self.zoom = cur_zoom
         self.reticle = cur_reticle
+
+        self.setDisabled(False)
+
         self.draw_ret()
 
     def InitWindow(self):
