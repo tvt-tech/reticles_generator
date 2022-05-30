@@ -368,7 +368,8 @@ class Window(QMainWindow, Ui_MainWindow):
         )
 
     def draw_ret(self, canvas=None):
-        self.enable_grid()
+        if not canvas:
+            self.enable_grid()
         self.draw_watermark()
 
         self.info_label.setText(
