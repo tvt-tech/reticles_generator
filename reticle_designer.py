@@ -354,7 +354,8 @@ class Window(QMainWindow, Ui_MainWindow):
             self.draw_ret()
         return super().wheelEvent(a0)
 
-    def enable_grid(self):
+    def enable_grid(self, event=None):
+
         if self.grid_on.isChecked():
             multiplier = self.reticle['multiplier']
             x1 = multiplier / self.click.x
