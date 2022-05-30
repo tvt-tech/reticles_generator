@@ -36,20 +36,3 @@ def read(img: QImage, w: int, h: int):
                     sx, counter = None, 0
     return output
 
-        # data, sx, counter = [], None, 0
-        # for y in range(1, h):
-        #     for x in range(1, w):
-        #         pcolor = self._img.pixelColor(x, y).value()
-        #         if pcolor == 0:
-        #             if not sx:
-        #                 sx = x
-        #             if sx + counter < 639:
-        #                 counter += 1
-        #             else:
-        #                 data.append((counter, y, sx))
-        #                 sx, counter = None, 0
-        #         else:
-        #             if counter > 0:
-        #                 data.append((counter, y, sx))
-        #             sx, counter = None, 0
-        # self.data = data

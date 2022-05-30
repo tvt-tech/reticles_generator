@@ -232,15 +232,21 @@ class Window(QMainWindow, Ui_MainWindow):
         return super().mousePressEvent(event)
 
     def table_clicked(self, index):
-
+        item = self.reticle['template'][index.row()]
         if index.column() == 4:
-            if self.reticle['template'][index.row()]['hide']:
-                self.reticle['template'][index.row()]['hide'] = False
+            if item['hide']:
+                item['hide'] = False
             else:
-                self.reticle['template'][index.row()]['hide'] = True
+                item['hide'] = True
 
-            self.table_model.item(index.row(), 4).setData(self.reticle['template'][index.row()]['hide'],
+            self.table_model.item(index.row(), 4).setData(item['hide'],
                                                           QtCore.Qt.DisplayRole)
+        min_zoom = item['min_zoom']
+        max_zoom = item['max_zoom']
+        if self.zoom < min_zoom:
+            self.zoom = min_zoom
+        if self.zoom >= max_zoom:
+            self.zoom = max_zoom-1
         self.draw_ret()
 
     def table_double_clicked(self, index):
