@@ -10,6 +10,7 @@ class GridLayer(PixmapLayer):
 
     def draw(self, x0, y0, x1, y1, zoom):
         self.createPixmap()
+
         painter = QtGui.QPainter(self.pixmap())
         pen = QtGui.QPen(QtCore.Qt.white, 0.5, QtCore.Qt.SolidLine)
 

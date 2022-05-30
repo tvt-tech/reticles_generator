@@ -377,12 +377,6 @@ class Window(QMainWindow, Ui_MainWindow):
         )
 
     def draw_ret(self, canvas=None):
-        if not canvas:
-            self.enable_grid()
-            self.draw_watermark()
-
-            self.info_label.setText(
-                f'{self.zoom}X, V:{round(self.click.y / self.zoom, 2)}, H:{round(self.click.x / self.zoom, 2)}')
 
         multiplier = self.reticle['multiplier']
         x1 = multiplier / self.click.x
@@ -446,6 +440,13 @@ class Window(QMainWindow, Ui_MainWindow):
         if not canvas:
 
             self.label.setPixmap(self.canvas)
+
+            self.enable_grid()
+            self.draw_watermark()
+
+            self.info_label.setText(
+                f'{self.zoom}X, V:{round(self.click.y / self.zoom, 2)}, H:{round(self.click.x / self.zoom, 2)}'
+            )
 
             if hasattr(self, 'magnifier_event'):
                 if self.magnifier_event:
