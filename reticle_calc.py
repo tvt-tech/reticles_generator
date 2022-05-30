@@ -29,35 +29,37 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName("gridLayout")
 
         self.background = PixmapLayer(self.width, self.height, Qt.gray)
+        self.background.setAlignment(Qt.AlignTop)
         self.gridLayout.addWidget(self.background, 0, 0, 1, 3)
 
         self.grid = GridLayer(self.width, self.height, Qt.transparent)
+        self.grid.setAlignment(Qt.AlignTop)
         self.gridLayout.addWidget(self.grid, 0, 0, 1, 3)
 
         self.watermark = Watermark(self.width, self.height, Qt.transparent)
+        self.watermark.setAlignment(Qt.AlignTop)
         self.gridLayout.addWidget(self.watermark, 0, 0, 1, 3)
 
-        self.magnifier_back = QLabel()
+        self.label = QLabel()
+        self.label.setAlignment(Qt.AlignTop)
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 3)
+
+        self.overlay = PixmapLayer(self.width, self.height, Qt.transparent)
+        self.overlay.setAlignment(Qt.AlignTop)
+        self.gridLayout.addWidget(self.overlay, 0, 0, 1, 3)
+
+        self.magnifier_back = QLabel(self.label)
         magnifier = QPixmap(128, 128)
         magnifier.fill(Qt.gray)
         self.magnifier_back.setPixmap(magnifier)
-        self.magnifier_back.setAlignment(Qt.AlignTop|Qt.AlignRight)
-        self.gridLayout.addWidget(self.magnifier_back, 0, 2, 1, 1)
 
-        self.magnifier_grid = QLabel()
+        self.magnifier_grid = QLabel(self.label)
         magnifier = QPixmap(128, 128)
         self.magnifier_grid.setPixmap(magnifier)
-        self.magnifier_grid.setAlignment(Qt.AlignTop|Qt.AlignRight)
-        self.gridLayout.addWidget(self.magnifier_grid, 0, 2, 1, 1)
 
-        self.magnifier = QLabel()
+        self.magnifier = QLabel(self.label)
         magnifier = QPixmap(128, 128)
         self.magnifier.setPixmap(magnifier)
-        self.magnifier.setAlignment(Qt.AlignTop|Qt.AlignRight)
-        self.gridLayout.addWidget(self.magnifier, 0, 2, 1, 1)
-
-        self.label = QLabel()
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 3)
 
         self.btn = QPushButton('Zoom')
         self.gridLayout.addWidget(self.btn, 1, 0, 1, 1)
@@ -138,6 +140,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.load_templates()
         self.reticle = self.combo.currentData()
 
+        self.canvas = None
+
         self.InitWindow()
 
         self.load_table()
@@ -157,12 +161,12 @@ class Window(QMainWindow, Ui_MainWindow):
         self.btn.clicked.connect(self.btn_zoom)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        if QApplication.widgetAt(self.cursor().pos()) == self.label:
+        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
             self.draw_magnifier(event)
         return super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        if QApplication.widgetAt(self.cursor().pos()) == self.label:
+        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
             self.draw_magnifier(event)
         return super().mouseMoveEvent(event)
 
@@ -182,6 +186,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         rect = QtCore.QRect(x, y, 64, 64)
         pixmap = self.label.pixmap().copy(rect)
+        # pixmap = self.canvas
         pixmap = pixmap.scaled(128, 128)
         self.magnifier.setPixmap(pixmap)
         painter = QPainter(self.magnifier.pixmap())
@@ -198,6 +203,10 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.magnifier_event = MagnifierEvent(label_pos.x(), label_pos.y())
 
+        self.magnifier.move(label_pos.x()-64, label_pos.y()-64)
+        self.magnifier_grid.move(label_pos.x()-64, label_pos.y()-64)
+        self.magnifier_back.move(label_pos.x()-64, label_pos.y()-64)
+
     def table_clicked(self, index):
 
         if index.column() == 4:
@@ -206,7 +215,8 @@ class Window(QMainWindow, Ui_MainWindow):
             else:
                 self.reticle['template'][index.row()]['hide'] = True
 
-            self.table_model.item(index.row(), 4).setData(self.reticle['template'][index.row()]['hide'], QtCore.Qt.DisplayRole)
+            self.table_model.item(index.row(), 4).setData(self.reticle['template'][index.row()]['hide'],
+                                                          QtCore.Qt.DisplayRole)
         self.draw_ret()
 
     def table_double_clicked(self, index):
@@ -299,7 +309,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.draw_ret()
 
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
-        if QApplication.widgetAt(self.cursor().pos()) == self.label:
+        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
             delta = a0.angleDelta().y()
             idx = 0
             if delta > 0 and self.zoom < 6:
@@ -348,16 +358,14 @@ class Window(QMainWindow, Ui_MainWindow):
         y1 = multiplier / self.click.y
 
         if not canvas:
-            canvas = QPixmap(640, 480)
-            canvas.fill(Qt.transparent)
-            self.label.setPixmap(canvas)
-            painter = QPainter(self.label.pixmap())
-            # highlighter_color = Qt.magenta
+            self.canvas = QPixmap(self.width, self.height)
+            self.canvas.fill(Qt.transparent)
             highlighter_color = QtGui.QColor('#3F57D2')
-
         else:
-            painter = QPainter(canvas)
+            self.canvas = canvas
             highlighter_color = Qt.black
+
+        painter = QPainter(self.canvas)
 
         font = QtGui.QFont("BankGothic Lt BT")
         font.setStyleStrategy(QtGui.QFont.NoAntialias)
@@ -404,11 +412,15 @@ class Window(QMainWindow, Ui_MainWindow):
                         if t['mirror_x'] and t['mirror_y']:
                             ruler(painter, self.x0, self.y0, x1, y1, self.zoom, **t, flip_x=True, flip_y=True)
 
-        if hasattr(self, 'magnifier_event'):
-            if self.magnifier_event:
-                self.draw_magnifier(self.magnifier_event, map=False)
-            else:
-                self.draw_magnifier(MagnifierEvent(self.x0, self.y0))
+        if not canvas:
+
+            self.label.setPixmap(self.canvas)
+
+            if hasattr(self, 'magnifier_event'):
+                if self.magnifier_event:
+                    self.draw_magnifier(self.magnifier_event, map=False)
+                else:
+                    self.draw_magnifier(MagnifierEvent(self.x0, self.y0))
 
     def dump_reticles(self):
         from reticle2 import ImgMap, Reticle4z, SMALL_RETS, LRF_RETS, PXL4
