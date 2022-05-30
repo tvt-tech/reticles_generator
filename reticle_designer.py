@@ -370,10 +370,10 @@ class Window(QMainWindow, Ui_MainWindow):
     def draw_ret(self, canvas=None):
         if not canvas:
             self.enable_grid()
-        self.draw_watermark()
+            self.draw_watermark()
 
-        self.info_label.setText(
-            f'{self.zoom}X, V:{round(self.click.y / self.zoom, 2)}, H:{round(self.click.x / self.zoom, 2)}')
+            self.info_label.setText(
+                f'{self.zoom}X, V:{round(self.click.y / self.zoom, 2)}, H:{round(self.click.x / self.zoom, 2)}')
 
         multiplier = self.reticle['multiplier']
         x1 = multiplier / self.click.x
