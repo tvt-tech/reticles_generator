@@ -9,18 +9,22 @@ import time
 
 
 # Main window class
-class MainWindow(QMainWindow):
+# class MainWindow(QMainWindow):
+class MainWindow(QDialog):
 
     # constructor
-    def __init__(self):
+    def __init__(self, parent, canvas):
         super().__init__()
 
+        self.parent = parent
+        self.canvas = canvas
+
         # setting geometry
-        self.setGeometry(100, 100,
-                         800, 600)
+        # self.setGeometry(100, 100,
+        #                  800, 600)
 
         # setting style sheet
-        self.setStyleSheet("background : lightgrey;")
+        # self.setStyleSheet("background : lightgrey;")
 
         # getting available cameras
         self.available_cameras = QCameraInfo.availableCameras()
@@ -31,25 +35,27 @@ class MainWindow(QMainWindow):
             sys.exit()
 
         # creating a status bar
-        self.status = QStatusBar()
+        # self.status = QStatusBar()
 
         # setting style sheet to the status bar
-        self.status.setStyleSheet("background : white;")
+        # self.status.setStyleSheet("background : white;")
 
         # adding status bar to the main window
-        self.setStatusBar(self.status)
+        # self.setStatusBar(self.status)
 
         # path to save
         self.save_path = ""
 
         # creating a QCameraViewfinder object
         self.viewfinder = QCameraViewfinder()
+        self.setLayout(QGridLayout())
+        self.layout().addWidget(self.viewfinder)
 
         # showing this viewfinder
-        self.viewfinder.show()
+        # self.viewfinder.show()
 
         # making it central widget of main window
-        self.setCentralWidget(self.viewfinder)
+        # self.setCentralWidget(self.viewfinder)
 
         self.viewfinder.setLayout(QGridLayout())
 
@@ -64,73 +70,88 @@ class MainWindow(QMainWindow):
         self.select_camera(0)
 
         # creating a tool bar
-        toolbar = QToolBar("Camera Tool Bar")
+        # toolbar = QToolBar("Camera Tool Bar")
 
         # adding tool bar to main window
-        self.addToolBar(toolbar)
+        # self.addToolBar(toolbar)
 
         # creating a photo action to take photo
-        click_action = QAction("Click photo", self)
+        # click_action = QAction("Click photo", self)
 
         # adding status tip to the photo action
-        click_action.setStatusTip("This will capture picture")
+        # click_action.setStatusTip("This will capture picture")
 
         # adding tool tip
-        click_action.setToolTip("Capture picture")
+        # click_action.setToolTip("Capture picture")
 
         # adding action to it
         # calling take_photo method
-        click_action.triggered.connect(self.click_photo)
+        # click_action.triggered.connect(self.click_photo)
 
         # adding this to the tool bar
-        toolbar.addAction(click_action)
+        # toolbar.addAction(click_action)
 
         # similarly creating action for changing save folder
-        change_folder_action = QAction("Change save location",
-                                       self)
+        # change_folder_action = QAction("Change save location",
+        #                                self)
 
         # adding status tip
-        change_folder_action.setStatusTip("Change folder where picture will be saved saved.")
+        # change_folder_action.setStatusTip("Change folder where picture will be saved saved.")
 
         # adding tool tip to it
-        change_folder_action.setToolTip("Change save location")
+        # change_folder_action.setToolTip("Change save location")
 
         # setting calling method to the change folder action
         # when triggered signal is emitted
-        change_folder_action.triggered.connect(self.change_folder)
+        # change_folder_action.triggered.connect(self.change_folder)
 
         # adding this to the tool bar
-        toolbar.addAction(change_folder_action)
+        # toolbar.addAction(change_folder_action)
 
         # creating a combo box for selecting camera
-        camera_selector = QComboBox()
+        # camera_selector = QComboBox()
 
         # adding status tip to it
-        camera_selector.setStatusTip("Choose camera to take pictures")
+        # camera_selector.setStatusTip("Choose camera to take pictures")
 
         # adding tool tip to it
-        camera_selector.setToolTip("Select Camera")
-        camera_selector.setToolTipDuration(2500)
+        # camera_selector.setToolTip("Select Camera")
+        # camera_selector.setToolTipDuration(2500)
 
         # adding items to the combo box
-        camera_selector.addItems([camera.description()
-                                  for camera in self.available_cameras])
+        # camera_selector.addItems([camera.description()
+        #                           for camera in self.available_cameras])
 
         # adding action to the combo box
         # calling the select camera method
-        camera_selector.currentIndexChanged.connect(self.select_camera)
+        # camera_selector.currentIndexChanged.connect(self.select_camera)
 
         # adding this to tool bar
-        toolbar.addWidget(camera_selector)
+        # toolbar.addWidget(camera_selector)
 
         # setting tool bar stylesheet
-        toolbar.setStyleSheet("background : white;")
+        # toolbar.setStyleSheet("background : white;")
 
         # setting window title
-        self.setWindowTitle("PyQt5 Cam")
+        # self.setWindowTitle("PyQt5 Cam")
 
         # showing the main window
-        self.show()
+        # self.show()
+
+    def wheelEvent(self, a0) -> None:
+        delta = a0.angleDelta().y()
+        idx = 0
+        if delta > 0 and self.parent.zoom < 6:
+            idx = 1
+        elif delta < 0 and self.parent.zoom > 1:
+            idx = -1
+
+        if self.parent.zoom + idx == 5:
+            self.parent.zoom = round(self.parent.zoom + 2 * idx, 1)
+        else:
+            self.parent.zoom = round(self.parent.zoom + idx, 1)
+        self.overlay.setPixmap(self.parent.label.pixmap())
+        return super().wheelEvent(a0)
 
     # method to select camera
     def select_camera(self, i):
@@ -169,16 +190,16 @@ class MainWindow(QMainWindow):
         self.save_seq = 0
 
 
-        w, h = self.viewfinder.width(), self.viewfinder.height()
+        # w, h = self.viewfinder.width(), self.viewfinder.height()
 
-        pixmap = QPixmap(w, h)
-        pixmap.fill(Qt.transparent)
-        self.overlay.setPixmap(pixmap)
-        painter = QPainter(self.overlay.pixmap())
+        # pixmap = QPixmap(w, h)
+        # pixmap.fill(Qt.transparent)
+        # self.overlay.setPixmap(pixmap)
+        # painter = QPainter(self.overlay.pixmap())
+        # painter.drawLine(0, h/2, w, h/2)
+        # painter.drawLine(w/2, 0, w/2, h)
 
-
-        painter.drawLine(0, h/2, w, h/2)
-        painter.drawLine(w/2, 0, w/2, h)
+        self.overlay.setPixmap(self.canvas)
 
     # method to take photo
     def click_photo(self):
@@ -223,12 +244,12 @@ class MainWindow(QMainWindow):
 
 
 # Driver code
-if __name__ == "__main__":
-    # create pyqt5 app
-    App = QApplication(sys.argv)
-
-    # create the instance of our Window
-    window = MainWindow()
-
-    # start the app
-    sys.exit(App.exec())
+# if __name__ == "__main__":
+#     # create pyqt5 app
+#     App = QApplication(sys.argv)
+#
+#     # create the instance of our Window
+#     window = MainWindow()
+#
+#     # start the app
+#     sys.exit(App.exec())

@@ -69,6 +69,15 @@ class Window(QMainWindow, Ui_MainWindow):
         self.table.clicked.connect(self.table_clicked)
         self.btn.clicked.connect(self.btn_zoom)
 
+        self.preview.clicked.connect(self.show_preview)
+
+    def show_preview(self):
+        from cam import MainWindow as prevDlg
+
+        dlg = prevDlg(self, self.label.pixmap())
+        dlg.exec_()
+        dlg.select_camera(1)
+
     @property
     def zoom(self):
         return self._zoom
@@ -280,7 +289,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
 App = QApplication(sys.argv)
 
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtGui
 
 _id = QtGui.QFontDatabase.addApplicationFont("Bank Gothic Light BT.ttf")
 fid = QtGui.QFontDatabase.applicationFontFamilies(_id)

@@ -72,4 +72,7 @@ class Ui_MainWindow(object):
         self.edit_click = QtWidgets.QPushButton('Click Calculator')
         self.gridLayout.addWidget(self.edit_click, 3, 3, 1, 1)
 
+        self.preview = QtWidgets.QPushButton('Preview')
+        self.gridLayout.addWidget(self.preview)
+
         MainWindow.setCentralWidget(self.centralwidget)
