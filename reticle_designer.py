@@ -31,15 +31,15 @@ class Ui_MainWindow(object):
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
 
-        self.background = PixmapLayer(self.width, self.height, Qt.gray)
+        self.background = PixmapLayer(self.pm_width, self.pm_height, Qt.gray)
         self.background.setAlignment(Qt.AlignTop)
         self.gridLayout.addWidget(self.background, 0, 0, 1, 3)
 
-        self.grid = GridLayer(self.width, self.height, Qt.transparent)
+        self.grid = GridLayer(self.pm_width, self.pm_height, Qt.transparent)
         self.grid.setAlignment(Qt.AlignTop)
         self.gridLayout.addWidget(self.grid, 0, 0, 1, 3)
 
-        self.watermark = Watermark(self.width, self.height, Qt.transparent)
+        self.watermark = Watermark(self.pm_width, self.pm_height, Qt.transparent)
         self.watermark.setAlignment(Qt.AlignTop)
         self.gridLayout.addWidget(self.watermark, 0, 0, 1, 3)
 
@@ -47,7 +47,7 @@ class Ui_MainWindow(object):
         self.label.setAlignment(Qt.AlignTop)
         self.gridLayout.addWidget(self.label, 0, 0, 1, 3)
 
-        self.overlay = PixmapLayer(self.width, self.height, Qt.transparent)
+        self.overlay = PixmapLayer(self.pm_width, self.pm_height, Qt.transparent)
         self.overlay.setAlignment(Qt.AlignTop)
         self.gridLayout.addWidget(self.overlay, 0, 0, 1, 3)
 
@@ -117,14 +117,14 @@ class Window(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.top = 300
         self.left = 300
-        self.width = 639
-        self.height = 479
+        self.pm_width = 639
+        self.pm_height = 479
         self.setupUi(self)
 
         self.title = "Reticle"
 
-        self.x0 = self.width / 2 + 1
-        self.y0 = self.height / 2 + 1
+        self.x0 = self.pm_width / 2 + 1
+        self.y0 = self.pm_height / 2 + 1
         self._zoom = 1
         self._click = Click(1.7, 1.7)
 
@@ -202,10 +202,10 @@ class Window(QMainWindow, Ui_MainWindow):
 
         x -= 32 if x >= 32 else 0
         y -= 32 if y >= 32 else 0
-        if x >= self.width - 64:
-            x = self.width - 64
-        if y >= self.height - 64:
-            y = self.height - 64
+        if x >= self.pm_width - 64:
+            x = self.pm_width - 64
+        if y >= self.pm_height - 64:
+            y = self.pm_height - 64
 
         rect = QtCore.QRect(x, y, 64, 64)
         pixmap = self.label.pixmap().copy(rect)
@@ -231,9 +231,9 @@ class Window(QMainWindow, Ui_MainWindow):
             self.resetMagnifierPos()
 
     def resetMagnifierPos(self):
-        self.magnifier.move(self.width - 128, 0)
-        self.magnifier_grid.move(self.width - 128, 0)
-        self.magnifier_back.move(self.width - 128, 0)
+        self.magnifier.move(self.pm_width - 128, 0)
+        self.magnifier_grid.move(self.pm_width - 128, 0)
+        self.magnifier_back.move(self.pm_width - 128, 0)
 
     def setMagnifierPos(self, index):
         self.magnifier.move(index.x() - 64, index.y() - 64)
@@ -341,10 +341,11 @@ class Window(QMainWindow, Ui_MainWindow):
         )
 
     def draw_layers(self):
-        canvas = QPixmap(self.width, self.height)
+        canvas = QPixmap(self.pm_width, self.pm_height)
         canvas.fill(Qt.transparent)
         highlighter_color = QtGui.QColor('#3F57D2')
-        canvas = self.draw_ret(canvas, highlighter_color)
+        highlited_index = self.table.currentIndex().row()
+        canvas = self.draw_ret(canvas, self.reticle, self.zoom, highlited_index, highlighter_color)
         self.label.setPixmap(canvas)
         self.enable_grid()
         self.draw_watermark()
@@ -357,8 +358,8 @@ class Window(QMainWindow, Ui_MainWindow):
             else:
                 self.draw_magnifier(MagnifierEvent(self.x0, self.y0))
 
-    def draw_ret(self, canvas=None, highlighter_color=Qt.black):
-        multiplier = self.reticle['multiplier']
+    def draw_ret(self, canvas=None, reticle=None, zoom=None, highlited_index=None, highlighter_color=Qt.black):
+        multiplier = reticle['multiplier']
         x1 = multiplier / self.click.x
         y1 = multiplier / self.click.y
         painter = QPainter(canvas)
@@ -368,10 +369,9 @@ class Window(QMainWindow, Ui_MainWindow):
         painter.setFont(font)
         painter.device().height()
         painter.setPen(QPen(Qt.black, 1, Qt.SolidLine))
-        template = self.reticle['template']
-        highlited_index = self.table.currentIndex().row()
+        template = reticle['template']
         reticle_layer = ReticleLayer()
-        reticle_layer.draw(painter, template, self.x0, self.y0, x1, y1, self.zoom, highlited_index, highlighter_color)
+        reticle_layer.draw(painter, template, self.x0, self.y0, x1, y1, zoom, highlited_index, highlighter_color)
         return canvas
 
     def dump_reticles(self):
@@ -383,16 +383,15 @@ class Window(QMainWindow, Ui_MainWindow):
         self.progress.setMaximum(progress_max - 1)
 
         for i in range(self.combo.count()):
-            self.reticle = self.combo.itemData(i)
+            reticle = self.combo.itemData(i)
             zooms = []
-            for j in [1, 2, 3, 4]:
-                self.zoom = j
-                canvas = QPixmap(self.width, self.height)
+            for zoom in [1, 2, 3, 4]:
+                canvas = QPixmap(self.pm_width, self.pm_height)
                 canvas.fill(Qt.white)
-                self.draw_ret(canvas=canvas)
+                self.draw_ret(canvas, reticle, zoom)
                 img = canvas.toImage()
                 zooms.append(ImgMap(img))
-                fmt_str = f'{self.reticle["name"]}, {j}X, %p%'
+                fmt_str = f'{reticle["name"]}, {zoom}X, %p%'
                 self.progress.setFormat(fmt_str)
                 self.progress.setValue(self.progress.value() + 1)
             base.append(Reticle4z(*zooms))
@@ -410,8 +409,6 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.setDisabled(False)
 
-        # self.draw_layers()
-
     def InitWindow(self):
         self.setWindowTitle(self.title)
         self.show()
@@ -422,7 +419,6 @@ App = QApplication(sys.argv)
 from PyQt5 import QtCore, QtGui
 
 _id = QtGui.QFontDatabase.addApplicationFont("Bank Gothic Light BT.ttf")
-# _id = QtGui.QFontDatabase.addApplicationFont("square-723.ttf")
 fid = QtGui.QFontDatabase.applicationFontFamilies(_id)
 
 window = Window()
