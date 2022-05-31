@@ -3,16 +3,14 @@ import os
 import sys
 
 from PyQt5 import QtGui
-from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen, QPixmap
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QDoubleSpinBox, QPushButton, \
-    QCheckBox, QProgressBar, QComboBox
+from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from click_calc import ClickCalc
-from layer import PixmapLayer, GridLayer, Watermark, ReticleLayer, Magnifier, MagnifierEvent
+from layer import ReticleLayer, MagnifierEvent
 from reticle_types import Click
-from widgets import ReticleTable
+from ui import Ui_MainWindow
 
 from reticle2 import ImgMap, Reticle4z, SMALL_RETS, LRF_RETS, PXL4
 
@@ -20,76 +18,6 @@ from reticle2 import ImgMap, Reticle4z, SMALL_RETS, LRF_RETS, PXL4
 DEFAULT_RET = {"name": "Cross", "multiplier": 10, "template": [
     {"type": "cross", "margin": 0.5, "size": 1, "mask": 15, "bind": True, "zoom": True,
      "min_zoom": 1, "max_zoom": 7, "pen": 1}]}
-
-
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-
-        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName("gridLayout")
-
-        self.background = PixmapLayer(self.pm_width, self.pm_height, Qt.gray)
-        self.background.setAlignment(Qt.AlignTop)
-        self.gridLayout.addWidget(self.background, 0, 0, 1, 3)
-
-        self.grid = GridLayer(self.pm_width, self.pm_height, Qt.transparent)
-        self.grid.setAlignment(Qt.AlignTop)
-        self.gridLayout.addWidget(self.grid, 0, 0, 1, 3)
-
-        self.watermark = Watermark(self.pm_width, self.pm_height, Qt.transparent)
-        self.watermark.setAlignment(Qt.AlignTop)
-        self.gridLayout.addWidget(self.watermark, 0, 0, 1, 3)
-
-        self.label = QLabel()
-        self.label.setAlignment(Qt.AlignTop)
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 3)
-
-        self.overlay = PixmapLayer(self.pm_width, self.pm_height, Qt.transparent)
-        self.overlay.setAlignment(Qt.AlignTop)
-        self.gridLayout.addWidget(self.overlay, 0, 0, 1, 3)
-
-        self.magnifier = Magnifier(self.pm_width, self.pm_height)
-        self.magnifier.setParent(self.label)
-
-        self.btn = QPushButton('Zoom')
-        self.gridLayout.addWidget(self.btn, 1, 0, 1, 1)
-
-        self.info_label = QLabel()
-        self.gridLayout.addWidget(self.info_label, 1, 1, 1, 1)
-
-        self.grid_on = QCheckBox(text='Enable grid')
-
-        self.gridLayout.addWidget(self.grid_on, 1, 2, 1, 1)
-
-        self.table = ReticleTable()
-        self.gridLayout.addWidget(self.table, 0, 3, 2, 1)
-
-        self.spin_x = QDoubleSpinBox()
-        self.spin_y = QDoubleSpinBox()
-        self.spin_x.setPrefix('X:')
-        self.spin_y.setPrefix('Y:')
-        self.spin_x.setSingleStep(0.01)
-        self.spin_x.setMinimum(0.01)
-        self.spin_y.setMinimum(0.01)
-        self.spin_y.setSingleStep(0.01)
-
-        self.gridLayout.addWidget(self.spin_x, 2, 0, 1, 1)
-        self.gridLayout.addWidget(self.spin_y, 2, 1, 1, 1)
-
-        self.combo = QComboBox()
-
-        self.gridLayout.addWidget(self.combo, 2, 2, 1, 1)
-        self.mk_reticle2_x4 = QPushButton('Сreate 4-zoom reticle2')
-        self.gridLayout.addWidget(self.mk_reticle2_x4, 3, 0, 1, 1)
-        self.progress = QProgressBar()
-        self.gridLayout.addWidget(self.progress, 3, 1, 1, 2)
-        self.edit_click = QPushButton('Click Calculator')
-        self.gridLayout.addWidget(self.edit_click, 3, 3, 1, 1)
-
-        MainWindow.setCentralWidget(self.centralwidget)
 
 
 class Window(QMainWindow, Ui_MainWindow):
