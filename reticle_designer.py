@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QDoubleSpinBox, Q
     QCheckBox, QProgressBar, QComboBox, QTableView
 
 from click_calc import ClickCalc
-from layer import PixmapLayer, GridLayer, Watermark
+from layer import PixmapLayer, GridLayer, Watermark, ReticleLayer
 from ret_edit import CrossEdit, DotEdit, RulerEdit
 from reticle_types import Click, Cross, Dot, HRuler, VRuler
 
@@ -377,6 +377,8 @@ class Window(QMainWindow, Ui_MainWindow):
             f' H:{round(self.click.x / self.zoom, 2)}'
         )
 
+
+
     def draw_ret(self, canvas=None):
 
         multiplier = self.reticle['multiplier']
@@ -403,40 +405,10 @@ class Window(QMainWindow, Ui_MainWindow):
 
         template = self.reticle['template']
 
-        for index, t_data in enumerate(template):
-            if 'hide' not in t_data:
-                t_data['hide'] = False
-            t = t_data.copy()
-            if self.table.currentIndex().row() == index:
-                t['color'] = highlighter_color
-            else:
-                t['color'] = Qt.black
+        highlited_index = self.table.currentIndex().row()
 
-            if t['max_zoom'] > self.zoom >= t['min_zoom'] and not t['hide']:
-                if t['type'] == 'dot':
-                    Dot(painter, self.x0, self.y0, x1, y1, self.zoom, **t)
-                if t['type'] == 'cross':
-                    Cross(painter, self.x0, self.y0, x1, y1, self.zoom, **t)
-                if t['type'] in ['hruler', 'vruler']:
-                    if t['type'] == 'hruler':
-                        ruler = HRuler
-                    elif t['type'] == 'vruler':
-                        ruler = VRuler
-                    else:
-                        ruler = HRuler
-                    ruler(painter, self.x0, self.y0, x1, y1, self.zoom, **t)
-
-                    if 'mirror_x' in t:
-                        if t['mirror_x']:
-                            ruler(painter, self.x0, self.y0, x1, y1, self.zoom, **t, flip_x=True)
-
-                    if 'mirror_y' in t:
-                        if t['mirror_y']:
-                            ruler(painter, self.x0, self.y0, x1, y1, self.zoom, **t, flip_y=True)
-
-                    if 'mirror_x' in t and 'mirror_y' in t:
-                        if t['mirror_x'] and t['mirror_y']:
-                            ruler(painter, self.x0, self.y0, x1, y1, self.zoom, **t, flip_x=True, flip_y=True)
+        reticle_layer = ReticleLayer()
+        reticle_layer.draw(painter, template, self.x0, self.y0, x1, y1, self.zoom, highlited_index, highlighter_color)
 
         if not canvas:
 
