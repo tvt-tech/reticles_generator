@@ -4,13 +4,13 @@ import sys
 
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QDoubleSpinBox, QPushButton, \
     QCheckBox, QProgressBar, QComboBox
 
 from click_calc import ClickCalc
-from layer import PixmapLayer, GridLayer, Watermark, ReticleLayer
+from layer import PixmapLayer, GridLayer, Watermark, ReticleLayer, Magnifier, MagnifierEvent
 from reticle_types import Click
 from widgets import ReticleTable
 
@@ -51,18 +51,8 @@ class Ui_MainWindow(object):
         self.overlay.setAlignment(Qt.AlignTop)
         self.gridLayout.addWidget(self.overlay, 0, 0, 1, 3)
 
-        self.magnifier_back = QLabel(self.label)
-        magnifier = QPixmap(128, 128)
-        magnifier.fill(Qt.gray)
-        self.magnifier_back.setPixmap(magnifier)
-
-        self.magnifier_grid = QLabel(self.label)
-        magnifier = QPixmap(128, 128)
-        self.magnifier_grid.setPixmap(magnifier)
-
-        self.magnifier = QLabel(self.label)
-        magnifier = QPixmap(128, 128)
-        self.magnifier.setPixmap(magnifier)
+        self.magnifier = Magnifier(self.pm_width, self.pm_height)
+        self.magnifier.setParent(self.label)
 
         self.btn = QPushButton('Zoom')
         self.gridLayout.addWidget(self.btn, 1, 0, 1, 1)
@@ -102,15 +92,6 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
 
-class MagnifierEvent(object):
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def pos(self):
-        return QPoint(self.x, self.y)
-
-
 class Window(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
@@ -146,10 +127,9 @@ class Window(QMainWindow, Ui_MainWindow):
         self.load_table()
         self.draw_layers()
 
-        self.is_pressed = False
         self.magnifier_event = MagnifierEvent(self.x0, self.y0)
-        self.draw_magnifier(self.magnifier_event, map=False)
-        self.resetMagnifierPos()
+        self.draw_magnifier(self.magnifier_event, is_map=False)
+        self.magnifier.resetMagnifierPos()
 
         self.combo.currentIndexChanged.connect(self.change_ret)
         self.grid_on.stateChanged.connect(self.enable_grid)
@@ -193,61 +173,17 @@ class Window(QMainWindow, Ui_MainWindow):
             self.draw_magnifier(event)
         return super().mouseMoveEvent(event)
 
-    def draw_magnifier(self, event, map=True):
-        if map:
-            label_pos = self.label.mapFrom(self, event.pos())
-        else:
-            label_pos = event.pos()
-        x, y = label_pos.x(), label_pos.y()
-
-        x -= 32 if x >= 32 else 0
-        y -= 32 if y >= 32 else 0
-        if x >= self.pm_width - 64:
-            x = self.pm_width - 64
-        if y >= self.pm_height - 64:
-            y = self.pm_height - 64
-
-        rect = QtCore.QRect(x, y, 64, 64)
-        pixmap = self.label.pixmap().copy(rect)
-        pixmap = pixmap.scaled(128, 128)
-        self.magnifier.setPixmap(pixmap)
-        painter = QPainter(self.magnifier.pixmap())
-        painter.setPen(QPen(Qt.black, 1))
-        painter.drawLine(0, 0, 0, 127)
-        painter.drawLine(0, 0, 127, 0)
-        painter.drawLine(127, 127, 127, 0)
-        painter.drawLine(127, 127, 0, 127)
-
-        rect = QtCore.QRect(x, y, 64, 64)
-        pixmap = self.grid.pixmap().copy(rect)
-        pixmap = pixmap.scaled(128, 128)
-        self.magnifier_grid.setPixmap(pixmap)
-
-        self.magnifier_event = MagnifierEvent(label_pos.x(), label_pos.y())
-
-        if self.is_pressed:
-            self.setMagnifierPos(label_pos)
-        else:
-            self.resetMagnifierPos()
-
-    def resetMagnifierPos(self):
-        self.magnifier.move(self.pm_width - 128, 0)
-        self.magnifier_grid.move(self.pm_width - 128, 0)
-        self.magnifier_back.move(self.pm_width - 128, 0)
-
-    def setMagnifierPos(self, index):
-        self.magnifier.move(index.x() - 64, index.y() - 64)
-        self.magnifier_grid.move(index.x() - 64, index.y() - 64)
-        self.magnifier_back.move(index.x() - 64, index.y() - 64)
+    def draw_magnifier(self, event, is_map=True):
+        self.magnifier.draw(event, self.label, self.grid, is_map)
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
-        self.is_pressed = False
+        self.magnifier.is_pressed = False
         if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
             self.draw_magnifier(event)
         return super().mouseReleaseEvent(event)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        self.is_pressed = True
+        self.magnifier.is_pressed = True
         if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
             self.draw_magnifier(event)
         return super().mousePressEvent(event)
@@ -329,7 +265,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         if hasattr(self, 'magnifier_event'):
             if self.magnifier_event:
-                self.draw_magnifier(self.magnifier_event, map=False)
+                self.draw_magnifier(self.magnifier_event, is_map=False)
             else:
                 self.draw_magnifier(MagnifierEvent(self.x0, self.y0))
 
@@ -354,7 +290,7 @@ class Window(QMainWindow, Ui_MainWindow):
         )
         if hasattr(self, 'magnifier_event'):
             if self.magnifier_event:
-                self.draw_magnifier(self.magnifier_event, map=False)
+                self.draw_magnifier(self.magnifier_event, is_map=False)
             else:
                 self.draw_magnifier(MagnifierEvent(self.x0, self.y0))
 
