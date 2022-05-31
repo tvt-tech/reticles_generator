@@ -146,18 +146,27 @@ class MainWindow(QDialog):
         elif delta < 0 and self.parent.zoom > 1:
             idx = -1
 
+        canvas = self.parent.label.pixmap()
+        img = canvas.toImage()
+        img.invertPixels(QImage.InvertMode.InvertRgb)
+        canvas = QPixmap.fromImage(img)
+
         if self.parent.zoom + idx == 5:
             self.parent.zoom = round(self.parent.zoom + 2 * idx, 1)
         else:
             self.parent.zoom = round(self.parent.zoom + idx, 1)
-        self.overlay.setPixmap(self.parent.label.pixmap())
+        self.overlay.setPixmap(canvas)
         return super().wheelEvent(a0)
 
     # method to select camera
     def select_camera(self, i):
 
         # getting the selected camera
-        self.camera = QCamera(self.available_cameras[i])
+        try:
+            self.camera = QCamera(self.available_cameras[i])
+
+        except:
+            return
 
         # setting view finder to the camera
         self.camera.setViewfinder(self.viewfinder)

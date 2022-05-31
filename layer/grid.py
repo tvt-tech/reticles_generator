@@ -55,6 +55,6 @@ class GridLayer(PixmapLayer):
         VRuler(*defs, *n, **nd, x_offset=3)
         VRuler(*defs, *n, **nd, x_offset=3, flip_x=True)
 
-        for i in range(-lys, lys):
-            HRuler(*defs, *g, mode='dot', y_offset=i, pen=pen)
-            HRuler(*defs, *g, mode='dot', y_offset=i, pen=pen, flip_y=True)
+        # for i in range(-lys, lys):
+        #     HRuler(*defs, *g, mode='dot', y_offset=i, pen=pen)
+        #     HRuler(*defs, *g, mode='dot', y_offset=i, pen=pen, flip_y=True)

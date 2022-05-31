@@ -4,7 +4,7 @@ import sys
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QPen, QPixmap
+from PyQt5.QtGui import QPainter, QPen, QPixmap, QImage
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from click_calc import ClickCalc
@@ -74,7 +74,14 @@ class Window(QMainWindow, Ui_MainWindow):
     def show_preview(self):
         from cam import MainWindow as prevDlg
 
-        dlg = prevDlg(self, self.label.pixmap())
+        canvas = self.label.pixmap()
+        # canvas.fill(Qt.transparent)
+        img = canvas.toImage()
+        img.invertPixels(QImage.InvertRgb)
+        canvas = QPixmap.fromImage(img)
+        # self.draw_ret(canvas, self.reticle, self.zoom, 0, Qt.gray)
+
+        dlg = prevDlg(self, canvas)
         dlg.exec_()
         dlg.select_camera(1)
 
