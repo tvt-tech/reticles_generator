@@ -12,7 +12,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QDoubleSpinBox, Q
 from click_calc import ClickCalc
 from layer import PixmapLayer, GridLayer, Watermark, ReticleLayer
 from ret_edit import CrossEdit, DotEdit, RulerEdit
-from reticle_types import Click, Cross, Dot, HRuler, VRuler
+from reticle_types import Click
+from widgets import ReticleTable
 
 from reticle2 import ImgMap, Reticle4z, SMALL_RETS, LRF_RETS, PXL4
 
@@ -74,13 +75,8 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.grid_on, 1, 2, 1, 1)
 
-        self.table = QTableView()
+        self.table = ReticleTable()
         self.gridLayout.addWidget(self.table, 0, 3, 2, 1)
-        self.table.setMinimumWidth(300)
-        self.table.setMaximumWidth(300)
-        self.table.setSelectionBehavior(QTableView.SelectRows)
-        header = self.table.verticalHeader()
-        header.setDefaultSectionSize(1)
 
         self.spin_x = QDoubleSpinBox()
         self.spin_y = QDoubleSpinBox()
@@ -130,8 +126,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.x0 = self.width / 2 + 1
         self.y0 = self.height / 2 + 1
-        self.zoom = 1
-        self.click = Click(1.7, 1.7)
+        self._zoom = 1
+        self._click = Click(1.7, 1.7)
 
         # self.click = Click(1.42, 1.42)
         # self.click = Click(2.13, 2.13)
@@ -141,7 +137,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.spin_x.setValue(self.click.x)
         self.spin_y.setValue(self.click.y)
         self.load_templates()
-        self.reticle = self.combo.currentData()
+        self._reticle = self.combo.currentData()
 
         self.canvas = None
 
@@ -149,7 +145,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.grid_on.setChecked(True)
         self.load_table()
-        self.draw_ret()
+        self.draw_layers()
 
         self.is_pressed = False
         self.magnifier_event = MagnifierEvent(self.x0, self.y0)
@@ -165,6 +161,33 @@ class Window(QMainWindow, Ui_MainWindow):
         self.table.doubleClicked.connect(self.table_double_clicked)
         self.table.clicked.connect(self.table_clicked)
         self.btn.clicked.connect(self.btn_zoom)
+
+    @property
+    def zoom(self):
+        return self._zoom
+
+    @zoom.setter
+    def zoom(self, value: int):
+        self._zoom = value
+        self.draw_layers()
+
+    @property
+    def click(self):
+        return self._click
+
+    @click.setter
+    def click(self, value: Click):
+        self._click = value
+        self.draw_layers()
+
+    @property
+    def reticle(self):
+        return self._reticle
+
+    @reticle.setter
+    def reticle(self, value: dict):
+        self._reticle = value
+        self.draw_layers()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
@@ -187,7 +210,6 @@ class Window(QMainWindow, Ui_MainWindow):
 
         rect = QtCore.QRect(x, y, 64, 64)
         pixmap = self.label.pixmap().copy(rect)
-        # pixmap = self.canvas
         pixmap = pixmap.scaled(128, 128)
         self.magnifier.setPixmap(pixmap)
         painter = QPainter(self.magnifier.pixmap())
@@ -232,43 +254,29 @@ class Window(QMainWindow, Ui_MainWindow):
         return super().mousePressEvent(event)
 
     def table_clicked(self, index):
-        item = self.reticle['template'][index.row()]
-        if index.column() == 4:
-            if item['hide']:
-                item['hide'] = False
-            else:
-                item['hide'] = True
-
-            self.table_model.item(index.row(), 4).setData(item['hide'],
-                                                          QtCore.Qt.DisplayRole)
-        min_zoom = item['min_zoom']
-        max_zoom = item['max_zoom']
-        if self.zoom < min_zoom:
-            self.zoom = min_zoom
-        if self.zoom >= max_zoom:
-            self.zoom = max_zoom-1
-        self.draw_ret()
+        self.zoom = self.table.table_clicked(index, self.reticle['template'], self.zoom)
 
     def table_double_clicked(self, index):
-        item = self.reticle['template'][index.row()]
-
-        dlg = None
-
-        if -1 < index.column() < 4:
-            if item['type'] == 'cross':
-                dlg = CrossEdit(item)
-            if item['type'] == 'dot':
-                dlg = DotEdit(item)
-            if item['type'] in ['vruler', 'hruler']:
-                dlg = RulerEdit(item)
-            if dlg is not None:
-                if dlg.exec_():
-                    self.reticle['template'][index.row()] = dlg.get_data()
-                    self.combo.setItemData(self.combo.currentIndex(), self.reticle)
-                    self.load_table()
-                    self.draw_ret()
-        self.table.selectRow(index.row())
-        self.table_clicked(index)
+        # item = self.reticle['template'][index.row()]
+        #
+        # dlg = None
+        #
+        # if -1 < index.column() < 4:
+        #     if item['type'] == 'cross':
+        #         dlg = CrossEdit(item)
+        #     if item['type'] == 'dot':
+        #         dlg = DotEdit(item)
+        #     if item['type'] in ['vruler', 'hruler']:
+        #         dlg = RulerEdit(item)
+        #     if dlg is not None:
+        #         if dlg.exec_():
+        #             self.reticle['template'][index.row()] = dlg.get_data()
+        #             self.combo.setItemData(self.combo.currentIndex(), self.reticle)
+        #             self.load_table()
+        #             self.draw_layers()
+        # self.table.selectRow(index.row())
+        # self.table_clicked(index)
+        self.table.table_double_clicked()
 
     def load_templates(self):
         self.combo.addItem(DEFAULT_RET['name'], DEFAULT_RET)
@@ -281,17 +289,14 @@ class Window(QMainWindow, Ui_MainWindow):
                 self.combo.addItem(data['name'], data)
 
     def edit_x_click(self, value):
-        self.click.x = value
-        self.draw_ret()
+        self.click = Click(value, self.click.y)
 
     def edit_y_click(self, value):
-        self.click.y = value
-        self.draw_ret()
+        self.click = Click(self.click.x, value)
 
     def change_ret(self):
         self.reticle = self.combo.currentData()
         self.load_table()
-        self.draw_ret()
 
     def click_calculator(self):
         dlg = ClickCalc()
@@ -300,33 +305,10 @@ class Window(QMainWindow, Ui_MainWindow):
             click = dlg.get_click()
             self.spin_x.setValue(click.x)
             self.spin_y.setValue(click.y)
-            self.draw_ret()
+            self.draw_layers()
 
     def load_table(self):
-        self.table_model = QtGui.QStandardItemModel(self)
-
-        for i, y in enumerate(self.reticle['template']):
-            self.table_model.setItem(i, 0, QtGui.QStandardItem())
-            self.table_model.item(i, 0).setData(y['type'], QtCore.Qt.DisplayRole)
-            self.table_model.setItem(i, 1, QtGui.QStandardItem())
-            self.table_model.item(i, 1).setData(y['mode'] if 'mode' in y else '', QtCore.Qt.DisplayRole)
-            self.table_model.setItem(i, 2, QtGui.QStandardItem())
-            self.table_model.item(i, 2).setData(y['min_zoom'], QtCore.Qt.DisplayRole)
-            self.table_model.setItem(i, 3, QtGui.QStandardItem())
-            self.table_model.item(i, 3).setData(y['max_zoom'], QtCore.Qt.DisplayRole)
-
-            item = QtGui.QStandardItem()
-            self.table_model.setItem(i, 4, item)
-            if not 'hide' in 'y':
-                self.reticle['template'][i]['hide'] = False
-                y['hide'] = False
-            self.table_model.item(i, 4).setData(y['hide'], QtCore.Qt.DisplayRole)
-
-        self.table_model.setHorizontalHeaderLabels(['Type', 'Mode', 'Min zoom', 'Max zoom', 'Hide'])
-        self.table.setModel(self.table_model)
-        header = self.table.horizontalHeader()
-        for i in range(header.count()):
-            header.setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeToContents)
+        self.table.load_table(self.reticle['template'])
 
     def btn_zoom(self):
         if self.zoom < 4:
@@ -336,7 +318,6 @@ class Window(QMainWindow, Ui_MainWindow):
         else:
             z = 1
         self.zoom = round(z, 1)
-        self.draw_ret()
 
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
         if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
@@ -351,7 +332,6 @@ class Window(QMainWindow, Ui_MainWindow):
                 self.zoom = round(self.zoom + 2 * idx, 1)
             else:
                 self.zoom = round(self.zoom + idx, 1)
-            self.draw_ret()
         return super().wheelEvent(a0)
 
     def enable_grid(self, event=None):
@@ -377,64 +357,45 @@ class Window(QMainWindow, Ui_MainWindow):
             f' H:{round(self.click.x / self.zoom, 2)}'
         )
 
+    def draw_layers(self):
+        canvas = QPixmap(self.width, self.height)
+        canvas.fill(Qt.transparent)
+        highlighter_color = QtGui.QColor('#3F57D2')
+        canvas = self.draw_ret(canvas, highlighter_color)
+        self.label.setPixmap(canvas)
+        self.enable_grid()
+        self.draw_watermark()
+        self.info_label.setText(
+            f'{self.zoom}X, V:{round(self.click.y / self.zoom, 2)}, H:{round(self.click.x / self.zoom, 2)}'
+        )
+        if hasattr(self, 'magnifier_event'):
+            if self.magnifier_event:
+                self.draw_magnifier(self.magnifier_event, map=False)
+            else:
+                self.draw_magnifier(MagnifierEvent(self.x0, self.y0))
 
-
-    def draw_ret(self, canvas=None):
-
+    def draw_ret(self, canvas=None, highlighter_color=Qt.black):
         multiplier = self.reticle['multiplier']
         x1 = multiplier / self.click.x
         y1 = multiplier / self.click.y
-
-        if not canvas:
-            self.canvas = QPixmap(self.width, self.height)
-            self.canvas.fill(Qt.transparent)
-            highlighter_color = QtGui.QColor('#3F57D2')
-        else:
-            self.canvas = canvas
-            highlighter_color = Qt.black
-
-        painter = QPainter(self.canvas)
-
+        painter = QPainter(canvas)
         font = QtGui.QFont("BankGothic Lt BT")
         font.setStyleStrategy(QtGui.QFont.NoAntialias)
         font.setPixelSize(11)
         painter.setFont(font)
-
         painter.device().height()
         painter.setPen(QPen(Qt.black, 1, Qt.SolidLine))
-
         template = self.reticle['template']
-
         highlited_index = self.table.currentIndex().row()
-
         reticle_layer = ReticleLayer()
         reticle_layer.draw(painter, template, self.x0, self.y0, x1, y1, self.zoom, highlited_index, highlighter_color)
-
-        if not canvas:
-
-            self.label.setPixmap(self.canvas)
-
-            self.enable_grid()
-            self.draw_watermark()
-
-            self.info_label.setText(
-                f'{self.zoom}X, V:{round(self.click.y / self.zoom, 2)}, H:{round(self.click.x / self.zoom, 2)}'
-            )
-
-            if hasattr(self, 'magnifier_event'):
-                if self.magnifier_event:
-                    self.draw_magnifier(self.magnifier_event, map=False)
-                else:
-                    self.draw_magnifier(MagnifierEvent(self.x0, self.y0))
+        return canvas
 
     def dump_reticles(self):
         self.setDisabled(True)
-
         base = []
-
         cur_zoom = self.zoom
         cur_reticle = self.combo.currentData()
-
         progress_max = self.combo.count() * 4
         self.progress.setMaximum(progress_max - 1)
 
@@ -466,7 +427,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.setDisabled(False)
 
-        self.draw_ret()
+        # self.draw_layers()
 
     def InitWindow(self):
         self.setWindowTitle(self.title)
