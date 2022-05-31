@@ -7,11 +7,10 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QPainter, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QDoubleSpinBox, QPushButton, \
-    QCheckBox, QProgressBar, QComboBox, QTableView
+    QCheckBox, QProgressBar, QComboBox
 
 from click_calc import ClickCalc
 from layer import PixmapLayer, GridLayer, Watermark, ReticleLayer
-from ret_edit import CrossEdit, DotEdit, RulerEdit
 from reticle_types import Click
 from widgets import ReticleTable
 
@@ -257,26 +256,10 @@ class Window(QMainWindow, Ui_MainWindow):
         self.zoom = self.table.table_clicked(index, self.reticle['template'], self.zoom)
 
     def table_double_clicked(self, index):
-        # item = self.reticle['template'][index.row()]
-        #
-        # dlg = None
-        #
-        # if -1 < index.column() < 4:
-        #     if item['type'] == 'cross':
-        #         dlg = CrossEdit(item)
-        #     if item['type'] == 'dot':
-        #         dlg = DotEdit(item)
-        #     if item['type'] in ['vruler', 'hruler']:
-        #         dlg = RulerEdit(item)
-        #     if dlg is not None:
-        #         if dlg.exec_():
-        #             self.reticle['template'][index.row()] = dlg.get_data()
-        #             self.combo.setItemData(self.combo.currentIndex(), self.reticle)
-        #             self.load_table()
-        #             self.draw_layers()
-        # self.table.selectRow(index.row())
-        # self.table_clicked(index)
-        self.table.table_double_clicked()
+        template = self.table.table_double_clicked(index, self.reticle['template'], self.zoom)
+        self.reticle['template'] = template
+        self.combo.setItemData(self.combo.currentIndex(), self.reticle)
+        self.draw_layers()
 
     def load_templates(self):
         self.combo.addItem(DEFAULT_RET['name'], DEFAULT_RET)

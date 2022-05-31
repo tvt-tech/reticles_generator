@@ -29,11 +29,9 @@ class ReticleTable(QtWidgets.QTableView):
         else:
             return zoom
 
-    def table_double_clicked(self, index):
-        item = self.reticle['template'][index.row()]
-
+    def table_double_clicked(self, index, template, zoom):
+        item = template[index.row()]
         dlg = None
-
         if -1 < index.column() < 4:
             if item['type'] == 'cross':
                 dlg = CrossEdit(item)
@@ -43,12 +41,11 @@ class ReticleTable(QtWidgets.QTableView):
                 dlg = RulerEdit(item)
             if dlg is not None:
                 if dlg.exec_():
-                    self.reticle['template'][index.row()] = dlg.get_data()
-                    self.combo.setItemData(self.combo.currentIndex(), self.reticle)
-                    self.load_table()
-                    self.draw_layers()
-        self.table.selectRow(index.row())
-        self.table_clicked(index)
+                    template[index.row()] = dlg.get_data()
+                    self.load_table(template)
+        self.selectRow(index.row())
+        self.table_clicked(index, template, zoom)
+        return template
 
     def load_table(self, template):
         self.table_model = QtGui.QStandardItemModel(self)
