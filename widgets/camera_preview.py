@@ -43,15 +43,6 @@ class CameraPreview(QWidget):
 
         self.layout().addWidget(self.camera_selector)
 
-    # def wheelEvent(self, a0) -> None:
-    #     self.parent.wheelEvent(a0)
-    #     canvas = self.parent.label.pixmap()
-    #     img = canvas.toImage()
-    #     img.invertPixels(QImage.InvertMode.InvertRgb)
-    #     canvas = QPixmap.fromImage(img)
-    #     self.overlay.setPixmap(canvas)
-    #     return super().wheelEvent(a0)
-
     # method to select camera
     def select_camera(self, i):
 
