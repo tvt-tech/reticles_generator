@@ -82,8 +82,9 @@ class Window(QMainWindow, Ui_MainWindow):
         # self.draw_ret(canvas, self.reticle, self.zoom, 0, Qt.gray)
 
         dlg = prevDlg(self, canvas)
+        self.sender().setObjectName('preview')
         dlg.exec_()
-        dlg.select_camera(1)
+        dlg.camera = None
 
     @property
     def zoom(self):
@@ -183,7 +184,10 @@ class Window(QMainWindow, Ui_MainWindow):
         self.zoom = round(z, 1)
 
     def wheelEvent(self, a0: QtGui.QWheelEvent) -> None:
-        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
+        oname = None
+        if self.sender():
+            oname = self.sender().objectName()
+        if QApplication.widgetAt(self.cursor().pos()) == self.overlay or oname:
             delta = a0.angleDelta().y()
             idx = 0
             if delta > 0 and self.zoom < 6:

@@ -109,25 +109,25 @@ class MainWindow(QDialog):
         # toolbar.addAction(change_folder_action)
 
         # creating a combo box for selecting camera
-        # camera_selector = QComboBox()
+        camera_selector = QComboBox()
 
         # adding status tip to it
-        # camera_selector.setStatusTip("Choose camera to take pictures")
+        camera_selector.setStatusTip("Choose camera to take pictures")
 
         # adding tool tip to it
-        # camera_selector.setToolTip("Select Camera")
-        # camera_selector.setToolTipDuration(2500)
+        camera_selector.setToolTip("Select Camera")
+        camera_selector.setToolTipDuration(2500)
 
         # adding items to the combo box
-        # camera_selector.addItems([camera.description()
-        #                           for camera in self.available_cameras])
+        camera_selector.addItems([camera.description()
+                                  for camera in self.available_cameras])
 
         # adding action to the combo box
         # calling the select camera method
-        # camera_selector.currentIndexChanged.connect(self.select_camera)
+        camera_selector.currentIndexChanged.connect(self.select_camera)
 
         # adding this to tool bar
-        # toolbar.addWidget(camera_selector)
+        self.layout().addWidget(camera_selector)
 
         # setting tool bar stylesheet
         # toolbar.setStyleSheet("background : white;")
@@ -139,22 +139,11 @@ class MainWindow(QDialog):
         # self.show()
 
     def wheelEvent(self, a0) -> None:
-        delta = a0.angleDelta().y()
-        idx = 0
-        if delta > 0 and self.parent.zoom < 6:
-            idx = 1
-        elif delta < 0 and self.parent.zoom > 1:
-            idx = -1
-
+        self.parent.wheelEvent(a0)
         canvas = self.parent.label.pixmap()
         img = canvas.toImage()
         img.invertPixels(QImage.InvertMode.InvertRgb)
         canvas = QPixmap.fromImage(img)
-
-        if self.parent.zoom + idx == 5:
-            self.parent.zoom = round(self.parent.zoom + 2 * idx, 1)
-        else:
-            self.parent.zoom = round(self.parent.zoom + idx, 1)
         self.overlay.setPixmap(canvas)
         return super().wheelEvent(a0)
 
