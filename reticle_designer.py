@@ -2,7 +2,7 @@ import json
 import os
 import sys
 
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen, QPixmap, QImage
 from PyQt5.QtWidgets import QApplication, QMainWindow
@@ -74,17 +74,36 @@ class Window(QMainWindow, Ui_MainWindow):
     def show_preview(self):
         from cam import MainWindow as prevDlg
 
-        canvas = self.label.pixmap()
+        # canvas = self.label.pixmap()
         # canvas.fill(Qt.transparent)
-        img = canvas.toImage()
-        img.invertPixels(QImage.InvertRgb)
-        canvas = QPixmap.fromImage(img)
+        # img = canvas.toImage()
+        # img.invertPixels(QImage.InvertRgb)
+        # canvas = QPixmap.fromImage(img)
         # self.draw_ret(canvas, self.reticle, self.zoom, 0, Qt.gray)
 
-        dlg = prevDlg(self, canvas)
-        self.sender().setObjectName('preview')
-        dlg.exec_()
-        dlg.camera = None
+        camera_layer = self.findChild(QtWidgets.QWidget, 'camera_layer')
+        if not camera_layer:
+            from widgets import CameraPreview
+
+            camera_layer = CameraPreview(self)
+            camera_layer.setObjectName('camera_layer')
+            self.gridLayout.addWidget(camera_layer, 0, 0, 1, 3)
+
+            camera_layer.stackUnder(self.label)
+            self.gridLayout.addWidget(camera_layer.camera_selector, 4, 1)
+            self.preview.setText('Hide preview')
+
+        else:
+            camera_layer.camera = None
+            camera_layer.camera_selector.deleteLater()
+            camera_layer.deleteLater()
+
+            self.preview.setText('Preview')
+
+        # dlg = prevDlg(self, canvas)
+        # self.sender().setObjectName('preview')
+        # dlg.exec_()
+        # dlg.camera = None
 
     @property
     def zoom(self):
