@@ -55,6 +55,10 @@ class GridLayer(PixmapLayer):
         VRuler(*defs, *n, **nd, x_offset=3)
         VRuler(*defs, *n, **nd, x_offset=3, flip_x=True)
 
-        # for i in range(-lys, lys):
-        #     HRuler(*defs, *g, mode='dot', y_offset=i, pen=pen)
-        #     HRuler(*defs, *g, mode='dot', y_offset=i, pen=pen, flip_y=True)
+        pen = QtGui.QPen(QtCore.Qt.white, 0.5, QtCore.Qt.CustomDashLine)
+        pen.setDashPattern([1, x1*zoom-1])
+        painter.setPen(pen)
+
+        for i in range(-lys, lys):
+            painter.drawLine(x0, y0+zoom*i*y1, self.pm_width, y0+zoom*i*y1)
+            painter.drawLine(x0, y0+zoom*i*y1, 0, y0+zoom*i*y1)
