@@ -31,8 +31,7 @@ class MainWindow(QDialog):
 
         # if no camera found
         if not self.available_cameras:
-            # exit the code
-            sys.exit()
+            self.reject()
 
         # creating a status bar
         # self.status = QStatusBar()
