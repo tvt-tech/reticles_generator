@@ -59,6 +59,6 @@ class GridLayer(PixmapLayer):
         pen.setDashPattern([1, x1*zoom-1])
         painter.setPen(pen)
 
-        for i in range(-lys, lys):
+        for i in range(-lys, lys+1):
             painter.drawLine(x0, y0+zoom*i*y1, self.pm_width, y0+zoom*i*y1)
             painter.drawLine(x0, y0+zoom*i*y1, 0, y0+zoom*i*y1)

@@ -4,7 +4,7 @@ import sys
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QPen, QPixmap, QImage
+from PyQt5.QtGui import QPainter, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from click_calc import ClickCalc
@@ -13,6 +13,7 @@ from reticle_types import Click
 from ui import Ui_MainWindow
 
 from reticle2 import ImgMap, Reticle4z, SMALL_RETS, LRF_RETS, PXL4
+from widgets import CameraPreview
 
 
 DEFAULT_RET = {"name": "Cross", "multiplier": 10, "template": [
@@ -72,24 +73,15 @@ class Window(QMainWindow, Ui_MainWindow):
         self.preview.clicked.connect(self.show_preview)
 
     def show_preview(self):
-        from cam import MainWindow as prevDlg
-
-        # canvas = self.label.pixmap()
-        # canvas.fill(Qt.transparent)
-        # img = canvas.toImage()
-        # img.invertPixels(QImage.InvertRgb)
-        # canvas = QPixmap.fromImage(img)
-        # self.draw_ret(canvas, self.reticle, self.zoom, 0, Qt.gray)
 
         camera_layer = self.findChild(QtWidgets.QWidget, 'camera_layer')
         if not camera_layer:
-            from widgets import CameraPreview
 
             camera_layer = CameraPreview(self)
             camera_layer.setObjectName('camera_layer')
             self.gridLayout.addWidget(camera_layer, 0, 0, 1, 3)
 
-            camera_layer.stackUnder(self.label)
+            camera_layer.stackUnder(self.grid)
             self.gridLayout.addWidget(camera_layer.camera_selector, 4, 1)
             self.preview.setText('Hide preview')
 
@@ -99,11 +91,6 @@ class Window(QMainWindow, Ui_MainWindow):
             camera_layer.deleteLater()
 
             self.preview.setText('Preview')
-
-        # dlg = prevDlg(self, canvas)
-        # self.sender().setObjectName('preview')
-        # dlg.exec_()
-        # dlg.camera = None
 
     @property
     def zoom(self):
