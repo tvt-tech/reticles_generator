@@ -20,8 +20,6 @@ class MainWindow(QDialog):
         self.canvas = canvas
 
         # setting geometry
-        # self.setGeometry(100, 100,
-        #                  800, 600)
 
         # setting style sheet
         # self.setStyleSheet("background : lightgrey;")

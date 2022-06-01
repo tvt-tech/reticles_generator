@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
 from layer import PixmapLayer, GridLayer, Watermark, Magnifier
 from widgets import ReticleTable
@@ -17,6 +17,11 @@ class Ui_MainWindow(object):
         self.background = PixmapLayer(self.pm_width, self.pm_height, QtCore.Qt.gray)
         self.background.setAlignment(QtCore.Qt.AlignTop)
         self.gridLayout.addWidget(self.background, 0, 0, 1, 3)
+        painter = QtGui.QPainter(self.background.pixmap())
+        painter.drawLine(0, 0, self.background.pm_width, 0)
+        painter.drawLine(0, 0, 0, self.background.pm_height)
+        painter.drawLine(self.background.pm_width-1, 0, self.background.pm_width-1, self.background.pm_height-1)
+        painter.drawLine(0, self.background.pm_height-1, self.background.pm_width-1, self.background.pm_height-1)
 
         self.grid = GridLayer(self.pm_width, self.pm_height, QtCore.Qt.transparent)
         self.grid.setAlignment(QtCore.Qt.AlignTop)
