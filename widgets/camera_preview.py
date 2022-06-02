@@ -26,9 +26,13 @@ class CameraPreview(QWidget):
 
         self.viewfinder = QCameraViewfinder()
         self.gridLayout = QGridLayout()
+
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.gridLayout)
+
         self.gridLayout.addWidget(self.viewfinder, 0, 0)
+
+        self.layout().setAlignment(Qt.AlignCenter)
 
         self.select_camera(0)
 
