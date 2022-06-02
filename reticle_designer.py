@@ -85,12 +85,16 @@ class Window(QMainWindow, Ui_MainWindow):
             self.gridLayout.addWidget(camera_layer.camera_selector, 4, 1)
             self.preview.setText('Hide preview')
 
+            self.magnifier.setVisible(False)
+
         else:
             camera_layer.camera = None
             camera_layer.camera_selector.deleteLater()
             camera_layer.deleteLater()
 
             self.preview.setText('Preview')
+
+            self.magnifier.setVisible(True)
 
     @property
     def zoom(self):

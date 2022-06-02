@@ -1,6 +1,6 @@
 import math
-from PyQt5.QtCore import Qt, QRect, QPoint
-from PyQt5.QtGui import QPen
+from PyQt5.QtCore import Qt, QRect, QPoint, QLine
+from PyQt5.QtGui import QPen, QPainter
 
 CROSS_1PX = {'bind': False, 'margin': 0, 'mask': 0b1111, 'pen': 1, 'size': 1, 'zoom': False}
 
@@ -46,7 +46,7 @@ class Kit(object):
 
 
 class Cross(object):
-    def __init__(self, painter, x0, y0, x1, y1,
+    def __init__(self, painter: QPainter, x0, y0, x1, y1,
                  current_zoom,
                  margin, size, x_offset=0, y_offset=0,
                  pen=1, mask=0b1111, bind=True, zoom=True, multiplier=1, color=Qt.black,
@@ -100,21 +100,27 @@ class Cross(object):
             margin_x, margin_y = margin_x * zoom, margin_y * zoom
             size_x, size_y = size_x * zoom, size_y * zoom
 
+        lines = []
         self.painter.setPen(peny)
         if left:
-            self.painter.drawLine(self.x0 - margin_x, self.y0, self.x0 - size_x, self.y0)  # left line
+            lines.append(QLine(self.x0 - margin_x, self.y0, self.x0 - size_x, self.y0))
         if right:
-            self.painter.drawLine(self.x0 + margin_x, self.y0, self.x0 + size_x, self.y0)  # right line
+            lines.append(QLine(self.x0 + margin_x, self.y0, self.x0 + size_x, self.y0))
+        if lines:
+            self.painter.drawLines(*lines)
 
+        lines = []
         self.painter.setPen(penx)
         if bottom:
-            self.painter.drawLine(self.x0, self.y0 + margin_y, self.x0, self.y0 + size_y)  # bottom line
+            lines.append(QLine(self.x0, self.y0 + margin_y, self.x0, self.y0 + size_y))
         if top:
-            self.painter.drawLine(self.x0, self.y0 - margin_y, self.x0, self.y0 - size_y)  # top line
+            lines.append(QLine(self.x0, self.y0 - margin_y, self.x0, self.y0 - size_y))
+        if lines:
+            self.painter.drawLines(*lines)
 
 
 class Dot(object):
-    def __init__(self, painter, x0, y0, x1, y1, zoom, x_offset=0, y_offset=0,
+    def __init__(self, painter: QPainter, x0, y0, x1, y1, zoom, x_offset=0, y_offset=0,
                  is_ring=True, pen=3, color=Qt.black, *args, **kwargs):
         self.painter = painter
         self.is_ring = is_ring
@@ -122,33 +128,19 @@ class Dot(object):
         self.x0 = x0 + (x_offset * x1 * zoom)
         self.y0 = y0 + (y_offset * y1 * zoom)
         self.color = color
-
         self.draw()
 
     def draw(self):
         point = QPoint(self.x0, self.y0)
         if isinstance(self.pen, int):
-
-            if self.is_ring:
-                self.painter.setPen(QPen(self.color, self.pen, Qt.SolidLine))
-
-                if self.pen == 1:
-                    self.painter.drawPoint(point)
-
-                if 5 >= self.pen > 1:
-                    self.painter.drawPoint(point)
-                    self.painter.setPen(QPen(Qt.white, 1, Qt.SolidLine))
-                    self.painter.drawPoint(point)
-
-                if self.pen > 5:
-                    self.painter.setPen(QPen(self.color, self.pen, Qt.SolidLine, Qt.RoundCap))
-                    self.painter.drawPoint(point)
-                    self.painter.setPen(QPen(Qt.white, self.pen - 5, Qt.SolidLine, Qt.RoundCap))
-                    self.painter.drawPoint(point)
-
+            self.painter.setPen(QPen(self.color, self.pen, Qt.SolidLine))
+            self.painter.drawPoint(point)
+            if 5 >= self.pen > 1:
+                self.painter.setPen(QPen(Qt.white, 1, Qt.SolidLine))
+                self.painter.drawPoint(point)
         else:
             self.painter.setPen(self.pen)
-            self.painter.drawPoint(QPoint(point))
+            self.painter.drawPoint(point)
 
 
 class Ruler(object):
@@ -208,20 +200,7 @@ class Ruler(object):
               color=self.color, **self.kwargs['cross'])
 
     def draw_dash(self, x, y):
-        if isinstance(self, VRuler):
-            width = int(self.w * self.x1 * self.zoom)
-            self.draw_hdash(y, width)
-        if isinstance(self, HRuler):
-            width = int(self.w * self.x1 * self.zoom)
-            self.draw_vdash(x, width)
-
-    def draw_vdash(self, x, width):
-        self.painter.drawLine(self.x0 + x, self.y0 + width,
-                              self.x0 + x, self.y0 - width)
-
-    def draw_hdash(self, y, width):
-        self.painter.drawLine(self.x0 + width, self.y0 + y,
-                              self.x0 - width, self.y0 + y)
+        return
 
     def draw_ruler(self, x, y, string):
         p1 = QPoint(self.x0 + x - 15, self.y0 + y - 15)
@@ -236,28 +215,14 @@ class Ruler(object):
         self.painter.drawText(QRect(p1, p2), Qt.AlignCenter, string)
 
     def draw(self):
-        i = self.a
-        if isinstance(self, HRuler):
-            if int(self.x1 * self.step * self.zoom) > 3:
-                y = 0
-                while i <= self.b:
-                    x = i * self.x1 * self.zoom
-                    self.draw_xy(x, y, i)
-                    i = round(i + self.step, 2)
-
-        if isinstance(self, VRuler):
-            x = 0
-            while i <= self.b:
-                y = i * self.y1 * self.zoom
-                self.draw_xy(x, y, i)
-                i = round(i + self.step, 2)
+        pass
 
     def draw_xy(self, x, y, i):
         if 'exclude_0' in self.kwargs and i == 0:
             pass
         else:
             if self.mode == 'grid':
-                self.draw_dash(x, y)
+                return self.draw_dash(x, y)
             elif self.mode == 'dot':
                 self.draw_dot(x, y)
             elif self.mode == 'cross':
@@ -280,6 +245,25 @@ class HRuler(Ruler):
     def flip_by_y(a, b, x_offset, y_offset):
         return -b, -a, -x_offset, y_offset
 
+    def draw(self):
+        i = self.a
+        items = []
+        if int(self.x1 * self.step * self.zoom) > 3:
+            y = 0
+            while i <= self.b:
+                x = i * self.x1 * self.zoom
+                item = self.draw_xy(x, y, i)
+                if item:
+                    items.append(item)
+                i = round(i + self.step, 2)
+        if items and self.mode == 'grid':
+            self.painter.drawLines(*items)
+
+    def draw_dash(self, x, y):
+        width = int(self.w * self.y1 * self.zoom)
+        return QLine(self.x0 + x, self.y0 + width,
+                     self.x0 + x, self.y0 - width)
+
 
 class VRuler(Ruler):
 
@@ -290,3 +274,21 @@ class VRuler(Ruler):
     @staticmethod
     def flip_by_y(a, b, x_offset, y_offset):
         return a, b, -x_offset, y_offset
+
+    def draw(self):
+        i = self.a
+        x = 0
+        items = []
+        while i <= self.b:
+            y = i * self.y1 * self.zoom
+            item = self.draw_xy(x, y, i)
+            if item:
+                items.append(item)
+            i = round(i + self.step, 2)
+        if items and self.mode == 'grid':
+            self.painter.drawLines(*items)
+
+    def draw_dash(self, x, y):
+        width = int(self.w * self.x1 * self.zoom)
+        return QLine(self.x0 + width, self.y0 + y,
+                     self.x0 - width, self.y0 + y)
