@@ -133,8 +133,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         self.magnifier.is_pressed = False
-        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
-            self.draw_magnifier(event)
+        # if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
+        self.draw_magnifier(event)
         return super().mouseReleaseEvent(event)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:

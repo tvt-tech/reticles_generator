@@ -54,14 +54,16 @@ class Magnifier(QtWidgets.QWidget, Ui_Magnifier):
             label_pos = event.pos()
         x, y = label_pos.x(), label_pos.y()
 
-        x -= self.w / 2 if x >= self.w / 2 else 0
-        y -= self.h / 2 if y >= self.h / 2 else 0
-        if x >= self.pm_width - self.w:
+        if x < self.w:
+            x = self.w
+        if x > self.pm_width - self.w:
             x = self.pm_width - self.w
-        if y >= self.pm_height - self.h:
+        if y < self.h:
+            y = self.h
+        if y > self.pm_height - self.h:
             y = self.pm_height - self.h
 
-        rect = QtCore.QRect(x, y, self.w, self.h)
+        rect = QtCore.QRect(x - self.w/2, y - self.h/2, self.w, self.h)
         pixmap = label.pixmap().copy(rect)
         pixmap = pixmap.scaled(self.w * 2, self.h * 2)
         self.magnifier.setPixmap(pixmap)
@@ -70,12 +72,12 @@ class Magnifier(QtWidgets.QWidget, Ui_Magnifier):
         painter.setPen(QtGui.QPen(QtCore.Qt.black, 1))
         painter.drawRect(0, 0, self.w * 2 - 1, self.h * 2 - 1)
 
-        rect = QtCore.QRect(x, y, self.w, self.h)
+        rect = QtCore.QRect(x - self.w/2, y - self.h/2, self.w, self.h)
         pixmap = grid.pixmap().copy(rect)
         pixmap = pixmap.scaled(self.w * 2, self.h * 2)
         self.magnifier_grid.setPixmap(pixmap)
 
-        self.magnifier_event = MagnifierEvent(label_pos.x(), label_pos.y())
+        self.magnifier_event = MagnifierEvent(x, y)
 
         if self.is_pressed:
             self.setMagnifierPos(label_pos)
@@ -86,4 +88,20 @@ class Magnifier(QtWidgets.QWidget, Ui_Magnifier):
         self.move(self.pm_width - self.w * 2, 0)
 
     def setMagnifierPos(self, index):
-        self.move(index.x() - self.w, index.y() - self.h)
+
+        if index.x() < self.w:
+            x = self.w
+        elif self.pm_width - self.w < index.x():
+            x = self.pm_width - self.w
+        else:
+            x = index.x()
+
+        if index.y() < self.h:
+            y = self.h
+        elif self.pm_height - self.h < index.y():
+            y = self.pm_height - self.h
+        else:
+            y = index.y()
+
+
+        self.move(x - self.w, y - self.h)
