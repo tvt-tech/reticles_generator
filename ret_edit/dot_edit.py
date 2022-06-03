@@ -7,7 +7,7 @@ class DotLabel(QtWidgets.QLabel):
     def __init__(self):
         super(DotLabel, self).__init__()
 
-    def draw(self, n=None, pen=None):
+    def draw(self, pen=None):
         pixmap = QPixmap(31, 31)
         center = QPoint(15, 15)
         pixmap.fill(QColor(Qt.gray))

@@ -143,6 +143,51 @@ class Dot(object):
             self.painter.drawPoint(point)
 
 
+class Text(object):
+    def __init__(self, painter: QPainter, x0, y0, x1, y1, zoom, text: str,
+                 x_offset=0, y_offset=0, color=Qt.black):
+
+        self.x0 = x0 + x_offset * x1 * zoom
+        self.y0 = y0 + y_offset * y1 * zoom
+        self.x1 = x1
+        self.y1 = y1
+        self.color = color
+        self.painter = painter
+        self.text = text
+
+        self.draw()
+
+    def draw(self):
+        p1 = QPoint(self.x0 - 15, self.y0 - 15)
+        p2 = QPoint(self.x0 + 15, self.y0 + 15)
+        self.painter.drawText(QRect(p1, p2), Qt.AlignCenter, self.text)
+
+
+class Line(object):
+    def __init__(self, painter: QPainter, x0, y0, x1, y1, zoom, pen,
+                 p1: tuple[int, int], p2: tuple[int, int],
+                 x_offset=0, y_offset=0, color=Qt.black):
+        self.x0 = x0 + x_offset * x1 * zoom
+        self.y0 = y0 + y_offset * y1 * zoom
+        self.x1 = x1
+        self.y1 = y1
+        self.color = color
+        self.painter = painter
+
+        if isinstance(pen, int):
+            self.painter.setPen(QPen(self.color, pen, Qt.SolidLine))
+        else:
+            self.painter.setPen(pen)
+
+        self.p1 = (self.x0 + p1[0] * zoom, self.y0 + p1[1] * zoom)
+        self.p2 = (self.x0 + p2[0] * zoom, self.y0 + p2[1] * zoom)
+
+        self.draw()
+
+    def draw(self):
+        self.painter.drawLine(*self.p1, *self.p2)
+
+
 class Ruler(object):
     def __init__(self, painter, x0, y0, x1, y1,
                  zoom,

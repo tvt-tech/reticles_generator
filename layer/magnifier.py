@@ -10,33 +10,41 @@ class MagnifierEvent(object):
         return QtCore.QPoint(self.x, self.y)
 
 
-class Magnifier(QtWidgets.QWidget):
-    def __init__(self, pm_width, pm_height):
-        super(Magnifier, self).__init__()
-        self.pm_width = pm_width
-        self.pm_height = pm_height
-
-        self.is_pressed = False
-
+class Ui_Magnifier(object):
+    def setupUi(self, parent):
         self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.gridLayout)
 
-        self.magnifier_back = QtWidgets.QLabel(self)
-        magnifier = QtGui.QPixmap(128, 128)
+        self.magnifier_back = QtWidgets.QLabel(parent)
+        magnifier = QtGui.QPixmap(self.w * 2, self.h * 2)
         magnifier.fill(QtCore.Qt.gray)
         self.magnifier_back.setPixmap(magnifier)
         self.gridLayout.addWidget(self.magnifier_back, 0, 0)
 
-        self.magnifier_grid = QtWidgets.QLabel(self)
-        magnifier = QtGui.QPixmap(128, 128)
+        self.magnifier_grid = QtWidgets.QLabel(parent)
+        magnifier = QtGui.QPixmap(self.w * 2, self.h * 2)
         self.magnifier_grid.setPixmap(magnifier)
         self.gridLayout.addWidget(self.magnifier_grid, 0, 0)
 
-        self.magnifier = QtWidgets.QLabel(self)
-        magnifier = QtGui.QPixmap(128, 128)
+        self.magnifier = QtWidgets.QLabel(parent)
+        magnifier = QtGui.QPixmap(self.w * 2, self.h * 2)
         self.magnifier.setPixmap(magnifier)
         self.gridLayout.addWidget(self.magnifier, 0, 0)
+
+
+class Magnifier(QtWidgets.QWidget, Ui_Magnifier):
+    def __init__(self, pm_width, pm_height):
+        super(Magnifier, self).__init__()
+        self.pm_width = pm_width
+        self.pm_height = pm_height
+        self.is_pressed = False
+        self.magnifier_event = None
+
+        self.w = 80
+        self.h = 60
+
+        self.setupUi(self)
 
 
     def draw(self, event, label, grid, is_map):
@@ -46,27 +54,25 @@ class Magnifier(QtWidgets.QWidget):
             label_pos = event.pos()
         x, y = label_pos.x(), label_pos.y()
 
-        x -= 32 if x >= 32 else 0
-        y -= 32 if y >= 32 else 0
-        if x >= self.pm_width - 64:
-            x = self.pm_width - 64
-        if y >= self.pm_height - 64:
-            y = self.pm_height - 64
+        x -= self.w / 2 if x >= self.w / 2 else 0
+        y -= self.h / 2 if y >= self.h / 2 else 0
+        if x >= self.pm_width - self.w:
+            x = self.pm_width - self.w
+        if y >= self.pm_height - self.h:
+            y = self.pm_height - self.h
 
-        rect = QtCore.QRect(x, y, 64, 64)
+        rect = QtCore.QRect(x, y, self.w, self.h)
         pixmap = label.pixmap().copy(rect)
-        pixmap = pixmap.scaled(128, 128)
+        pixmap = pixmap.scaled(self.w * 2, self.h * 2)
         self.magnifier.setPixmap(pixmap)
+        
         painter = QtGui.QPainter(self.magnifier.pixmap())
         painter.setPen(QtGui.QPen(QtCore.Qt.black, 1))
-        painter.drawLine(0, 0, 0, 127)
-        painter.drawLine(0, 0, 127, 0)
-        painter.drawLine(127, 127, 127, 0)
-        painter.drawLine(127, 127, 0, 127)
+        painter.drawRect(0, 0, self.w * 2 - 1, self.h * 2 - 1)
 
-        rect = QtCore.QRect(x, y, 64, 64)
+        rect = QtCore.QRect(x, y, self.w, self.h)
         pixmap = grid.pixmap().copy(rect)
-        pixmap = pixmap.scaled(128, 128)
+        pixmap = pixmap.scaled(self.w * 2, self.h * 2)
         self.magnifier_grid.setPixmap(pixmap)
 
         self.magnifier_event = MagnifierEvent(label_pos.x(), label_pos.y())
@@ -77,7 +83,7 @@ class Magnifier(QtWidgets.QWidget):
             self.resetMagnifierPos()
 
     def resetMagnifierPos(self):
-        self.move(self.pm_width - 128, 0)
+        self.move(self.pm_width - self.w * 2, 0)
 
     def setMagnifierPos(self, index):
-        self.move(index.x() - 64, index.y() - 64)
+        self.move(index.x() - self.w, index.y() - self.h)

@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtCore, QtGui
 
 from layer import PixmapLayer, GridLayer, Watermark, Magnifier
-from widgets import ReticleTable
+from widgets import ReticleTable, ItemAdder
 
 
 class Ui_MainWindow(object):
@@ -74,5 +74,9 @@ class Ui_MainWindow(object):
 
         self.preview = QtWidgets.QPushButton('Preview')
         self.gridLayout.addWidget(self.preview)
+
+        self.item_adder = ItemAdder()
+        self.item_adder.setText('Add')
+        self.gridLayout.addWidget(self.item_adder, 2, 3)
 
         MainWindow.setCentralWidget(self.centralwidget)
