@@ -8,8 +8,9 @@ DEFAULT_DOT = {"type": "dot", "x_offset": 0, "y_offset": 0, "pen": 3, "min_zoom"
 
 
 class ItemAdder(QtWidgets.QPushButton):
-    def __init__(self):
+    def __init__(self, w):
         super(ItemAdder, self).__init__()
+        self.w = w
         self.context = QtWidgets.QMenu()
         self.add_cross_action = self.context.addAction('Cross')
         self.add_dot_action = self.context.addAction('Dot')
@@ -21,6 +22,10 @@ class ItemAdder(QtWidgets.QPushButton):
             self.add_cross()
         if action == self.add_dot_action:
             self.add_dot()
+        self.w.reticle = self.w.combo.currentData()
+        self.w.load_table()
+        QtWidgets.QTableView.selectRow()
+        self.w.draw_layers()
         return super().mousePressEvent(e)
 
     def add_cross(self):
@@ -28,7 +33,7 @@ class ItemAdder(QtWidgets.QPushButton):
         dlg.exec_()
         if dlg.accepted:
             new_cross = dlg.get_data()
-            combo = self.window().findChild(QtWidgets.QComboBox)
+            combo = self.w.combo
             reticle = combo.currentData()
             reticle['template'].append(new_cross)
             combo.setItemData(combo.currentIndex(), reticle)
@@ -39,7 +44,7 @@ class ItemAdder(QtWidgets.QPushButton):
         dlg.exec_()
         if dlg.accepted:
             new_dot = dlg.get_data()
-            combo = self.window().findChild(QtWidgets.QComboBox)
+            combo = self.w.combo
             reticle = combo.currentData()
             reticle['template'].append(new_dot)
             combo.setItemData(combo.currentIndex(), reticle)

@@ -75,7 +75,7 @@ class Ui_MainWindow(object):
         self.preview = QtWidgets.QPushButton('Preview')
         self.gridLayout.addWidget(self.preview)
 
-        self.item_adder = ItemAdder()
+        self.item_adder = ItemAdder(self)
         self.item_adder.setText('Add')
         self.gridLayout.addWidget(self.item_adder, 2, 3)
 
