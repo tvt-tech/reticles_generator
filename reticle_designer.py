@@ -124,7 +124,9 @@ class Window(QMainWindow, Ui_MainWindow):
         self.draw_layers()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
+        if QApplication.widgetAt(self.cursor().pos()) == self.overlay and not self.magnifier.is_pressed:
+            self.draw_magnifier(event)
+        if self.magnifier.is_pressed:
             self.draw_magnifier(event)
         return super().mouseMoveEvent(event)
 
