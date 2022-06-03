@@ -174,8 +174,10 @@ class RulerEdit(QtWidgets.QDialog):
             view_changed = lambda: self.p_view.draw(self.mask.value(), self.pen.value())
             self.mask.valueChanged.connect(view_changed)
             self.pen.valueChanged.connect(view_changed)
-
-            self.p_view.draw(self.mask.value(), self.pen.value())
+            if isinstance(self.p_view, DotLabel):
+                self.p_view.draw(self.pen.value())
+            elif isinstance(self.p_view, CrossLabel):
+                self.p_view.draw(self.mask.value(), self.pen.value())
 
         else:
             item = self.gridLayout.itemAtPosition(6, 3)

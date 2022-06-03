@@ -146,7 +146,6 @@ class Dot(object):
 class Text(object):
     def __init__(self, painter: QPainter, x0, y0, x1, y1, zoom, text: str,
                  x_offset=0, y_offset=0, color=Qt.black):
-
         self.x0 = x0 + x_offset * x1 * zoom
         self.y0 = y0 + y_offset * y1 * zoom
         self.x1 = x1
@@ -273,6 +272,8 @@ class Ruler(object):
             elif self.mode == 'cross':
                 self.draw_cross(x, y)
             elif self.mode == 'ruler':
+                i = int(i) if i % 1 == 0 else round(i, 1)
+
                 if y == 0:
                     string = f'{i}' if x >= 0 else f'{-i}'
                 else:
