@@ -24,7 +24,6 @@ class ItemAdder(QtWidgets.QPushButton):
             self.add_dot()
         self.w.reticle = self.w.combo.currentData()
         self.w.load_table()
-        QtWidgets.QTableView.selectRow()
         self.w.draw_layers()
         return super().mousePressEvent(e)
 
