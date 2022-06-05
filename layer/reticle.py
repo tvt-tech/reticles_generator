@@ -1,5 +1,5 @@
 from PyQt5 import QtGui, QtWidgets, QtCore
-from reticle_types import Cross, Dot, VRuler, HRuler
+from reticle_types import Cross, Dot, VRuler, HRuler, Line, Text
 
 
 class ReticleLayer(object):
@@ -17,6 +17,8 @@ class ReticleLayer(object):
                 t['color'] = QtCore.Qt.black
 
             if t['max_zoom'] > zoom >= t['min_zoom'] and not t['hide']:
+                if t['type'] == 'line':
+                    Line(painter, x0, y0, x1, y1, zoom, **t)
                 if t['type'] == 'dot':
                     Dot(painter, x0, y0, x1, y1, zoom, **t)
                 if t['type'] == 'cross':

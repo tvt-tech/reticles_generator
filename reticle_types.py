@@ -165,21 +165,26 @@ class Text(object):
 class Line(object):
     def __init__(self, painter: QPainter, x0, y0, x1, y1, zoom, pen,
                  p1: tuple[int, int], p2: tuple[int, int],
-                 x_offset=0, y_offset=0, color=Qt.black):
+                 x_offset=0, y_offset=0, color=Qt.black, zoomed=True, *args, **kwargs):
         self.x0 = x0 + x_offset * x1 * zoom
         self.y0 = y0 + y_offset * y1 * zoom
         self.x1 = x1
         self.y1 = y1
         self.color = color
         self.painter = painter
+        self.zoomed = zoomed
 
         if isinstance(pen, int):
             self.painter.setPen(QPen(self.color, pen, Qt.SolidLine))
         else:
             self.painter.setPen(pen)
 
-        self.p1 = (self.x0 + p1[0] * zoom, self.y0 + p1[1] * zoom)
-        self.p2 = (self.x0 + p2[0] * zoom, self.y0 + p2[1] * zoom)
+        if zoomed:
+            self.p1 = (self.x0 + p1[0] * x1 * zoom, self.y0 + p1[1] * y1 * zoom)
+            self.p2 = (self.x0 + p2[0] * x1 * zoom, self.y0 + p2[1] * y1 * zoom)
+        else:
+            self.p1 = (self.x0 + p1[0] * x1, self.y0 + p1[1] * y1)
+            self.p2 = (self.x0 + p2[0] * x1, self.y0 + p2[1] * y1)
 
         self.draw()
 

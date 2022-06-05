@@ -1,0 +1,72 @@
+{
+  "name": "LRF2",
+  "multiplier": 10,
+  "template": [
+    {
+      "type": "cross",
+      "margin": 2,
+      "size": 4,
+      "mask": 3,
+      "bind": true,
+      "zoom": false,
+      "min_zoom": 1,
+      "max_zoom": 7,
+      "pen": 1
+    },
+    {
+      "type": "cross",
+      "margin": 1,
+      "size": 4,
+      "mask": 12,
+      "bind": true,
+      "zoom": false,
+      "min_zoom": 1,
+      "max_zoom": 7,
+      "pen": 1
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 7,
+      "x_offset": 0,
+      "y_offset": 0,
+      "p1": [0.5, 1],
+      "p2": [-0.5, 1],
+      "pen": 1,
+      "zoomed": false
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 7,
+      "x_offset": 0,
+      "y_offset": 0,
+      "p1": [0.5, -1],
+      "p2": [-0.5, -1],
+      "pen": 1,
+      "zoomed": false
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 7,
+      "x_offset": 0,
+      "y_offset": 0,
+      "p1": [0.5, -1],
+      "p2": [0.5, 1],
+      "pen": 1,
+      "zoomed": false
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 7,
+      "x_offset": 0,
+      "y_offset": 0,
+      "p1": [-0.5, -1],
+      "p2": [-0.5, 1],
+      "pen": 1,
+      "zoomed": false
+    }
+  ]
+}
