@@ -144,8 +144,8 @@ class Dot(object):
 
 
 class Text(object):
-    def __init__(self, painter: QPainter, x0, y0, x1, y1, zoom, text: str,
-                 x_offset=0, y_offset=0, color=Qt.black):
+    def __init__(self, painter: QPainter, x0, y0, x1, y1, zoom, text: str, pen=1,
+                 x_offset=0, y_offset=0, color=Qt.black, *args, **kwargs):
         self.x0 = x0 + x_offset * x1 * zoom
         self.y0 = y0 + y_offset * y1 * zoom
         self.x1 = x1
@@ -153,6 +153,11 @@ class Text(object):
         self.color = color
         self.painter = painter
         self.text = text
+
+        if isinstance(pen, int):
+            self.painter.setPen(QPen(self.color, pen, Qt.SolidLine))
+        else:
+            self.painter.setPen(pen)
 
         self.draw()
 

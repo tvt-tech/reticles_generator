@@ -19,6 +19,8 @@ class ReticleLayer(object):
             if t['max_zoom'] > zoom >= t['min_zoom'] and not t['hide']:
                 if t['type'] == 'line':
                     Line(painter, x0, y0, x1, y1, zoom, **t)
+                if t['type'] == 'text':
+                    Text(painter, x0, y0, x1, y1, zoom, **t)
                 if t['type'] == 'dot':
                     Dot(painter, x0, y0, x1, y1, zoom, **t)
                 if t['type'] == 'cross':
