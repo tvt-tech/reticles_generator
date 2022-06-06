@@ -8,18 +8,20 @@ face = cv2.CascadeClassifier("venv/Lib/site-packages/cv2/data/haarcascade_fronta
 # cap = cv2.VideoCapture(1)
 #
 
+
 def draw(cv2, src, dst):
     fbs = fb.detectMultiScale(src, 1.1, 4)
     ubs = ub.detectMultiScale(src, 1.1, 4)
     # lbs = lb.detectMultiScale(img_gray, 1.1, 4)
     # faces = face.detectMultiScale(inverted_image, 1.1, 4)
 
+
     for (x, y, w, h) in fbs:
         cv2.rectangle(dst, (x, y), (x + w, y + h), (0, 0, 255), 1)
         cv2.line(dst, (x - 3 + int(w / 2), y + int(h / 2)), (x + 3 + int(w / 2), y + int(h / 2)), (0, 0, 255), 1)
         cv2.line(dst, (x + int(w / 2), y - 3 + int(h / 2)), (x + int(w / 2), y + 3 + int(h / 2)), (0, 0, 255), 1)
 
-        distance = int(1000 * 2 / (h / 7))
+        distance = int(1000 * 1.75 / (h / 7))
         cv2.putText(dst, f'{distance}m', (x, y + h + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, thickness=1, color=(0, 0, 255))
 
     for (x, y, w, h) in ubs:
@@ -27,7 +29,7 @@ def draw(cv2, src, dst):
         cv2.line(dst, (x - 3 + int(w / 2), y + int(h / 2)), (x + 3 + int(w / 2), y + int(h / 2)), (255, 0, 255), 1)
         cv2.line(dst, (x + int(w / 2), y - 3 + int(h / 2)), (x + int(w / 2), y + 3 + int(h / 2)), (255, 0, 255), 1)
 
-        distance = int(1000 * 1 / (h / 7))
+        distance = int(1000 * 0.9 / (h / 7))
         cv2.putText(dst, f'{distance}m', (x, y - 3), cv2.FONT_HERSHEY_SIMPLEX, 0.4, thickness=1, color=(255, 0, 255))
 
     # for (x, y, w, h) in lbs:
