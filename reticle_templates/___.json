@@ -253,69 +253,89 @@
       }
     },
     {
-      "type": "cross",
-      "margin": 0,
-      "size": 8,
-      "mask": 12,
-      "bind": true,
-      "zoom": true,
+      "type": "line",
       "min_zoom": 1,
       "max_zoom": 7,
+      "x_offset": 5,
+      "y_offset": 7.5,
+      "p1": [
+        0,
+        0
+      ],
+      "p2": [
+        3,
+        0
+      ],
       "pen": 1,
+      "zoomed": true
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 7,
+      "x_offset": 1,
+      "y_offset": 8.3,
+      "p1": [
+        0,
+        0
+      ],
+      "p2": [
+        3,
+        0
+      ],
+      "pen": 1,
+      "zoomed": true
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 7,
+      "x_offset": -4,
+      "y_offset": 8.75,
+      "p1": [
+        0,
+        0
+      ],
+      "p2": [
+        3,
+        0
+      ],
+      "pen": 1,
+      "zoomed": true
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 7,
+      "x_offset": -8,
+      "y_offset": 9,
+      "p1": [
+        0,
+        0
+      ],
+      "p2": [
+        3,
+        0
+      ],
+      "pen": 1,
+      "zoomed": true
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 7,
       "x_offset": 0,
-      "y_offset": 10
-    },
-    {
-      "type": "cross",
-      "margin": 0,
-      "size": 1.5,
-      "mask": 12,
-      "bind": true,
-      "zoom": true,
-      "min_zoom": 1,
-      "max_zoom": 7,
+      "y_offset": 10,
+      "p1": [
+        -8,
+        0
+      ],
+      "p2": [
+        8,
+        0
+      ],
       "pen": 1,
-      "x_offset": 6.5,
-      "y_offset": 7.5
-    },
-    {
-      "type": "cross",
-      "margin": 0,
-      "size": 1.5,
-      "mask": 12,
-      "bind": true,
-      "zoom": true,
-      "min_zoom": 1,
-      "max_zoom": 7,
-      "pen": 1,
-      "x_offset": 2.5,
-      "y_offset": 8.3
-    },
-    {
-      "type": "cross",
-      "margin": 0,
-      "size": 1.5,
-      "mask": 12,
-      "bind": true,
-      "zoom": true,
-      "min_zoom": 1,
-      "max_zoom": 7,
-      "pen": 1,
-      "x_offset": -2.5,
-      "y_offset": 8.7
-    },
-    {
-      "type": "cross",
-      "margin": 0,
-      "size": 1.5,
-      "mask": 12,
-      "bind": true,
-      "zoom": true,
-      "min_zoom": 1,
-      "max_zoom": 7,
-      "pen": 1,
-      "x_offset": -6.5,
-      "y_offset": 9
+      "zoomed": true
     }
   ]
 }
