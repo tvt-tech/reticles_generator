@@ -3,7 +3,7 @@ import os
 import sys
 
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QLine
 from PyQt5.QtGui import QPainter, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
@@ -14,7 +14,6 @@ from ui import Ui_MainWindow
 
 from widgets import CameraPreview
 from widgets import dump_reticles
-
 
 DEFAULT_RET = {"name": "Cross", "multiplier": 10, "template": [
     {"type": "cross", "margin": 0.5, "size": 1, "mask": 15, "bind": True, "zoom": True,
@@ -72,6 +71,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.preview.clicked.connect(self.show_preview)
 
+        self.installEventFilter(self)
+
     def show_preview(self):
 
         camera_layer = self.findChild(QtWidgets.QWidget, 'camera_layer')
@@ -128,7 +129,26 @@ class Window(QMainWindow, Ui_MainWindow):
             self.draw_magnifier(event)
         elif self.magnifier.is_pressed:
             self.draw_magnifier(event)
+
         return super().mouseMoveEvent(event)
+
+    def eventFilter(self, obj, event):
+        multiplier = self.reticle['multiplier']
+        x1 = multiplier / self.click.x
+        y1 = multiplier / self.click.y
+        if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
+            pos = self.overlay.mapFromGlobal(self.cursor().pos())
+            xm = round((pos.x() - self.x0) / (x1 * self.zoom), 1)
+            ym = round((pos.y() - self.y0) / (y1 * self.zoom), 1)
+            x, y = xm * (x1 * self.zoom) + self.x0, ym * (y1 * self.zoom) + self.y0
+            pixmap = QPixmap(self.pm_width, self.pm_height)
+            pixmap.fill(Qt.transparent)
+            self.overlay.setPixmap(pixmap)
+            painter = QPainter(self.overlay.pixmap())
+            painter.setPen(QPen(Qt.darkCyan, 1, Qt.DotLine))
+            painter.drawText(x + 5, y - 5, f'x:{xm}, y:{ym}')
+            painter.drawLines(*[QLine(0, y, self.pm_width, y), QLine(x, 0, x, self.pm_height)])
+        return super().eventFilter(obj, event)
 
     def draw_magnifier(self, event, is_map=True):
         self.magnifier.draw(event, self.label, self.grid, is_map)

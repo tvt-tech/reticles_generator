@@ -10,7 +10,7 @@
       "bind": true,
       "zoom": true,
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1
     },
     {
@@ -21,7 +21,7 @@
       "bind": true,
       "zoom": true,
       "min_zoom": 2,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1
     },
     {
@@ -31,8 +31,8 @@
       "mask": 15,
       "bind": true,
       "zoom": false,
-      "min_zoom": 3,
-      "max_zoom": 7,
+      "min_zoom": 2,
+      "max_zoom": 6,
       "pen": 1
     },
     {
@@ -43,7 +43,7 @@
       "bind": true,
       "zoom": true,
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1
     },
     {
@@ -56,7 +56,7 @@
       "y_offset": 0,
       "mode": "grid",
       "min_zoom": 2,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "mirror_y": true
     },
@@ -70,7 +70,7 @@
       "y_offset": 0,
       "mode": "grid",
       "min_zoom": 2,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "exclude_0": true
     },
@@ -82,7 +82,7 @@
       "bind": true,
       "zoom": true,
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "x_offset": 0,
       "y_offset": 0.2
@@ -95,7 +95,7 @@
       "bind": true,
       "zoom": true,
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "x_offset": 0,
       "y_offset": -0.2
@@ -108,7 +108,7 @@
       "bind": true,
       "zoom": true,
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "x_offset": 0.2,
       "y_offset": -6
@@ -121,7 +121,7 @@
       "bind": true,
       "zoom": true,
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "x_offset": -0.2,
       "y_offset": -6
@@ -136,7 +136,7 @@
       "y_offset": 0,
       "mode": "grid",
       "min_zoom": 1,
-      "max_zoom": 2,
+      "max_zoom": 1,
       "pen": 1,
       "mirror_y": true
     },
@@ -150,7 +150,7 @@
       "y_offset": 0,
       "mode": "grid",
       "min_zoom": 1,
-      "max_zoom": 2,
+      "max_zoom": 1,
       "pen": 1,
       "exclude_0": true
     },
@@ -164,7 +164,7 @@
       "y_offset": 0,
       "mode": "grid",
       "min_zoom": 2,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "mirror_y": true
     },
@@ -178,7 +178,7 @@
       "y_offset": 0,
       "mode": "grid",
       "min_zoom": 2,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "exclude_0": true
     },
@@ -192,7 +192,7 @@
       "y_offset": 0,
       "mode": "grid",
       "min_zoom": 2,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "exclude_0": true
     },
@@ -204,7 +204,7 @@
       "bind": true,
       "zoom": true,
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "x_offset": 0,
       "y_offset": 5
@@ -219,7 +219,7 @@
       "y_offset": 0,
       "mode": "cross",
       "min_zoom": 3,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "mirror_y": true,
       "cross": {
@@ -241,7 +241,7 @@
       "y_offset": 0,
       "mode": "cross",
       "min_zoom": 3,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1,
       "cross": {
         "margin": 0,
@@ -255,7 +255,7 @@
     {
       "type": "line",
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "x_offset": 5,
       "y_offset": 7.5,
       "p1": [
@@ -272,7 +272,7 @@
     {
       "type": "line",
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "x_offset": 1,
       "y_offset": 8.3,
       "p1": [
@@ -289,7 +289,7 @@
     {
       "type": "line",
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "x_offset": -4,
       "y_offset": 8.75,
       "p1": [
@@ -306,7 +306,7 @@
     {
       "type": "line",
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "x_offset": -8,
       "y_offset": 9,
       "p1": [
@@ -323,7 +323,7 @@
     {
       "type": "line",
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "x_offset": 0,
       "y_offset": 10,
       "p1": [
@@ -336,6 +336,17 @@
       ],
       "pen": 1,
       "zoomed": true
+    },
+        {
+      "type": "cross",
+      "margin": 5,
+      "size": 2,
+      "mask": 15,
+      "bind": true,
+      "zoom": true,
+      "min_zoom": 1,
+      "max_zoom": 1,
+      "pen": 1
     }
   ]
 }

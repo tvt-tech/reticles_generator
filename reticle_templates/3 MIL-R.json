@@ -10,7 +10,7 @@
       "bind": true,
       "zoom": false,
       "min_zoom": 1,
-      "max_zoom": 2,
+      "max_zoom": 1,
       "pen": 1
     },
     {
@@ -21,7 +21,7 @@
       "bind": true,
       "zoom": false,
       "min_zoom": 1,
-      "max_zoom": 2,
+      "max_zoom": 1,
       "pen": 1
     },
     {
@@ -34,7 +34,7 @@
       "y_offset": 0,
       "mode": "dot",
       "min_zoom": 1,
-      "max_zoom": 2,
+      "max_zoom": 1,
       "pen": 3
     },
     {
@@ -47,7 +47,7 @@
       "y_offset": 0,
       "mode": "dot",
       "min_zoom": 1,
-      "max_zoom": 2,
+      "max_zoom": 1,
       "pen": 3
     },
     {
@@ -58,7 +58,7 @@
       "bind": true,
       "zoom": false,
       "min_zoom": 2,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1
     },
     {
@@ -71,7 +71,7 @@
       "y_offset": 0,
       "mode": "grid",
       "min_zoom": 3,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1
     },
     {
@@ -84,7 +84,7 @@
       "y_offset": 0,
       "mode": "dot",
       "min_zoom": 2,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 3,
       "exclude_0": true
     },
@@ -98,7 +98,7 @@
       "y_offset": 0,
       "mode": "grid",
       "min_zoom": 3,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1
     },
     {
@@ -111,7 +111,7 @@
       "y_offset": 0,
       "mode": "dot",
       "min_zoom": 2,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 3,
       "exclude_0": true
     }

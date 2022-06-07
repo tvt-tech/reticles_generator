@@ -1,5 +1,5 @@
 {
-  "name": "LRF1",
+  "name": "LRF2",
   "multiplier": 10,
   "template": [
     {
@@ -10,7 +10,7 @@
       "bind": true,
       "zoom": false,
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1
     },
     {
@@ -21,7 +21,7 @@
       "bind": true,
       "zoom": false,
       "min_zoom": 1,
-      "max_zoom": 7,
+      "max_zoom": 6,
       "pen": 1
     }
   ]
