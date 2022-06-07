@@ -146,8 +146,8 @@ class Window(QMainWindow, Ui_MainWindow):
             self.overlay.setPixmap(pixmap)
             painter = QPainter(self.overlay.pixmap())
             painter.setPen(QPen(Qt.darkCyan, 1, Qt.DotLine))
-            painter.drawText(x + 5, y - 5, f'x:{xm}, y:{ym}')
-            painter.drawLines(*[QLine(0, y, self.pm_width, y), QLine(x, 0, x, self.pm_height)])
+            painter.drawText(int(x) + 5, int(y) - 5, f'x:{xm}, y:{ym}')
+            painter.drawLines(*[QLine(0, int(y), self.pm_width, int(y)), QLine(int(x), 0, int(x), self.pm_height)])
         else:
             self.overlay.createPixmap()
         return super().eventFilter(obj, event)
@@ -157,7 +157,6 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         self.magnifier.is_pressed = False
-        # if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
         self.draw_magnifier(event)
         return super().mouseReleaseEvent(event)
 
