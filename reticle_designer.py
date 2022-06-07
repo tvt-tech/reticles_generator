@@ -303,6 +303,15 @@ App = QApplication(sys.argv)
 
 from PyQt5 import QtGui
 
+# DARK THEME
+# import qdarkstyle
+# App.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5') + "QLabel {background-color: transparent;}")
+
+from dark_theme import DarkTheme
+
+DarkTheme().setup(App)
+
+
 _id = QtGui.QFontDatabase.addApplicationFont("Bank Gothic Light BT.ttf")
 fid = QtGui.QFontDatabase.applicationFontFamilies(_id)
 

@@ -2,17 +2,17 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from ret_edit import CrossEdit, DotEdit, RulerEdit, LineEdit, TextEdit
 
 DEFAULT_CROSS = {"type": "cross", "margin": 0.5, "size": 1, "mask": 15, "bind": True, "zoomed": True,
-                 "min_zoom": 1, "max_zoom": 7, "pen": 1}
+                 "min_zoom": 1, "max_zoom": 6, "pen": 1}
 
-DEFAULT_DOT = {"type": "dot", "x_offset": 0, "y_offset": 0, "pen": 3, "min_zoom": 1, "max_zoom": 7}
+DEFAULT_DOT = {"type": "dot", "x_offset": 0, "y_offset": 0, "pen": 3, "min_zoom": 1, "max_zoom": 6}
 
 DEFAULT_RULER = {"type": "vruler", "a": -10, "b": 10, "step": 1, "w": 0.3, "x_offset": 0, "y_offset": 0, "mode": "grid",
-                 "min_zoom": 1, "max_zoom": 7, "pen": 1, "exclude_0": True}
+                 "min_zoom": 1, "max_zoom": 6, "pen": 1, "exclude_0": True}
 
 DEFAULT_LINE = {"type": "line", "min_zoom": 1, "max_zoom": 6, "x_offset": 0, "y_offset": 0, "p1": [0.7, 1.2],
                 "p2": [-0.7, 1.2], "pen": 1, "zoomed": False},
 
-DEFAULT_TEXT = {"type": "text", "text": "SAMPLE TEXT", "x_offset": 2, "y_offset": 2, "min_zoom": 4, "max_zoom": 6,
+DEFAULT_TEXT = {"type": "text", "text": "SAMPLE TEXT", "x_offset": 5, "y_offset": 3, "min_zoom": 1, "max_zoom": 6,
                 "pen": 1}
 
 
@@ -65,8 +65,8 @@ class ItemAdder(QtWidgets.QPushButton):
         self.add_item(dlg)
 
     def add_item(self, dlg):
-        dlg.exec_()
-        if dlg.accepted:
+        res = dlg.exec_()
+        if res:
             new_item = dlg.get_data()
             combo = self.w.combo
             reticle = combo.currentData()
