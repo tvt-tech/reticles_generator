@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt
 def dump_reticles(self):
     self.setDisabled(True)
     base = []
+    lrf = []
     cur_zoom = self.zoom
     cur_reticle = self.combo.currentData()
     progress_max = self.combo.count() * 4
@@ -13,8 +14,15 @@ def dump_reticles(self):
 
     for i in range(self.combo.count()):
         reticle = self.combo.itemData(i)
+
         zooms = []
-        for zoom in [1, 2, 3, 4]:
+
+        if not reticle['name'].startswith('LRF'):
+            zoomlist = [1, 2, 3, 4]
+        if reticle['name'].startswith('LRF'):
+            zoomlist = [1]
+
+        for zoom in zoomlist:
             canvas = QPixmap(self.pm_width, self.pm_height)
             canvas.fill(Qt.white)
             self.draw_ret(canvas, reticle, zoom)
@@ -23,8 +31,13 @@ def dump_reticles(self):
             fmt_str = f'{reticle["name"]}, {zoom}X, %p%'
             self.progress.setFormat(fmt_str)
             self.progress.setValue(self.progress.value() + 1)
-        base.append(Reticle4z(*zooms))
-    d = PXL4.dump(SMALL_RETS, [], base, LRF_RETS)
+
+        if not reticle['name'].startswith('LRF'):
+            base.append(Reticle4z(*zooms))
+        elif reticle['name'].startswith('LRF'):
+            lrf.append(Reticle4z(*zooms))
+
+    d = PXL4.dump(SMALL_RETS, [], base, lrf)
     file_data = PXL4.build(d)
 
     click_x = str(self.click.x).replace('.', '_')
