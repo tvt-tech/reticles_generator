@@ -307,8 +307,8 @@ from PyQt5 import QtGui
 # import qdarkstyle
 # App.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5') + "QLabel {background-color: transparent;}")
 
+# NATIVE DARK THEME
 from dark_theme import DarkTheme
-
 DarkTheme().setup(App)
 
 
