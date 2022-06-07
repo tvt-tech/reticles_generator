@@ -45,6 +45,11 @@ class Kit(object):
         return
 
 
+class ReticleItem(object):
+    def __init__(self, painter: QPainter, x0, y0, x1, y1, zoom, *args, **kwargs):
+        pass
+
+
 class Cross(object):
     def __init__(self, painter: QPainter, x0, y0, x1, y1,
                  zoom,
@@ -358,3 +363,12 @@ class VRuler(Ruler):
         width = int(self.w * self.x1 * self.zoom)
         return QLine(self.x0 + width, self.y0 + y,
                      self.x0 - width, self.y0 + y)
+
+TYPES = {
+    'cross': Cross,
+    'dot': Dot,
+    'hruler': HRuler,
+    'vruler': VRuler,
+    'line': Line,
+    'text': Text
+}

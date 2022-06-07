@@ -1,5 +1,8 @@
 from PyQt5 import QtGui, QtWidgets, QtCore
-from reticle_types import Cross, Dot, VRuler, HRuler, Line, Text
+from reticle_types import TYPES
+
+
+
 
 
 class ReticleLayer(object):
@@ -15,33 +18,21 @@ class ReticleLayer(object):
                 t['color'] = highlighter_color
             else:
                 t['color'] = QtCore.Qt.black
-
             if t['max_zoom'] >= zoom >= t['min_zoom'] and not t['hide']:
-                if t['type'] == 'line':
-                    Line(painter, x0, y0, x1, y1, zoom, **t)
-                if t['type'] == 'text':
-                    Text(painter, x0, y0, x1, y1, zoom, **t)
-                if t['type'] == 'dot':
-                    Dot(painter, x0, y0, x1, y1, zoom, **t)
-                if t['type'] == 'cross':
-                    Cross(painter, x0, y0, x1, y1, zoom, **t)
+                item_class = TYPES[t['type']]
                 if t['type'] in ['hruler', 'vruler']:
-                    if t['type'] == 'hruler':
-                        ruler = HRuler
-                    elif t['type'] == 'vruler':
-                        ruler = VRuler
-                    else:
-                        ruler = HRuler
-                    ruler(painter, x0, y0, x1, y1, zoom, **t)
+                    self._draw_ruler(item_class, painter, x0, y0, x1, y1, zoom, **t)
+                else:
+                    item_class(painter, x0, y0, x1, y1, zoom, **t)
 
-                    if 'mirror_x' in t:
-                        if t['mirror_x']:
-                            ruler(painter, x0, y0, x1, y1, zoom, **t, flip_x=True)
-
-                    if 'mirror_y' in t:
-                        if t['mirror_y']:
-                            ruler(painter, x0, y0, x1, y1, zoom, **t, flip_y=True)
-
-                    if 'mirror_x' in t and 'mirror_y' in t:
-                        if t['mirror_x'] and t['mirror_y']:
-                            ruler(painter, x0, y0, x1, y1, zoom, **t, flip_x=True, flip_y=True)
+    def _draw_ruler(self, item_class, painter, x0, y0, x1, y1, zoom, **t):
+        item_class(painter, x0, y0, x1, y1, zoom, **t)
+        if 'mirror_x' in t:
+            if t['mirror_x']:
+                item_class(painter, x0, y0, x1, y1, zoom, **t, flip_x=True)
+        if 'mirror_y' in t:
+            if t['mirror_y']:
+                item_class(painter, x0, y0, x1, y1, zoom, **t, flip_y=True)
+        if 'mirror_x' in t and 'mirror_y' in t:
+            if t['mirror_x'] and t['mirror_y']:
+                item_class(painter, x0, y0, x1, y1, zoom, **t, flip_x=True, flip_y=True)

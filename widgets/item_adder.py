@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
-from ret_edit import CrossEdit, DotEdit, RulerEdit, LineEdit, TextEdit
+# from ret_edit import CrossEdit, DotEdit, RulerEdit, LineEdit, TextEdit
+from ret_edit import DIALOGS
 
 DEFAULT_CROSS = {"type": "cross", "margin": 0.5, "size": 1, "mask": 15, "bind": True, "zoomed": True,
                  "min_zoom": 1, "max_zoom": 6, "pen": 1}
@@ -15,6 +16,14 @@ DEFAULT_LINE = {"type": "line", "min_zoom": 1, "max_zoom": 6, "x_offset": 0, "y_
 DEFAULT_TEXT = {"type": "text", "text": "SAMPLE TEXT", "x_offset": 5, "y_offset": 3, "min_zoom": 1, "max_zoom": 6,
                 "pen": 1}
 
+DEFAULTS = {
+    'cross': DEFAULT_CROSS,
+    'dot': DEFAULT_DOT,
+    'ruler': DEFAULT_RULER,
+    'line': DEFAULT_LINE,
+    'text': DEFAULT_TEXT
+}
+
 
 class ItemAdder(QtWidgets.QPushButton):
     def __init__(self, w):
@@ -29,40 +38,16 @@ class ItemAdder(QtWidgets.QPushButton):
 
     def mousePressEvent(self, e: QtGui.QMouseEvent) -> None:
         action = self.context.exec_(self.mapToGlobal(e.pos()))
-        if action == self.add_cross_action:
-            self.add_cross()
-        if action == self.add_dot_action:
-            self.add_dot()
-        if action == self.add_ruler_action:
-            self.add_ruler()
-        if action == self.add_line_action:
-            self.add_line()
-        if action == self.add_text_action:
-            self.add_text()
-        self.w.reticle = self.w.combo.currentData()
-        self.w.load_table()
-        self.w.draw_layers()
+        if action:
+            action_text = action.text().lower()
+            dlg_class = DIALOGS[action_text]
+            defalt = DEFAULTS[action_text]
+            dlg = dlg_class(defalt)
+            self.add_item(dlg)
+            self.w.reticle = self.w.combo.currentData()
+            self.w.load_table()
+            self.w.draw_layers()
         return super().mousePressEvent(e)
-
-    def add_cross(self):
-        dlg = CrossEdit(DEFAULT_CROSS)
-        self.add_item(dlg)
-
-    def add_dot(self):
-        dlg = DotEdit(DEFAULT_DOT)
-        self.add_item(dlg)
-
-    def add_ruler(self):
-        dlg = RulerEdit(DEFAULT_RULER)
-        self.add_item(dlg)
-
-    def add_line(self):
-        dlg = LineEdit(DEFAULT_LINE)
-        self.add_item(dlg)
-
-    def add_text(self):
-        dlg = TextEdit(DEFAULT_TEXT)
-        self.add_item(dlg)
 
     def add_item(self, dlg):
         res = dlg.exec_()

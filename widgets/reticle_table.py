@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from ret_edit import CrossEdit, DotEdit, RulerEdit, LineEdit, TextEdit
+# from ret_edit import CrossEdit, DotEdit, RulerEdit, LineEdit, TextEdit
+from ret_edit import DIALOGS
 
 
 class ReticleTable(QtWidgets.QTableView):
@@ -31,18 +32,11 @@ class ReticleTable(QtWidgets.QTableView):
 
     def table_double_clicked(self, index, template, zoom):
         item = template[index.row()]
-        dlg = None
         if -1 < index.column() < 4:
-            if item['type'] == 'cross':
-                dlg = CrossEdit(item)
-            if item['type'] == 'dot':
-                dlg = DotEdit(item)
-            if item['type'] in ['vruler', 'hruler']:
-                dlg = RulerEdit(item)
-            if item['type'] == 'line':
-                dlg = LineEdit(item)
-            if item['type'] == 'text':
-                dlg = TextEdit(item)
+
+            dlg_class = DIALOGS[item['type']]
+            dlg = dlg_class(item)
+
             if dlg is not None:
                 if dlg.exec_():
                     template[index.row()] = dlg.get_data()

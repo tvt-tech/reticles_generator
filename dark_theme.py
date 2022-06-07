@@ -7,8 +7,10 @@ from PyQt5 import QtWidgets
 class DarkTheme(object):
     def setup(self, App):
         try:
-            settings = QtCore.QSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
-                                        QtCore.QSettings.NativeFormat)
+            settings = QtCore.QSettings(
+                "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                QtCore.QSettings.NativeFormat
+            )
             if settings.value("AppsUseLightTheme") == 0:
 
                 App.setStyle(QtWidgets.QStyleFactory.create("Fusion"))
