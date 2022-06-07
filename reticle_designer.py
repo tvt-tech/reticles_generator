@@ -16,7 +16,7 @@ from widgets import CameraPreview
 from widgets import dump_reticles
 
 DEFAULT_RET = {"name": "Cross", "multiplier": 10, "template": [
-    {"type": "cross", "margin": 0.5, "size": 1, "mask": 15, "bind": True, "zoom": True,
+    {"type": "cross", "margin": 0.5, "size": 1, "mask": 15, "bind": True, "zoomed": True,
      "min_zoom": 1, "max_zoom": 7, "pen": 1}]}
 
 

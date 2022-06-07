@@ -47,7 +47,7 @@ class CrossEdit(QtWidgets.QDialog):
         self.max_zoom.setCurrentIndex(index)
 
         self.bind.setCurrentIndex(self.bind.findData(self.cross['bind']))
-        self.zoom.setCurrentIndex(self.zoom.findData(self.cross['zoom']))
+        self.zoom.setCurrentIndex(self.zoom.findData(self.cross['zoomed']))
 
         self.margin.setValue(self.cross['margin'])
         self.size.setValue(self.cross['size'])
@@ -69,7 +69,7 @@ class CrossEdit(QtWidgets.QDialog):
         self.gridLayout = QtWidgets.QGridLayout()
         self.setLayout(self.gridLayout)
 
-        labels = ['Min zoom', 'Max zoom', 'Size format', 'Zoom', 'Margin center', 'Size',
+        labels = ['Min zoom', 'Max zoom', 'Size format', 'Zoomed', 'Margin center', 'Size',
                   'Horizontal position', 'Vertical position',
                   'View', 'Fatness', ]
 
@@ -94,7 +94,7 @@ class CrossEdit(QtWidgets.QDialog):
         self.gridLayout.addWidget(self.bind, 2, 1)
 
         self.zoom = QtWidgets.QComboBox()
-        self.zoom.setObjectName('zoom')
+        self.zoom.setObjectName('zoomed')
         self.zoom.addItem('Disable', False)
         self.zoom.addItem('Enable', True)
         self.gridLayout.addWidget(self.zoom, 3, 1)
@@ -159,7 +159,7 @@ class CrossEdit(QtWidgets.QDialog):
                       'pen': self.pen.value(),
                       'size': self.size.value(),
                       'type': 'cross',
-                      'zoom': self.zoom.currentData(),
+                      'zoomed': self.zoom.currentData(),
                       'x_offset': self.x_offset.value(),
                       'y_offset': self.y_offset.value()}
         return self.cross

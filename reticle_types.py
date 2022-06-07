@@ -2,7 +2,7 @@ import math
 from PyQt5.QtCore import Qt, QRect, QPoint, QLine
 from PyQt5.QtGui import QPen, QPainter
 
-CROSS_1PX = {'bind': False, 'margin': 0, 'mask': 0b1111, 'pen': 1, 'size': 1, 'zoom': False}
+CROSS_1PX = {'bind': False, 'margin': 0, 'mask': 0b1111, 'pen': 1, 'size': 1, 'zoomed': False}
 
 
 class Click(object):
@@ -47,10 +47,15 @@ class Kit(object):
 
 class Cross(object):
     def __init__(self, painter: QPainter, x0, y0, x1, y1,
-                 current_zoom,
+                 zoom,
                  margin, size, x_offset=0, y_offset=0,
-                 pen=1, mask=0b1111, bind=True, zoom=True, multiplier=1, color=Qt.black,
+                 pen=1, mask=0b1111, bind=True, zoomed=True, flags=0x11110011, multiplier=1, color=Qt.black,
                  *args, **kwargs):
+
+        # flags = [bool(flags >> i & 1) for i in range(8 - 1, -1, -1)]
+
+        self.flags = int(bind) << 1 | int(zoomed) | mask << 4
+
         self.painter = painter
         self.margin = margin
         self.size = size
@@ -58,10 +63,10 @@ class Cross(object):
         self.mask = mask
         self.bind = bind
         self.zoom = zoom
-        self.current_zoom = current_zoom
+        self.zoom = zoom
         self.multiplier = multiplier
-        self.x0 = x0 + (x_offset * x1) * current_zoom
-        self.y0 = y0 + (y_offset * y1) * current_zoom
+        self.x0 = x0 + (x_offset * x1) * zoom
+        self.y0 = y0 + (y_offset * y1) * zoom
         self.x1 = x1
         self.y1 = y1
         self.color = color
@@ -69,19 +74,20 @@ class Cross(object):
         self.draw()
 
     def draw(self):
-        left, right, bottom, top = [self.mask >> i & 1 for i in range(4 - 1, -1, -1)]
+
+        left, right, bottom, top, f0, f1, bind, zoomed = [(self.flags >> i & 1) for i in range(8 - 1, -1, -1)]
 
         if isinstance(self.pen, int):
             penx = QPen(self.color, self.pen, Qt.SolidLine, Qt.SquareCap)
             peny = QPen(self.color, self.pen, Qt.SolidLine, Qt.SquareCap)
             if self.pen > 1:
-                penx = QPen(self.color, self.pen / 10 * self.current_zoom * self.x1, Qt.SolidLine, Qt.FlatCap)
-                peny = QPen(self.color, self.pen / 10 * self.current_zoom * self.y1, Qt.SolidLine, Qt.FlatCap)
+                penx = QPen(self.color, self.pen / 10 * self.zoom * self.x1, Qt.SolidLine, Qt.FlatCap)
+                peny = QPen(self.color, self.pen / 10 * self.zoom * self.y1, Qt.SolidLine, Qt.FlatCap)
         else:
             penx = self.pen
             peny = self.pen
 
-        if self.bind:
+        if bind:
             margin_x = self.margin * self.x1
             margin_y = self.margin * self.y1
             size_x = (self.size + self.margin) * self.x1
@@ -95,8 +101,8 @@ class Cross(object):
             margin_x, margin_y = self.margin, self.margin
             size_x, size_y = self.size, self.size
 
-        if self.zoom:
-            zoom = self.current_zoom
+        if zoomed:
+            zoom = self.zoom
             margin_x, margin_y = margin_x * zoom, margin_y * zoom
             size_x, size_y = size_x * zoom, size_y * zoom
 

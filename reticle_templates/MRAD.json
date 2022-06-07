@@ -8,7 +8,7 @@
       "size": 9,
       "mask": 15,
       "bind": true,
-      "zoom": true,
+      "zoomed": true,
       "min_zoom": 1,
       "max_zoom": 6,
       "pen": 1
@@ -19,7 +19,7 @@
       "size": 9,
       "mask": 15,
       "bind": true,
-      "zoom": false,
+      "zoomed": false,
       "min_zoom": 1,
       "max_zoom": 6,
       "pen": 1
@@ -84,7 +84,7 @@
         "size": 0.2,
         "mask": 2,
         "bind": true,
-        "zoom": true,
+        "zoomed": true,
         "pen": 1
       }
     },
@@ -106,7 +106,7 @@
         "size": 0.2,
         "mask": 1,
         "bind": true,
-        "zoom": true,
+        "zoomed": true,
         "pen": 1
       }
     },
@@ -156,7 +156,7 @@
         "size": 1,
         "mask": 3,
         "bind": false,
-        "zoom": false,
+        "zoomed": false,
         "min_zoom": 1,
         "max_zoom": 6,
         "pen": 1
@@ -180,7 +180,7 @@
         "size": 1,
         "mask": 3,
         "bind": false,
-        "zoom": false,
+        "zoomed": false,
         "min_zoom": 1,
         "max_zoom": 6,
         "pen": 1
@@ -204,7 +204,7 @@
         "size": 1,
         "mask": 3,
         "bind": false,
-        "zoom": false,
+        "zoomed": false,
         "min_zoom": 1,
         "max_zoom": 6,
         "pen": 1
@@ -228,7 +228,7 @@
         "size": 1,
         "mask": 3,
         "bind": false,
-        "zoom": false,
+        "zoomed": false,
         "min_zoom": 1,
         "max_zoom": 6,
         "pen": 1
@@ -252,7 +252,7 @@
         "size": 1,
         "mask": 3,
         "bind": false,
-        "zoom": false,
+        "zoomed": false,
         "min_zoom": 1,
         "max_zoom": 6,
         "pen": 1
@@ -276,7 +276,7 @@
         "size": 1,
         "mask": 3,
         "bind": false,
-        "zoom": false,
+        "zoomed": false,
         "min_zoom": 1,
         "max_zoom": 6,
         "pen": 1

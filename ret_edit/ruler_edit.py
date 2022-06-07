@@ -97,7 +97,7 @@ class RulerEdit(QtWidgets.QDialog):
 
         self.gridLayout.addWidget(QtWidgets.QLabel(text='Crosses settings:'), 0, 3, 1, 1)
 
-        cross_labels = ['Size format', 'Zoom', 'Margin center', 'Size', 'View']
+        cross_labels = ['Size format', 'Zoomed', 'Margin center', 'Size', 'View']
 
         for i, k in enumerate(cross_labels):
             label = QtWidgets.QLabel(k)
@@ -110,7 +110,7 @@ class RulerEdit(QtWidgets.QDialog):
         self.groupbox_layout.addWidget(self.bind, 0, 1)
 
         self.zoom = QtWidgets.QComboBox()
-        self.zoom.setObjectName('zoom')
+        self.zoom.setObjectName('zoomed')
         self.zoom.addItem('Disable', False)
         self.zoom.addItem('Enable', True)
         self.groupbox_layout.addWidget(self.zoom, 1, 1)
@@ -208,7 +208,7 @@ class RulerEdit(QtWidgets.QDialog):
 
         if 'cross' in self.ruler:
             self.bind.setCurrentIndex(self.bind.findData(self.ruler['cross']['bind']))
-            self.zoom.setCurrentIndex(self.zoom.findData(self.ruler['cross']['zoom']))
+            self.zoom.setCurrentIndex(self.zoom.findData(self.ruler['cross']['zoomed']))
             self.margin.setValue(self.ruler['cross']['margin'])
             self.size.setValue(self.ruler['cross']['size'])
             self.mask.setValue(self.ruler['cross']['mask'])
@@ -236,7 +236,7 @@ class RulerEdit(QtWidgets.QDialog):
             'cross': {
                 'margin': self.margin.value(),
                 'size': self.size.value(),
-                'zoom': self.zoom.currentData(),
+                'zoomed': self.zoom.currentData(),
                 'bind': self.bind.currentData(),
                 'mask': self.mask.value()
             }
