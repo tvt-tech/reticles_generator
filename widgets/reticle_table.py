@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from ret_edit import CrossEdit, DotEdit, RulerEdit
+from ret_edit import CrossEdit, DotEdit, RulerEdit, LineEdit, TextEdit
 
 
 class ReticleTable(QtWidgets.QTableView):
@@ -39,6 +39,10 @@ class ReticleTable(QtWidgets.QTableView):
                 dlg = DotEdit(item)
             if item['type'] in ['vruler', 'hruler']:
                 dlg = RulerEdit(item)
+            if item['type'] == 'line':
+                dlg = LineEdit(item)
+            if item['type'] == 'text':
+                dlg = TextEdit(item)
             if dlg is not None:
                 if dlg.exec_():
                     template[index.row()] = dlg.get_data()

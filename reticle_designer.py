@@ -148,6 +148,8 @@ class Window(QMainWindow, Ui_MainWindow):
             painter.setPen(QPen(Qt.darkCyan, 1, Qt.DotLine))
             painter.drawText(x + 5, y - 5, f'x:{xm}, y:{ym}')
             painter.drawLines(*[QLine(0, y, self.pm_width, y), QLine(x, 0, x, self.pm_height)])
+        else:
+            self.overlay.createPixmap()
         return super().eventFilter(obj, event)
 
     def draw_magnifier(self, event, is_map=True):

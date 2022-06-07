@@ -168,8 +168,9 @@ class Text(object):
         self.draw()
 
     def draw(self):
-        p1 = QPoint(self.x0 - 15, self.y0 - 15)
-        p2 = QPoint(self.x0 + 15, self.y0 + 15)
+        strlen = 15 * len(self.text)
+        p1 = QPoint(self.x0 - strlen, self.y0 - strlen)
+        p2 = QPoint(self.x0 + strlen, self.y0 + strlen)
         self.painter.drawText(QRect(p1, p2), Qt.AlignCenter, self.text)
 
 
@@ -190,12 +191,15 @@ class Line(object):
         else:
             self.painter.setPen(pen)
 
+        px1, py1 = p1
+        px2, py2 = p2
+
         if zoomed:
-            self.p1 = (self.x0 + p1[0] * x1 * zoom, self.y0 + p1[1] * y1 * zoom)
-            self.p2 = (self.x0 + p2[0] * x1 * zoom, self.y0 + p2[1] * y1 * zoom)
+            self.p1 = (self.x0 + px1 * x1 * zoom, self.y0 + py1 * y1 * zoom)
+            self.p2 = (self.x0 + px2 * x1 * zoom, self.y0 + py2 * y1 * zoom)
         else:
-            self.p1 = (self.x0 + p1[0] * x1, self.y0 + p1[1] * y1)
-            self.p2 = (self.x0 + p2[0] * x1, self.y0 + p2[1] * y1)
+            self.p1 = (self.x0 + px1 * x1, self.y0 + py1 * y1)
+            self.p2 = (self.x0 + px2 * x1, self.y0 + py2 * y1)
 
         self.draw()
 
