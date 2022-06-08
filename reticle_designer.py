@@ -299,22 +299,24 @@ class Window(QMainWindow, Ui_MainWindow):
         self.show()
 
 
-App = QApplication(sys.argv)
+if __name__ == '__main__':
+    # if '-exec' in sys.argv:
+    App = QApplication(sys.argv)
 
-from PyQt5 import QtGui
+    from PyQt5 import QtGui
 
-# DARK THEME
-# import qdarkstyle
-# App.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5') + "QLabel {background-color: transparent;}")
+    # DARK THEME
+    # import qdarkstyle
+    # App.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5') + "QLabel {background-color: transparent;}")
 
-# NATIVE DARK THEME
-from dark_theme import DarkTheme
-DarkTheme().setup(App)
+    # NATIVE DARK THEME
+    from dark_theme import DarkTheme
+    DarkTheme().setup(App)
 
 
-_id = QtGui.QFontDatabase.addApplicationFont("Bank Gothic Light BT.ttf")
-fid = QtGui.QFontDatabase.applicationFontFamilies(_id)
+    _id = QtGui.QFontDatabase.addApplicationFont("Bank Gothic Light BT.ttf")
+    fid = QtGui.QFontDatabase.applicationFontFamilies(_id)
 
-window = Window()
+    window = Window()
 
-sys.exit(App.exec())
+    sys.exit(App.exec())
