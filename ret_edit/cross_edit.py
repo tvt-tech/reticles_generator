@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QPixmap, QColor, QPen
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QLine
 
 
 class CrossLabel(QtWidgets.QLabel):
@@ -20,14 +20,17 @@ class CrossLabel(QtWidgets.QLabel):
         painter.setPen(QPen(Qt.black, pen, Qt.SolidLine, Qt.FlatCap))
         left, right, bottom, top = [index >> i & 1 for i in range(4 - 1, -1, -1)]
 
+        lines = []
+
         if left:
-            painter.drawLine(13, 15, 4, 15)  # left line
+            lines.append(QLine(13, 15, 4, 15))
         if right:
-            painter.drawLine(18, 15, 27, 15)  # right line
+            lines.append(QLine(18, 15, 27, 15))
         if top:
-            painter.drawLine(15, 13, 15, 4)  # top line
+            lines.append(QLine(15, 13, 15, 4))
         if bottom:
-            painter.drawLine(15, 18, 15, 27)  # bottom line
+            lines.append(QLine(15, 18, 15, 27))
+        painter.drawLines(*lines)
 
 
 class CrossEdit(QtWidgets.QDialog):
@@ -48,12 +51,9 @@ class CrossEdit(QtWidgets.QDialog):
 
         self.bind.setCurrentIndex(self.bind.findData(self.cross['bind']))
         self.zoom.setCurrentIndex(self.zoom.findData(self.cross['zoomed']))
-
         self.margin.setValue(self.cross['margin'])
         self.size.setValue(self.cross['size'])
-
         self.mask.setValue(self.cross['mask'])
-
         self.pen.setValue(self.cross['pen'])
 
         if 'x_offset' in self.cross:
