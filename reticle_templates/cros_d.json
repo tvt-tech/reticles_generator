@@ -1,0 +1,25 @@
+{
+  "name": "x_d",
+  "multiplier": 10,
+  "template": [
+    {
+      "type": "cross",
+      "margin": 0.4,
+      "size": 0.6,
+      "mask": 15,
+      "bind": true,
+      "zoomed": true,
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "pen": 1
+    },
+    {
+      "type": "dot",
+      "pen": 3,
+      "min_zoom": 2,
+      "max_zoom": 6,
+      "x_offset": 0,
+      "y_offset": 0
+    }
+  ]
+}

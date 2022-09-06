@@ -263,6 +263,8 @@ class PXL4(object):
 
 # ret0 = [ImgMap(QImage(f'reticle_templates/small.bmp'))]
 
+
+
 SMALL_RETS = [
     Reticle4z(ImgMap(QImage(f'reticle_templates/small.bmp')))
 ]

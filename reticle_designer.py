@@ -39,7 +39,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         # self.click = Click(1.42, 1.42)
         # self.click = Click(2.13, 2.13)
-        # self.click = Click(3.01, 3.01)
+        self._click = Click(3.01, 3.01)
         # self.click = Click(1.27, 1.27)
 
         self.spin_x.setValue(self.click.x)
@@ -68,6 +68,10 @@ class Window(QMainWindow, Ui_MainWindow):
         self.table.doubleClicked.connect(self.table_double_clicked)
         self.table.clicked.connect(self.table_clicked)
         self.btn.clicked.connect(self.btn_zoom)
+
+        # self.btn2 = QtWidgets.QPushButton('save')
+        # self.gridLayout.addWidget(self.btn2)
+        # self.btn2.clicked.connect(self.savebmp)
 
         self.preview.clicked.connect(self.show_preview)
 
@@ -262,8 +266,13 @@ class Window(QMainWindow, Ui_MainWindow):
         canvas.fill(Qt.transparent)
         highlighter_color = QtGui.QColor('#3F57D2')
         highlited_index = self.table.currentIndex().row()
+
+        # canvas.fill(Qt.white)
         canvas = self.draw_ret(canvas, self.reticle, self.zoom, highlited_index, highlighter_color)
+
         self.label.setPixmap(canvas)
+
+        self.label.pixmap().save(f'{self.zoom}_{self.reticle["name"]}.bmp', "BMP")
         self.enable_grid()
         self.draw_watermark()
         self.info_label.setText(

@@ -1,0 +1,123 @@
+{
+  "name": "MIL_DOT",
+  "multiplier": 10,
+  "template": [
+    {
+      "type": "cross",
+      "margin": 1,
+      "size": 4,
+      "mask": 15,
+      "bind": true,
+      "zoomed": true,
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "pen": 1
+    },
+    {
+      "type": "cross",
+      "margin": 1,
+      "size": 4,
+      "mask": 2,
+      "bind": true,
+      "zoomed": true,
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "pen": 1
+    },
+    {
+      "type": "hruler",
+      "a": 1,
+      "b": 7,
+      "step": 1,
+      "w": 0.5,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "grid",
+      "min_zoom": 2,
+      "max_zoom": 6,
+      "pen": 1,
+      "mirror_y": true
+    },
+    {
+      "type": "hruler",
+      "a": 1,
+      "b": 5,
+      "step": 2,
+      "w": 0.5,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "grid",
+      "min_zoom": 1,
+      "max_zoom": 1,
+      "pen": 1,
+      "mirror_y": true
+    },
+    {
+      "type": "vruler",
+      "a": -7,
+      "b": 7,
+      "step": 2,
+      "w": 0.5,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "grid",
+      "min_zoom": 1,
+      "max_zoom": 1,
+      "pen": 1,
+      "exclude_0": true
+    },
+    {
+      "type": "vruler",
+      "a": -7,
+      "b": 7,
+      "step": 1,
+      "w": 0.5,
+      "x_offset": 0,
+      "y_offset": 0,
+      "mode": "grid",
+      "min_zoom": 2,
+      "max_zoom": 6,
+      "pen": 1,
+      "exclude_0": true
+    },
+    {
+      "type": "cross",
+      "margin": 5,
+      "size": 2,
+      "mask": 15,
+      "bind": true,
+      "zoomed": true,
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "pen": 1
+    },
+    {
+      "type": "cross",
+      "comment": "fat",
+      "margin": 7,
+      "size": 5,
+      "mask": 15,
+      "bind": true,
+      "zoomed": true,
+      "min_zoom": 1,
+      "max_zoom": 1,
+      "pen": 9,
+      "x_offset": 0,
+      "y_offset": 0
+    },
+    {
+      "type": "cross",
+      "comment": "fat",
+      "margin": 7,
+      "size": 5,
+      "mask": 15,
+      "bind": true,
+      "zoomed": true,
+      "min_zoom": 2,
+      "max_zoom": 6,
+      "pen": 7,
+      "x_offset": 0.03,
+      "y_offset": 0.03
+    }
+  ]
+}
