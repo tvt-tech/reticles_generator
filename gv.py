@@ -1,10 +1,45 @@
 from enum import IntFlag, auto
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF
+from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF, QRect
 from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont, QBrush
 from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QGraphicsPixmapItem, \
     QGraphicsRectItem
+
+import math
+
+milatcm = 10
+mingridstep_h = 4
+mingridstep_v = 2
+
+# click = 4.25
+
+
+def minmilstep(click, mingridstep):
+    pixatclick = milatcm / click
+    minmilstep = mingridstep / pixatclick
+    return minmilstep
+
+
+def roundmilstep(milstep):
+    rlist = [0.1, 0.2, 0.25, 0.3, 0.5, 1]
+    if milstep > max(rlist):
+        return roundmilstep(milstep / 10) * 10
+    elif milstep < min(rlist):
+        return roundmilstep(milstep * 10) / 10
+    for v in rlist:
+        if v >= milstep:
+            return v
+    return None
+
+
+# for i in range(1, 7):
+#     cl = click / i
+#     mm = minmilstep(cl)
+#     rm = roundmilstep(mm)
+#
+#     print(cl, rm)
+
 
 
 class CenterPainter(QPainter):
@@ -47,13 +82,13 @@ class DrawbleGraphicScene(QtWidgets.QGraphicsScene):
         text_item.setPos(self.transpose_point(pos))
         return text_item
 
-    def addPointC(self, point: QPoint, pen: QPen = QPen(Qt.white), brush: QBrush = QBrush(Qt.white)) -> QGraphicsRectItem:
+    def addPointC(self, point: QPointF, pen: QPen = QPen(Qt.white), brush: QBrush = QBrush(Qt.white)) -> QGraphicsRectItem:
         point = self.transpose_point(point)
-        rect = QLineF(QPoint(point.x(), point.y()), QPoint(point.x()+1, point.y()+1))
-        return super(DrawbleGraphicScene, self).addLine(rect, pen)
+        rect = QRectF(QPointF(point.x()-0.5, point.y()-0.5), QPointF(point.x()+0.5, point.y()+0.5))
+        return super(DrawbleGraphicScene, self).addRect(rect, pen, brush)
 
     def transpose_point(self, p: [QtCore.QPointF, QtCore.QPoint]):
-        return QPoint(self.x0 + p.x(), self.y0 + p.y())
+        return QPointF(self.x0 + p.x() - 0.5, self.y0 + p.y() - 0.5)
 
     def drawForeground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super(DrawbleGraphicScene, self).drawForeground(painter, rect)
@@ -102,13 +137,21 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self.click_x = 2.01
         self.click_y = 2.01
 
-        self.click_x = 3.01
-        self.click_y = 3.01
+        # self.click_x = 3.01
+        # self.click_y = 3.01
 
         self.multiplier = 10
 
         self.x1 = 1
         self.y1 = 1
+
+        mmsx = minmilstep(self.click_x, mingridstep_h)
+        mmsy = minmilstep(self.click_y, mingridstep_v)
+        mmrx = roundmilstep(mmsx)
+        mmry = roundmilstep(mmsy)
+
+        self.xs = mmrx * self.x1
+        self.ys = mmry * self.y1
 
         self.set_reticle_scale()
 
@@ -154,6 +197,12 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
         self._scene.addItem(self._pmap)
 
+        self.draw_reticle_grid(10, True, True, QPen(Qt.darkMagenta, 0.1, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
+        # self.draw_reticle_grid(2, True, False, QPen(Qt.magenta, 0.1, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
+        self.draw_reticle_grid(self.xs, True, False, QPen(Qt.magenta, 0.05, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
+
+        self.draw_reticle_grid(100, True, False, QPen(Qt.magenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
+
         # self.canvas_pixmap = self._scene.addPixmap(self._pix)
         self.canvas_pixmap = MyCanvasItem()
         # self.canvas_pixmap = QGraphicsPixmapItem()
@@ -161,20 +210,19 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self._scene.addItem(self.canvas_pixmap)
 
         self.painter = CenterPainter(self.canvas_pixmap.pixmap())
-        line_h = QLineF(-self.x1 * 5, 0, self.x1 * 5, 0)
-        line_v = QLineF(0, -self.y1 * 5, 0, self.y1 * 5)
+        line_h = QLineF(int(-self.x1 * 1), 0, int(self.x1 * 1), 0)
+        line_v = QLineF(0, int(-self.y1 * 1), 0, int(self.y1 * 1))
 
-        self._scene.addLineC(line_v, QPen())
-        self._scene.addLineC(line_h, QPen())
-        self._scene.addPointC(QPoint(0, 0), QPen(Qt.white, 1, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
+        # self._scene.addLineC(line_v, QPen())
+        # self._scene.addLineC(line_h, QPen())
+        # self._scene.addPointC(QPointF(0, 0), QPen(Qt.white, 0, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
 
-        self.painter.drawLinesC([line_h, line_v])
+        # self.painter.drawLinesC([line_h, line_v])
         # self.canvas_pixmap.paint(self.painter, QStyleOptionGraphicsItem(), self)
         self.painter.setPen(QPen(Qt.white))
         self.painter.drawPointC(QPoint(0, 0))
 
-        self.draw_reticle_grid(10, True, True, QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
-        self.draw_reticle_grid(2, True, False, QPen(Qt.magenta, 0.1, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
+
 
         self.setScene(self._scene)
 
@@ -217,25 +265,17 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         grid_scale_h_f = self.x1 * step
         grid_scale_v_f = self.y1 * step
 
-        # line = QGraphicsLineItem(self.x0+0.5, 0, self.x0+0.5, self.h)
-        # line.setPen(QPen(Qt.white, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
-        # self._scene.addItem(line)
-        #
-        # line = QGraphicsLineItem(0, self.y0, self.w, self.y0)
-        # line.setPen(QPen(Qt.white, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
-        # self._scene.addItem(line)
-
         for i, x in enumerate(range(0, self.x0, grid_scale_h)):
-            x_f = i * grid_scale_h_f
+            x_f = int(i * grid_scale_h_f)
             if grid:
-                line = QLineF(x_f + 1, self.y0, x_f + 1, -self.y0)
+                line = QLineF(x_f, self.y0, x_f, -self.y0)
                 self._scene.addLineC(line, pen)
             if mark:
                 text = self._scene.addTextC(str(i * 10), QPoint(x_f, 0))
                 text.setDefaultTextColor(pen.color())
 
         for i, x in enumerate(range(0, self.x0, grid_scale_h)):
-            x_f = -i * grid_scale_h_f
+            x_f = int(-i * grid_scale_h_f)
             if grid:
                 line = QLineF(x_f, self.y0, x_f, -self.y0)
                 self._scene.addLineC(line, pen)
@@ -244,18 +284,18 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                 text.setDefaultTextColor(pen.color())
 
         for i, y in enumerate(range(0, self.y0, grid_scale_v)):
-            y_f = i * grid_scale_v_f
+            y_f = int(i * grid_scale_v_f)
             if grid:
-                line = QLine(self.x0, y_f + 1, -self.x0, y_f + 1)
+                line = QLineF(self.x0, y_f, -self.x0, y_f)
                 self._scene.addLineC(line, pen)
             if mark:
                 text = self._scene.addTextC(str(i * 10), QPoint(0, y_f))
                 text.setDefaultTextColor(pen.color())
 
-        for i, y in enumerate(range(0, self.y0, grid_scale_v)):
-            y_f = -i * grid_scale_v_f
+        for i, y in enumerate(range(1, self.y0, grid_scale_v)):
+            y_f = int(-i * grid_scale_v_f)
             if grid:
-                line = QLine(self.x0, y_f, -self.x0, y_f)
+                line = QLineF(self.x0, y_f, -self.x0, y_f)
                 self._scene.addLineC(line, pen)
             if mark:
                 text = self._scene.addTextC(str(i * 10), QPoint(0, y_f))
@@ -341,16 +381,19 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             if self.draw_mode == DrawMode.Line:
 
                 if not self.temp_item:
-                    line = QLineF(self.lastPoint, point)
-                    self.temp_item = self._scene.addLine(line, QPen())
+                    p1 = QPointF(self.lastPoint.x() - 0.5, self.lastPoint.y() - 0.5)
+                    p2 = QPointF(point.x() - 0.5, point.y() - 0.5)
+                    line = QLineF(p1, p2)
+                    self.temp_item = self._scene.addLine(line, QPen(Qt.black, 1))
                 else:
+                    p2 = QPointF(point.x() - 0.5, point.y() - 0.5)
                     if modifiers == Qt.ShiftModifier:
-                        if abs(self.temp_item.line().p1().x() - point.x()) < abs(
-                                self.temp_item.line().p1().y() - point.y()):
-                            point.setX(self.temp_item.line().p1().x())
+                        if abs(self.temp_item.line().p1().x() - p2.x()) < abs(
+                                self.temp_item.line().p1().y() - p2.y()):
+                            p2.setX(self.temp_item.line().p1().x())
                         else:
-                            point.setY(self.temp_item.line().p1().y())
-                    line = QLineF(self.temp_item.line().p1(), point)
+                            p2.setY(self.temp_item.line().p1().y())
+                    line = QLineF(self.temp_item.line().p1(), p2)
                     self.temp_item.setLine(line)
 
         self.lastPoint = point
