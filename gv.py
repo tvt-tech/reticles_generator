@@ -1,9 +1,10 @@
 from enum import IntFlag, auto
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt, QLine, QPoint, QLineF
-from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont
-from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QStyleOptionGraphicsItem
+from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF
+from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont, QBrush
+from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QGraphicsPixmapItem, \
+    QGraphicsRectItem
 
 
 class CenterPainter(QPainter):
@@ -46,6 +47,11 @@ class DrawbleGraphicScene(QtWidgets.QGraphicsScene):
         text_item.setPos(self.transpose_point(pos))
         return text_item
 
+    def addPointC(self, point: QPoint, pen: QPen = QPen(Qt.white), brush: QBrush = QBrush(Qt.white)) -> QGraphicsRectItem:
+        point = self.transpose_point(point)
+        rect = QLineF(QPoint(point.x(), point.y()), QPoint(point.x()+1, point.y()+1))
+        return super(DrawbleGraphicScene, self).addLine(rect, pen)
+
     def transpose_point(self, p: [QtCore.QPointF, QtCore.QPoint]):
         return QPoint(self.x0 + p.x(), self.y0 + p.y())
 
@@ -64,7 +70,6 @@ class DrawModeBtn(QtWidgets.QToolButton):
         self.is_enabled = not self.is_enabled
 
 
-
 class DrawMode(IntFlag):
     Notool = auto()
     Pencil = auto()
@@ -73,6 +78,17 @@ class DrawMode(IntFlag):
     Rect = auto()
     Elipse = auto()
     Text = auto()
+
+
+class MyCanvasItem(QGraphicsPixmapItem):
+    def __init__(self, parent=None):
+        super(MyCanvasItem, self).__init__(parent)
+
+    def paint(self, painter, option, widget=None):
+        super(MyCanvasItem, self).paint(painter, option, widget)
+        # line_h = QLineF(-self.x1 * 5, 0, self.x1 * 5, 0)
+        # line_v = QLineF(0, -self.y1 * 5, 0, self.y1 * 5)
+        # painter.drawLines([line_h, line_v])
 
 
 class PhotoViewer(QtWidgets.QGraphicsView):
@@ -136,15 +152,21 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
         # self._scene.addPixmap(QPixmap.fromImage(self._img))
 
-
-
         self._scene.addItem(self._pmap)
 
-        self.canvas_pixmap = self._scene.addPixmap(self._pix)
+        # self.canvas_pixmap = self._scene.addPixmap(self._pix)
+        self.canvas_pixmap = MyCanvasItem()
+        # self.canvas_pixmap = QGraphicsPixmapItem()
+        # self.canvas_pixmap.setPixmap(self._pix)
+        self._scene.addItem(self.canvas_pixmap)
 
         self.painter = CenterPainter(self.canvas_pixmap.pixmap())
         line_h = QLineF(-self.x1 * 5, 0, self.x1 * 5, 0)
         line_v = QLineF(0, -self.y1 * 5, 0, self.y1 * 5)
+
+        self._scene.addLineC(line_v, QPen())
+        self._scene.addLineC(line_h, QPen())
+        self._scene.addPointC(QPoint(0, 0), QPen(Qt.white, 1, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
 
         self.painter.drawLinesC([line_h, line_v])
         # self.canvas_pixmap.paint(self.painter, QStyleOptionGraphicsItem(), self)
@@ -155,6 +177,9 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self.draw_reticle_grid(2, True, False, QPen(Qt.magenta, 0.1, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
 
         self.setScene(self._scene)
+
+        # self.canvas_pixmap.paint(self.painter)
+
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -320,14 +345,13 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                     self.temp_item = self._scene.addLine(line, QPen())
                 else:
                     if modifiers == Qt.ShiftModifier:
-                        if abs(self.temp_item.line().p1().x() - point.x()) < abs(self.temp_item.line().p1().y() - point.y()):
+                        if abs(self.temp_item.line().p1().x() - point.x()) < abs(
+                                self.temp_item.line().p1().y() - point.y()):
                             point.setX(self.temp_item.line().p1().x())
                         else:
                             point.setY(self.temp_item.line().p1().y())
                     line = QLineF(self.temp_item.line().p1(), point)
                     self.temp_item.setLine(line)
-
-
 
         self.lastPoint = point
         self.update()
