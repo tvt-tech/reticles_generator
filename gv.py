@@ -146,7 +146,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         painter.end()
 
         self._scene.addItem(self._pmap)
-        self._scene.addPixmap(self._pix)
+        self.canvas_pixmap = self._scene.addPixmap(self._pix)
 
         self.draw_reticle_grid(10, True, True, QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
         self.draw_reticle_grid(2, True, False, QPen(Qt.magenta, 0.1, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
@@ -301,7 +301,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         modifiers = QApplication.keyboardModifiers()
         if (event.buttons() & Qt.LeftButton) & self.drawing:
             if self.draw_mode == DrawMode.Pencil:
-                painter = QPainter(self._pix)
+                painter = QPainter(self.canvas_pixmap.pixmap())
                 painter.setPen(QPen(Qt.black))
                 if modifiers == Qt.ShiftModifier:
                     if abs(self.lastPoint.x() - point.x()) < abs(self.lastPoint.y() - point.y()):
@@ -309,7 +309,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                     else:
                         point.setY(self.lastPoint.y())
                 painter.drawLine(QLine(self.lastPoint, point))
-                self._scene.addPixmap(self._pix)
+
             if self.draw_mode == DrawMode.Line:
 
                 if not self.temp_item:
@@ -320,7 +320,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                         if abs(self.temp_item.line().p1().x() - point.x()) < abs(self.temp_item.line().p1().y() - point.y()):
                             point.setX(self.temp_item.line().p1().x())
                         else:
-                            point.setY(self.lastPoint.y())
+                            point.setY(self.temp_item.line().p1().y())
                     line = QLineF(self.temp_item.line().p1(), point)
                     self.temp_item.setLine(line)
 
@@ -335,20 +335,22 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         point = self.mapToScene(event.pos()).toPoint()
         if event.button() == Qt.LeftButton:
             if self.draw_mode == DrawMode.Pencil:
-                painter = QPainter(self._pix)
+                painter = QPainter(self.canvas_pixmap.pixmap())
                 painter.drawPoint(QPoint(self.lastPoint))
-                self._scene.addPixmap(self._pix)
+                painter.end()
         self.lastPoint = point
 
         # make drawing flag false
         self.drawing = False
         if self.temp_item:
             if self.draw_mode == DrawMode.Line:
-                painter = QPainter(self._pix)
+                painter = QPainter(self.canvas_pixmap.pixmap())
                 painter.drawLines(self.temp_item.line())
-                self._scene.addPixmap(self._pix)
+                painter.end()
             self._scene.removeItem(self.temp_item)
             self.temp_item = None
+
+        self.update()
         super(PhotoViewer, self).mouseReleaseEvent(event)
 
 
@@ -385,6 +387,10 @@ class Window(QtWidgets.QWidget):
         self.line_btn.setText('Line')
         self.line_btn.clicked.connect(self.on_line_btn_press)
 
+        self.clear_btn = QtWidgets.QToolButton(self)
+        self.clear_btn.setText('Clear')
+        self.clear_btn.clicked.connect(self.on_clear_btn_press)
+
         self.lab = QLabel()
         self.labpix = QPixmap(640, 480)
         self.labpix.fill(Qt.transparent)
@@ -409,6 +415,7 @@ class Window(QtWidgets.QWidget):
         HBlayout.addWidget(self.no_tool_btn)
         HBlayout.addWidget(self.draw_btn)
         HBlayout.addWidget(self.line_btn)
+        HBlayout.addWidget(self.clear_btn)
         VBlayout.addLayout(HBlayout)
 
         self.installEventFilter(self.viewer._scene)
@@ -429,6 +436,11 @@ class Window(QtWidgets.QWidget):
     def on_notool_btn_press(self):
         self.viewer.draw_mode = DrawMode.Notool
         self.viewer.toggleDragMode()
+
+    def on_clear_btn_press(self):
+        self.viewer.canvas_pixmap.pixmap().fill(Qt.transparent)
+
+        # self.viewer._scene.addPixmap(self.viewer._pix)
 
     def loadImage(self):
         self.viewer.setPhoto(QtGui.QPixmap('1_3 MIL-R.bmp'))
