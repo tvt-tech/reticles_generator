@@ -3,7 +3,7 @@ from enum import IntFlag, auto
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QLine, QPoint, QLineF
 from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont
-from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication
+from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QStyleOptionGraphicsItem
 
 
 class CenterPainter(QPainter):
@@ -136,17 +136,20 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
         # self._scene.addPixmap(QPixmap.fromImage(self._img))
 
-        painter = CenterPainter(self._pix)
+
+
+        self._scene.addItem(self._pmap)
+
+        self.canvas_pixmap = self._scene.addPixmap(self._pix)
+
+        self.painter = CenterPainter(self.canvas_pixmap.pixmap())
         line_h = QLineF(-self.x1 * 5, 0, self.x1 * 5, 0)
         line_v = QLineF(0, -self.y1 * 5, 0, self.y1 * 5)
 
-        painter.drawLinesC([line_h, line_v])
-        painter.setPen(QPen(Qt.white))
-        painter.drawPointC(QPoint(0, 0))
-        painter.end()
-
-        self._scene.addItem(self._pmap)
-        self.canvas_pixmap = self._scene.addPixmap(self._pix)
+        self.painter.drawLinesC([line_h, line_v])
+        # self.canvas_pixmap.paint(self.painter, QStyleOptionGraphicsItem(), self)
+        self.painter.setPen(QPen(Qt.white))
+        self.painter.drawPointC(QPoint(0, 0))
 
         self.draw_reticle_grid(10, True, True, QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
         self.draw_reticle_grid(2, True, False, QPen(Qt.magenta, 0.1, Qt.SolidLine, Qt.FlatCap, Qt.MiterJoin))
@@ -301,14 +304,14 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         modifiers = QApplication.keyboardModifiers()
         if (event.buttons() & Qt.LeftButton) & self.drawing:
             if self.draw_mode == DrawMode.Pencil:
-                painter = QPainter(self.canvas_pixmap.pixmap())
-                painter.setPen(QPen(Qt.black))
+                # painter = QPainter(self.canvas_pixmap.pixmap())
+                self.painter.setPen(QPen(Qt.black))
                 if modifiers == Qt.ShiftModifier:
                     if abs(self.lastPoint.x() - point.x()) < abs(self.lastPoint.y() - point.y()):
                         point.setX(self.lastPoint.x())
                     else:
                         point.setY(self.lastPoint.y())
-                painter.drawLine(QLine(self.lastPoint, point))
+                self.painter.drawLine(QLine(self.lastPoint, point))
 
             if self.draw_mode == DrawMode.Line:
 
@@ -335,18 +338,16 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         point = self.mapToScene(event.pos()).toPoint()
         if event.button() == Qt.LeftButton:
             if self.draw_mode == DrawMode.Pencil:
-                painter = QPainter(self.canvas_pixmap.pixmap())
-                painter.drawPoint(QPoint(self.lastPoint))
-                painter.end()
+                # painter = QPainter(self.canvas_pixmap.pixmap())
+                self.painter.drawPoint(QPoint(self.lastPoint))
         self.lastPoint = point
 
         # make drawing flag false
         self.drawing = False
         if self.temp_item:
             if self.draw_mode == DrawMode.Line:
-                painter = QPainter(self.canvas_pixmap.pixmap())
-                painter.drawLines(self.temp_item.line())
-                painter.end()
+                # painter = QPainter(self.canvas_pixmap.pixmap())
+                self.painter.drawLines(self.temp_item.line())
             self._scene.removeItem(self.temp_item)
             self.temp_item = None
 
