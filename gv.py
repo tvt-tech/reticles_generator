@@ -398,11 +398,9 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                 pen.setWidth(item['pen'])
                 self._scene.addPolygonC(polygon, pen)
 
-
     def set_reticle_scale(self):
         self.x1 = self.multiplier / self.click_x
         self.y1 = self.multiplier / self.click_y
-
 
     def draw_reticle_grid(self, step_h=10, step_v=10, grid=False, mark=False, pen: QPen = QPen()):
         grid_scale_h = int(self.x1 * step_h)
@@ -446,7 +444,6 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                 text = self._scene.addTextC(str(i * 10), QPoint(0, y_f))
                 text.setDefaultTextColor(pen.color())
 
-
     def fitInView(self, scale=True):
         rect = self.sceneRect()
         unity = self.transform().mapRect(QtCore.QRectF(0, 0, 1, 1))
@@ -457,7 +454,6 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                      viewrect.height() / scenerect.height())
         self.scale(factor, factor)
         self._zoom = 0
-
 
     def setPhoto(self, pixmap=None):
         self._zoom = 0
@@ -470,7 +466,6 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
             self._pmap.setPixmap(QtGui.QPixmap())
         self.fitInView()
-
 
     def wheelEvent(self, event):
         if event.angleDelta().y() > 0:
@@ -494,13 +489,11 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
         # print(self._zoom)
 
-
     def toggleDragMode(self):
         if self.draw_mode != DrawMode.Notool:
             self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
         else:
             self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-
 
     def mousePressEvent(self, event):
         # if True:
@@ -513,7 +506,6 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self.lastPoint = self.mapToScene(event.pos()).toPoint()
 
         super(PhotoViewer, self).mousePressEvent(event)
-
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         point = self.mapToScene(event.pos()).toPoint()
@@ -567,14 +559,14 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             if self.draw_mode == DrawMode.Ellipse:
                 delta_x = abs(self.lastPoint.x() - point.x())
                 delta_y = abs(self.lastPoint.y() - point.y())
-                p1 = QPointF(
-                    self.lastPoint.x() - delta_x,
-                    self.lastPoint.y() - delta_y
-                )
-                p2 = QPointF(
-                    self.lastPoint.x() + delta_x,
-                    self.lastPoint.y() + delta_y
-                )
+
+                if modifiers == Qt.ShiftModifier:
+                    p1 = QPointF(self.lastPoint.x() - delta_x, self.lastPoint.y() - delta_x)
+                    p2 = QPointF(self.lastPoint.x() + delta_x, self.lastPoint.y() + delta_x)
+                else:
+                    p1 = QPointF(self.lastPoint.x() - delta_x, self.lastPoint.y() - delta_y)
+                    p2 = QPointF(self.lastPoint.x() + delta_x, self.lastPoint.y() + delta_y)
+
                 rect = QRectF(p1, p2)
 
                 if not self.temp_item:
@@ -585,7 +577,6 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         # self.lastPoint = point
         self.update()
         super(PhotoViewer, self).mouseMoveEvent(event)
-
 
     # method for mouse left button release
     def mouseReleaseEvent(self, event):
