@@ -3,10 +3,10 @@ from functools import wraps
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF
-from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont, QBrush
+from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont, QBrush, QPolygonF
 from PyQt5.QtSvg import QSvgGenerator
 from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QGraphicsPixmapItem, \
-    QGraphicsRectItem
+    QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPolygonItem
 
 milatcm = 10
 mingridstep_h = 4
@@ -49,6 +49,26 @@ example = [
         'mode': 'pt',
         'p1': [-1, -2],
         'p2': [1, 2],
+        'pen': 1,
+    },
+    {
+        't': 'ellipse',
+        'mode': 'pt',
+        'p1': [-5, -5],
+        'p2': [5, 5],
+        'pen': 1,
+    },
+    {
+        't': 'circle',
+        'mode': 'pt',
+        'p': [0, 0],
+        'r': 10,
+        'pen': 1,
+    },
+    {
+        't': 'polygon',
+        'mode': 'pt',
+        'points': [[-5, 0], [0, -5], [5, 0], [0, 5]],
         'pen': 1,
     }
 ]
@@ -147,6 +167,19 @@ class DrawbleGraphicScene(QtWidgets.QGraphicsScene):
         rect = QRectF(p1, p2)
         super(DrawbleGraphicScene, self).addRect(rect, pen, brush)
 
+    def addEllipseC(self, rect: QtCore.QRectF, pen: QtGui.QPen,
+                    brush: QtGui.QBrush = Qt.transparent) -> QGraphicsEllipseItem:
+        p1 = QPointF(self._transpose_point(QPointF(rect.x(), rect.y())))
+        p2 = QPointF(self._transpose_point(QPointF(rect.width(), rect.height())))
+        rect = QRectF(p1, p2)
+        super(DrawbleGraphicScene, self).addEllipse(rect, pen, brush)
+
+    def addPolygonC(self, polygon: QtGui.QPolygonF, pen: QPen,
+                    brush: QtGui.QBrush = Qt.transparent) -> QGraphicsPolygonItem:
+        points = [self._transpose_point(point) for point in polygon]
+        polygon = QPolygonF(points)
+        super(DrawbleGraphicScene, self).addPolygon(polygon, pen, brush)
+
     def addPoint(self, point: QPointF, pen: QPen = QPen(Qt.black),
                  brush: QBrush = QBrush(Qt.white)) -> QGraphicsRectItem:
         rect = QRectF(QPointF(point.x() - 0.5, point.y() - 0.5), QPointF(point.x() + 0.5, point.y() + 0.5))
@@ -171,6 +204,7 @@ class CustomPen:
     GridH3 = QPen(Qt.magenta, 0.05, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     Pencil = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
     Line = QPen(Qt.black, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
+    Ellipse = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
 
 
 class DrawModeBtn(QtWidgets.QToolButton):
@@ -195,7 +229,7 @@ class DrawMode(IntFlag):
     Eraser = auto()
     Line = auto()
     Rect = auto()
-    Elipse = auto()
+    Ellipse = auto()
     Text = auto()
 
 
@@ -319,12 +353,58 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                 pen.setWidth(item['pen'])
                 self._scene.addRectC(rect, pen)
 
+            if item['t'] == 'ellipse':
+                if item['mode'] == 'pt':
+                    p1 = (int(self.x1 * item['p1'][0]), int(self.y1 * item['p1'][1]))
+                    p2 = (int(self.x1 * item['p2'][0]), int(self.y1 * item['p2'][1]))
+
+                else:
+                    p1 = item['p1']
+                    p2 = item['p2']
+
+                rect = QRectF(*p1, *p2)
+                pen = CustomPen.Line
+                pen.setWidth(item['pen'])
+                self._scene.addEllipseC(rect, pen)
+
+            if item['t'] == 'circle':
+                if item['mode'] == 'pt':
+                    p1 = (
+                        int(self.x1 * (item['p'][0] - item['r'])),
+                        int(self.y1 * (item['p'][1] - item['r']))
+                    )
+                    p2 = (
+                        int(self.x1 * (item['p'][0] + item['r'])),
+                        int(self.y1 * (item['p'][1] + item['r']))
+                    )
+
+                else:
+                    p1 = (int(item['p'][0] - item['r']), int(item['p'][1] - item['r']))
+                    p2 = (int(item['p'][0] + item['r']), int(item['p'][1] + item['r']))
+
+                rect = QRectF(*p1, *p2)
+                pen = CustomPen.Line
+                pen.setWidth(item['pen'])
+                self._scene.addEllipseC(rect, pen)
+
+            if item['t'] == 'polygon':
+                if item['mode'] == 'pt':
+                    points = [QPointF(int(self.x1 * x), int(self.y1 * y)) for x, y in item['points']]
+                else:
+                    points = [QPointF(x, y) for x, y in item['points']]
+                polygon = QtGui.QPolygonF(points)
+
+                pen = CustomPen.Line
+                pen.setWidth(item['pen'])
+                self._scene.addPolygonC(polygon, pen)
+
+
     def set_reticle_scale(self):
         self.x1 = self.multiplier / self.click_x
         self.y1 = self.multiplier / self.click_y
 
-    def draw_reticle_grid(self, step_h=10, step_v=10, grid=False, mark=False, pen: QPen = QPen()):
 
+    def draw_reticle_grid(self, step_h=10, step_v=10, grid=False, mark=False, pen: QPen = QPen()):
         grid_scale_h = int(self.x1 * step_h)
         grid_scale_v = int(self.y1 * step_v)
         grid_scale_h_f = self.x1 * step_h
@@ -366,6 +446,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                 text = self._scene.addTextC(str(i * 10), QPoint(0, y_f))
                 text.setDefaultTextColor(pen.color())
 
+
     def fitInView(self, scale=True):
         rect = self.sceneRect()
         unity = self.transform().mapRect(QtCore.QRectF(0, 0, 1, 1))
@@ -376,6 +457,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                      viewrect.height() / scenerect.height())
         self.scale(factor, factor)
         self._zoom = 0
+
 
     def setPhoto(self, pixmap=None):
         self._zoom = 0
@@ -388,6 +470,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
             self._pmap.setPixmap(QtGui.QPixmap())
         self.fitInView()
+
 
     def wheelEvent(self, event):
         if event.angleDelta().y() > 0:
@@ -411,11 +494,13 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
         # print(self._zoom)
 
+
     def toggleDragMode(self):
         if self.draw_mode != DrawMode.Notool:
             self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
         else:
             self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+
 
     def mousePressEvent(self, event):
         # if True:
@@ -428,6 +513,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self.lastPoint = self.mapToScene(event.pos()).toPoint()
 
         super(PhotoViewer, self).mousePressEvent(event)
+
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         point = self.mapToScene(event.pos()).toPoint()
@@ -445,42 +531,61 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                         p2.setY(self.lastPoint.y())
                 self._scene.addLine(QLineF(p1, p2), CustomPen.Pencil)
 
+                self.lastPoint = point
+
             if self.draw_mode == DrawMode.Line:
 
                 if not self.temp_item:
-                    p1 = QPointF(self.lastPoint.x(), self.lastPoint.y())
-                    p2 = QPointF(point.x(), point.y())
+                    p1 = QPointF(self.lastPoint)
+                    p2 = QPointF(point)
                     line = QLineF(p1, p2)
                     self.temp_item = self._scene.addLine(line, CustomPen.Line)
                 else:
-                    p2 = QPointF(point.x(), point.y())
+                    p1 = QPointF(self.lastPoint)
+                    p2 = QPointF(point)
                     if modifiers == Qt.ShiftModifier:
-                        if abs(self.temp_item.line().p1().x() - p2.x()) < abs(
-                                self.temp_item.line().p1().y() - p2.y()):
-                            p2.setX(self.temp_item.line().p1().x())
+                        if abs(p1.x() - p2.x()) < abs(p1.y() - p2.y()):
+                            p2.setX(p1.x())
                         else:
-                            p2.setY(self.temp_item.line().p1().y())
-                    line = QLineF(self.temp_item.line().p1(), p2)
+                            p2.setY(p1.y())
+                    line = QLineF(p1, p2)
                     self.temp_item.setLine(line)
+
+                # self.lastPoint = point
 
             if self.draw_mode == DrawMode.Rect:
 
+                p1 = QPointF(self.lastPoint)
+                p2 = QPointF(point)
+                rect = QRectF(p1, p2)
+
                 if not self.temp_item:
-                    p1 = QPointF(self.lastPoint.x(), self.lastPoint.y())
-                    p2 = QPointF(point.x(), point.y())
-                    rect = QRectF(p1, p2)
                     self.temp_item = self._scene.addRect(rect, CustomPen.Line)
                 else:
-                    p1 = QPointF(self.temp_item.rect().x(), self.temp_item.rect().y())
-                    p2 = QPointF(point.x(), point.y())
-                    print(p1, p2)
-                    rect = QRectF(p1, p2)
                     self.temp_item.setRect(rect)
 
+            if self.draw_mode == DrawMode.Ellipse:
+                delta_x = abs(self.lastPoint.x() - point.x())
+                delta_y = abs(self.lastPoint.y() - point.y())
+                p1 = QPointF(
+                    self.lastPoint.x() - delta_x,
+                    self.lastPoint.y() - delta_y
+                )
+                p2 = QPointF(
+                    self.lastPoint.x() + delta_x,
+                    self.lastPoint.y() + delta_y
+                )
+                rect = QRectF(p1, p2)
 
-        self.lastPoint = point
+                if not self.temp_item:
+                    self.temp_item = self._scene.addEllipse(rect, CustomPen.Ellipse)
+                else:
+                    self.temp_item.setRect(rect)
+
+        # self.lastPoint = point
         self.update()
         super(PhotoViewer, self).mouseMoveEvent(event)
+
 
     # method for mouse left button release
     def mouseReleaseEvent(self, event):
@@ -545,6 +650,10 @@ class Window(QtWidgets.QWidget):
         self.rect_btn.setText('Rect')
         self.rect_btn.clicked.connect(self.on_rect_btn_press)
 
+        self.ellipse_btn = DrawModeBtn()
+        self.ellipse_btn.setText('Ellipse')
+        self.ellipse_btn.clicked.connect(self.on_ellipse_btn_press)
+
         self.lab = QLabel()
         self.labpix = QPixmap(640, 480)
         self.labpix.fill(Qt.transparent)
@@ -570,6 +679,7 @@ class Window(QtWidgets.QWidget):
         HBlayout.addWidget(self.draw_btn)
         HBlayout.addWidget(self.line_btn)
         HBlayout.addWidget(self.rect_btn)
+        HBlayout.addWidget(self.ellipse_btn)
         HBlayout.addWidget(self.clear_btn)
         HBlayout.addWidget(self.to_svg_btn)
         HBlayout.addWidget(self.raster_btn)
@@ -598,6 +708,11 @@ class Window(QtWidgets.QWidget):
     def on_rect_btn_press(self):
 
         self.viewer.draw_mode = DrawMode.Rect
+        self.viewer.toggleDragMode()
+
+    def on_ellipse_btn_press(self):
+
+        self.viewer.draw_mode = DrawMode.Ellipse
         self.viewer.toggleDragMode()
 
     def on_clear_btn_press(self):
