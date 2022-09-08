@@ -1,7 +1,7 @@
 from enum import IntFlag, auto
 from functools import wraps
 
-from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF, QRect, pyqtSignal
+from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF, QRect, pyqtSignal, QSize
 from PyQt5.QtGui import QPen, QPainter, QPixmap, QFont, QBrush, QPolygonF, QPolygon, QTransform, QMouseEvent
 from PyQt5.QtSvg import QSvgGenerator
 from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QGraphicsPixmapItem, \
@@ -20,7 +20,7 @@ class SmoothLineItem(QGraphicsLineItem):
         return self.scene().sceneRect()
 
     def redraw_pix(self):
-        pixmap = QPixmap(640, 480)
+        pixmap = QPixmap(self.scene().width(), self.scene().height())
         pixmap.fill(Qt.transparent)
         pix_painter = QPainter(pixmap)
         pix_painter.drawLine(self.line())
@@ -44,7 +44,7 @@ class SmoothRectItem(QGraphicsEllipseItem):
         return self.scene().sceneRect()
 
     def redraw_pix(self):
-        pixmap = QPixmap(640, 480)
+        pixmap = QPixmap(self.scene().width(), self.scene().height())
         pixmap.fill(Qt.transparent)
         pix_painter = QPainter(pixmap)
         pix_painter.drawRect(self.rect())
@@ -68,7 +68,7 @@ class SmoothEllipseItem(QGraphicsEllipseItem):
         return self.scene().sceneRect()
 
     def redraw_pix(self):
-        pixmap = QPixmap(640, 480)
+        pixmap = QPixmap(self.scene().width(), self.scene().height())
         pixmap.fill(Qt.transparent)
         pix_painter = QPainter(pixmap)
         pix_painter.drawEllipse(self.rect())
@@ -82,12 +82,11 @@ class SmoothEllipseItem(QGraphicsEllipseItem):
 
 
 class MyCanvas(QGraphicsItem):
-    def __init__(self, parent=None):
+    def __init__(self, size: QSize, parent=None):
         super(MyCanvas, self).__init__(parent)
 
         self.pixmap = None
-        # self.pixmap = QPixmap(640, 480)
-        self.pixmap = QPixmap(640, 480)
+        self.pixmap = QPixmap(size.width(), size.height())
         self.pixmap.fill(Qt.transparent)
 
     def boundingRect(self) -> QRectF:
@@ -98,7 +97,7 @@ class MyCanvas(QGraphicsItem):
         painter.drawPixmap(self.boundingRect(), self.pixmap, pixmap_rect)
 
     def clear_pixmap(self):
-        self.pixmap = QPixmap(640, 480)
+        self.pixmap = QPixmap(self.scene().width(), self.scene().height())
         self.pixmap.fill(Qt.transparent)
         self.scene().update()
 
@@ -172,39 +171,39 @@ mingridstep_v = 2
 
 
 example = [
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [2, 0],
-        'p2': [4, 0],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [-2, 0],
-        'p2': [-4, 0],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [0, 3],
-        'p2': [0, 5],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [0, -3],
-        'p2': [0, -5],
-        'pen': 1,
-    },
+    # {
+    #     't': 'line',
+    #     'mode': 'px',
+    #     'p1': [20, 0],
+    #     'p2': [40, 0],
+    #     'pen': 1,
+    # },
+    # {
+    #     't': 'line',
+    #     'mode': 'px',
+    #     'p1': [-20, 0],
+    #     'p2': [-40, 0],
+    #     'pen': 1,
+    # },
+    # {
+    #     't': 'line',
+    #     'mode': 'px',
+    #     'p1': [0, 30],
+    #     'p2': [0, 50],
+    #     'pen': 1,
+    # },
+    # {
+    #     't': 'line',
+    #     'mode': 'px',
+    #     'p1': [0, -30],
+    #     'p2': [0, -50],
+    #     'pen': 1,
+    # },
     {
         't': 'rect',
-        'mode': 'pt',
-        'p1': [-1, -2],
-        'p2': [1, 2],
+        'mode': 'px',
+        'p1': [-10, -20],
+        'p2': [10, 20],
         'pen': 1,
     },
     # {
@@ -221,12 +220,74 @@ example = [
     #     'r': 10,
     #     'pen': 1,
     # },
+    # {
+    #     't': 'polygon',
+    #     'mode': 'pt',
+    #     'points': [[-5, 0], [0, -5], [5, 0], [0, 5]],
+    #     'pen': 1,
+    # },
     {
-        't': 'polygon',
+        't': 'line',
         'mode': 'pt',
-        'points': [[-5, 0], [0, -5], [5, 0], [0, 5]],
+        'p1': [0, -10],
+        'p2': [0, -1],
         'pen': 1,
-    }
+    },
+    {
+        't': 'line',
+        'mode': 'pt',
+        'p1': [-10, 0],
+        'p2': [-1, 0],
+        'pen': 1,
+    },
+    {
+        't': 'line',
+        'mode': 'pt',
+        'p1': [0, 1],
+        'p2': [0, 10],
+        'pen': 1,
+    },
+    {
+        't': 'line',
+        'mode': 'pt',
+        'p1': [1, 0],
+        'p2': [10, 0],
+        'pen': 1,
+    },
+    {
+        't': 'line',
+        'mode': 'pt',
+        'p1': [-10, -1],
+        'p2': [-10, 1],
+        'pen': 1,
+    },
+    {
+        't': 'line',
+        'mode': 'pt',
+        'p1': [10, -1],
+        'p2': [10, 1],
+        'pen': 1,
+    },
+    {
+        't': 'line',
+        'mode': 'pt',
+        'p1': [-1, 10],
+        'p2': [1, 10],
+        'pen': 1,
+    },
+    {
+        't': 'line',
+        'mode': 'pt',
+        'p1': [-1, -10],
+        'p2': [1, -10],
+        'pen': 1,
+    },
+    {
+        't': 'point',
+        'mode': 'pt',
+        'p': [0, 0],
+        'pen': 0,
+    },
 ]
 
 
@@ -242,10 +303,11 @@ def hide_grid(func: callable):
             if hasattr(ch, 'defaultTextColor'):
                 if ch.defaultTextColor() == Qt.darkMagenta or ch.defaultTextColor() == Qt.magenta:
                     ch.setVisible(False)
-
+        self.viewer._pen_size_ellipse.setVisible(False)
         ret = func(self, *method_args, **method_kwargs)
         for ch in children:
             ch.setVisible(True)
+        self.viewer._pen_size_ellipse.setVisible(True)
         return ret
 
     return _impl
@@ -315,10 +377,6 @@ class CenterPainter(QPainter):
         return super(CenterPainter, self).drawPolygon(polygon, fillRule)
 
     def _transpose_line_point(self, p: [QPointF, QPoint]):
-        # if p.x() > 0:
-        #     p.setX(p.x() - 1)
-        # if p.y() > 0:
-        #     p.setY(p.y() - 1)
         return QPoint(self.x0 + p.x(), self.y0 + p.y())
 
     def _transpose_point(self, p: [QPointF, QPoint]):
@@ -515,11 +573,13 @@ class VectoRaster(QGraphicsView):
         self.draw_reticle_grid(self.xs, self.ys, True, False, CustomPen.GridH4)
         self.draw_reticle_grid(100, 100, True, False, CustomPen.GridH1)
 
-        self._canvas = MyCanvas()
+        self._canvas = MyCanvas(QSize(self.w, self.h))
         self._canvas.setPos(-0.5, -0.5)
         self._scene.addItem(self._canvas)
 
         self._pen_size_ellipse = QGraphicsEllipseItem(0, 0, 1, 1)
+        self._pen_size_ellipse.setPen(QPen(Qt.darkBlue, 0, Qt.SolidLine))
+        self._pen_size_ellipse.setBrush(Qt.darkBlue)
         self._scene.addItem(self._pen_size_ellipse)
 
         self.setScene(self._scene)
@@ -574,6 +634,20 @@ class VectoRaster(QGraphicsView):
                 pen = CustomPen.Line
                 pen.setWidth(item['pen'])
                 self._canvas.drawRectC(rect, pen)
+
+            if item['t'] == 'point':
+                if item['mode'] == 'pt':
+                    p = (
+                        int(self.x1 * item['p'][0]),
+                        int(self.y1 * item['p'][1])
+                    )
+                else:
+                    p = item['p']
+
+                point = QPoint(*p)
+                pen = CustomPen.Line
+                pen.setWidth(item['pen'])
+                self._canvas.drawPointC(point, pen)
 
             if item['t'] == 'ellipse':
                 if item['mode'] == 'pt':
@@ -845,8 +919,6 @@ class VectoRaster(QGraphicsView):
 
         if self.draw_mode != DrawMode.Notool:
             self._pen_size_ellipse.setPos(point.x() - 0.5, point.y() - 0.5)
-            self._pen_size_ellipse.setPen(QPen(Qt.darkBlue, 0, Qt.SolidLine))
-            self._pen_size_ellipse.setBrush(Qt.darkBlue)
 
         if (event.buttons() & Qt.LeftButton) & self.drawing:
 
@@ -1028,8 +1100,8 @@ class Window(QWidget):
     def on_to_svg_btn_press(self, *args, **kwargs):
         svg_gen = QSvgGenerator()
         svg_gen.setFileName('test_scene.svg')
-        svg_gen.setSize(640, 480)
-        svg_gen.setViewBox(QRectF(0, 0, 640, 480))
+        svg_gen.setSize(self.viewer.rect())
+        svg_gen.setViewBox(self.viewer.rect())
         svg_gen.setTitle("SVG Generator Example Drawing")
         svg_gen.setDescription("An SVG drawing created by the SVG Generator "
                                "Example provided with Qt.")
@@ -1040,12 +1112,13 @@ class Window(QWidget):
 
     @hide_grid
     def on_raster_btn_press(self, *args, **kwargs):
-        out_pix = QPixmap(640, 480)
+        out_pix = QPixmap(self.viewer._scene.width(), self.viewer._scene.height())
         painter = QPainter(out_pix)
-        # painter.setRenderHint(QPainter.Antialiasing)
         out_pix.fill(Qt.white)
 
-        self.viewer._scene.render(painter, QRectF(out_pix.rect()), QRectF(0, 0, 640, 480), Qt.KeepAspectRatio)
+        print(QRectF(out_pix.rect()))
+
+        self.viewer._scene.render(painter, QRectF(out_pix.rect()), QRectF(self.viewer._scene.sceneRect()), Qt.KeepAspectRatio)
         painter.end()
         out_pix.save('test_scene.bmp', 'BMP')
 
