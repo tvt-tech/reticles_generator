@@ -2,8 +2,8 @@ from enum import IntFlag, auto
 from functools import wraps
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF
-from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont, QBrush, QPolygonF
+from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF, QRect
+from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont, QBrush, QPolygonF, QPolygon
 from PyQt5.QtSvg import QSvgGenerator
 from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QGraphicsPixmapItem, \
     QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPolygonItem, QGraphicsItem
@@ -23,6 +23,65 @@ class MyCanvas(QGraphicsItem):
         pixmap_rect = QRectF(self.pixmap.rect())
         painter.drawPixmap(self.boundingRect(), self.pixmap, pixmap_rect)
 
+    def drawPoint(self, p: QPoint, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawPoint(p)
+        self.scene().update()
+
+    def drawLine(self, l: QLine, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawLine(l)
+        self.scene().update()
+
+    def drawRect(self, r: QRect, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawRect(r)
+        self.scene().update()
+
+    def drawEllipse(self, r: QRect, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawEllipse(r)
+        self.scene().update()
+
+    def drawPolygon(self, p: QPolygon, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawPolygon(p)
+        self.scene().update()
+
+    def drawPointC(self, p: QPoint, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawPointC(p)
+        self.scene().update()
+
+    def drawLineC(self, l: QLine, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawLineC(l)
+        self.scene().update()
+
+    def drawRectC(self, r: QRect, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawRectC(r)
+        self.scene().update()
+
+    def drawEllipseC(self, r: QRect, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawEllipseC(r)
+        self.scene().update()
+
+    def drawPolygonC(self, p: QPolygon, pen: QPen):
+        painter = CenterPainter(self.pixmap)
+        painter.setPen(pen)
+        painter.drawPolygonC(p)
+        self.scene().update()
 
 milatcm = 10
 mingridstep_h = 4
@@ -157,7 +216,28 @@ class CenterPainter(QPainter):
         lines = list(map(lambda line: QLine(self._transpose_point(line.p1()), self._transpose_point(line.p2())), lines))
         return super(CenterPainter, self).drawLines(lines)
 
+    def drawRectC(self, r: QtCore.QRect) -> None:
+        p1 = QPoint(self._transpose_point(QPoint(r.x(), r.y())))
+        p2 = QPoint(self._transpose_point(QPoint(r.width(), r.height())))
+        r = QRect(p1, p2)
+        return super(CenterPainter, self).drawRect(r)
+
+    def drawEllipseC(self, r: QtCore.QRectF) -> None:
+        p1 = QPoint(self._transpose_point(QPoint(r.x(), r.y())))
+        p2 = QPoint(self._transpose_point(QPoint(r.width(), r.height())))
+        r = QRect(p1, p2)
+        return super(CenterPainter, self).drawEllipse(r)
+
+    def drawPolygonC(self, polygon: QPolygon, fillRule: QtCore.Qt.FillRule = Qt.OddEvenFill) -> None:
+        points = [self._transpose_point(point) for point in polygon]
+        polygon = QPolygon(points)
+        return super(CenterPainter, self).drawPolygon(polygon, fillRule)
+
     def _transpose_point(self, p: [QtCore.QPointF, QtCore.QPoint]):
+        if p.x() > 0:
+            p.setX(p.x() - 1)
+        if p.y() > 0:
+            p.setY(p.y() - 1)
         return QPoint(self.x0 + p.x(), self.y0 + p.y())
 
 
@@ -215,8 +295,8 @@ class DrawbleGraphicScene(QtWidgets.QGraphicsScene):
 
 
 class CustomPen:
-    GridH1 = QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH2 = QPen(Qt.darkMagenta, 0.1, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH1 = QPen(Qt.darkMagenta, 0.5, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH2 = QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     GridH3 = QPen(Qt.magenta, 0.05, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     Pencil = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
     Line = QPen(Qt.black, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
@@ -302,7 +382,7 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self.draw_mode = DrawMode.Notool
         self.drawing = False
         self.temp_item = None
-        self.mp = False
+        self.lastPoint = None
 
         self._scene = DrawbleGraphicScene(0, 0, self.w, self.h)
 
@@ -320,12 +400,8 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self._canvas.setPos(-0.5, -0.5)
         self._scene.addItem(self._canvas)
 
-        painter = CenterPainter(self._canvas.pixmap)
-        painter.setPen(Qt.red)
-        painter.drawLineC(QLine(QPoint(20, 20), QPoint(-20, -20)))
-
-        self.draw_reticle_grid(10, 10, True, True, CustomPen.GridH3)
-        self.draw_reticle_grid(self.xs, self.ys, True, False, CustomPen.GridH2)
+        self.draw_reticle_grid(10, 10, True, True, CustomPen.GridH2)
+        self.draw_reticle_grid(self.xs, self.ys, True, False, CustomPen.GridH3)
         self.draw_reticle_grid(100, 100, True, False, CustomPen.GridH1)
 
         self.setScene(self._scene)
@@ -351,9 +427,9 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         self.toggleDragMode()
         # self.fitInView()
 
-        self.draw_test_reticle()
+        self.draw_example_reticle()
 
-    def draw_test_reticle(self):
+    def draw_example_reticle(self):
 
         for item in example:
             if item['t'] == 'line':
@@ -366,10 +442,10 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                     p1 = item['p1']
                     p2 = item['p2']
 
-                line = QLineF(*p1, *p2)
+                line = QLine(*p1, *p2)
                 pen = CustomPen.Line
                 pen.setWidth(item['pen'])
-                self._scene.addLineC(line, pen)
+                self._canvas.drawLineC(line, pen)
 
             if item['t'] == 'rect':
                 if item['mode'] == 'pt':
@@ -380,10 +456,10 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                     p1 = item['p1']
                     p2 = item['p2']
 
-                rect = QRectF(*p1, *p2)
+                rect = QRect(*p1, *p2)
                 pen = CustomPen.Line
                 pen.setWidth(item['pen'])
-                self._scene.addRectC(rect, pen)
+                self._canvas.drawRectC(rect, pen)
 
             if item['t'] == 'ellipse':
                 if item['mode'] == 'pt':
@@ -395,9 +471,9 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                     p2 = item['p2']
 
                 rect = QRectF(*p1, *p2)
-                pen = CustomPen.Line
+                pen = CustomPen.Ellipse
                 pen.setWidth(item['pen'])
-                self._scene.addEllipseC(rect, pen)
+                self._canvas.drawEllipseC(rect, pen)
 
             if item['t'] == 'circle':
                 if item['mode'] == 'pt':
@@ -414,21 +490,21 @@ class PhotoViewer(QtWidgets.QGraphicsView):
                     p1 = (int(item['p'][0] - item['r']), int(item['p'][1] - item['r']))
                     p2 = (int(item['p'][0] + item['r']), int(item['p'][1] + item['r']))
 
-                rect = QRectF(*p1, *p2)
-                pen = CustomPen.Line
+                rect = QRect(*p1, *p2)
+                pen = CustomPen.Ellipse
                 pen.setWidth(item['pen'])
-                self._scene.addEllipseC(rect, pen)
+                self._canvas.drawEllipseC(rect, pen)
 
             if item['t'] == 'polygon':
                 if item['mode'] == 'pt':
-                    points = [QPointF(int(self.x1 * x), int(self.y1 * y)) for x, y in item['points']]
+                    points = [QPoint(int(self.x1 * x), int(self.y1 * y)) for x, y in item['points']]
                 else:
-                    points = [QPointF(x, y) for x, y in item['points']]
+                    points = [QPoint(x, y) for x, y in item['points']]
                 polygon = QtGui.QPolygonF(points)
 
                 pen = CustomPen.Line
                 pen.setWidth(item['pen'])
-                self._scene.addPolygonC(polygon, pen)
+                self._canvas.drawPolygonC(polygon, pen)
 
     def set_reticle_scale(self):
         self.x1 = self.multiplier / self.click_x
@@ -540,18 +616,16 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         super(PhotoViewer, self).mousePressEvent(event)
 
     def pencil_mode_draw(self, point, modifiers):
-        p1 = QPointF(self.lastPoint.x(), self.lastPoint.y())
-        p2 = QPointF(point.x(), point.y())
+        p1 = QPoint(self.lastPoint.x(), self.lastPoint.y())
+        p2 = QPoint(point.x(), point.y())
 
         if modifiers == Qt.ShiftModifier:
             if abs(p1.x() - p2.x()) < abs(p1.y() - p2.y()):
                 p2.setX(self.lastPoint.x())
             else:
                 p2.setY(self.lastPoint.y())
-        # self._scene.addLine(QLineF(p1, p2), CustomPen.Pencil)
-        painter = CenterPainter(self._canvas.pixmap)
-        painter.setPen(Qt.red)
-        painter.drawLine(p1, p2)
+        self._canvas.drawLine(QLine(p1, p2), CustomPen.Pencil)
+
         self.lastPoint = point
         self._scene.update()
 
@@ -624,11 +698,18 @@ class PhotoViewer(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event):
         point = self.mapToScene(event.pos()).toPoint()
         if event.button() == Qt.LeftButton:
+
+            if self.draw_mode == DrawMode.Pencil:
+                self._canvas.drawPoint(point, CustomPen.Pencil)
+
             if self.draw_mode == DrawMode.Line and self.temp_item:
-                # p1 = QPointF(self.lastPoint.x(), self.lastPoint.y())
-                painter = CenterPainter(self._canvas.pixmap)
-                painter.drawLine(self.temp_item.line())
-                self._scene.update()
+                self._canvas.drawLine(self.temp_item.line(), CustomPen.Line)
+
+            if self.draw_mode == DrawMode.Rect and self.temp_item:
+                self._canvas.drawRect(self.temp_item.rect(), CustomPen.Line)
+
+            if self.draw_mode == DrawMode.Ellipse and self.temp_item:
+                self._canvas.drawEllipse(self.temp_item.rect(), CustomPen.Ellipse)
 
         self.lastPoint = point
 
@@ -638,7 +719,6 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             self._scene.removeItem(self.temp_item)
             self.temp_item = None
 
-        # self.update()
         super(PhotoViewer, self).mouseReleaseEvent(event)
 
 
