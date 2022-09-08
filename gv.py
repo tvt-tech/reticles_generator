@@ -6,7 +6,55 @@ from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF, QRect
 from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont, QBrush, QPolygonF, QPolygon
 from PyQt5.QtSvg import QSvgGenerator
 from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QGraphicsPixmapItem, \
-    QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPolygonItem, QGraphicsItem
+    QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPolygonItem, QGraphicsItem, QStyleOptionGraphicsItem, QWidget
+
+
+class SmoothLineItem(QGraphicsLineItem):
+    def __init__(self, line: QLineF, pen: QPen, parent=None):
+        super(SmoothLineItem, self).__init__(parent)
+        self.setLine(line)
+        self.setPen(pen)
+        self.setPos(-0.5, -0.5)
+
+    def boundingRect(self) -> QtCore.QRectF:
+        return self.scene().sceneRect()
+
+    def redraw_pix(self):
+        pixmap = QPixmap(640, 480)
+        pixmap.fill(Qt.transparent)
+        pix_painter = QPainter(pixmap)
+        pix_painter.drawLine(self.line())
+        return pixmap
+
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
+        painter.setPen(self.pen())
+        pixmap = self.redraw_pix()
+        pixmap_rect = QRectF(pixmap.rect())
+        painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
+
+
+class SmoothEllipseItem(QGraphicsEllipseItem):
+    def __init__(self, rect: QRectF, pen: QPen, parent=None):
+        super(SmoothEllipseItem, self).__init__(parent)
+        self.setRect(rect)
+        self.setPen(pen)
+        self.setPos(-0.5, -0.5)
+
+    def boundingRect(self) -> QtCore.QRectF:
+        return self.scene().sceneRect()
+
+    def redraw_pix(self):
+        pixmap = QPixmap(640, 480)
+        pixmap.fill(Qt.transparent)
+        pix_painter = QPainter(pixmap)
+        pix_painter.drawEllipse(self.rect())
+        return pixmap
+
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
+        painter.setPen(self.pen())
+        pixmap = self.redraw_pix()
+        pixmap_rect = QRectF(pixmap.rect())
+        painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
 
 
 class MyCanvas(QGraphicsItem):
@@ -126,20 +174,20 @@ example = [
         'p2': [1, 2],
         'pen': 1,
     },
-    {
-        't': 'ellipse',
-        'mode': 'pt',
-        'p1': [-5, -5],
-        'p2': [5, 5],
-        'pen': 1,
-    },
-    {
-        't': 'circle',
-        'mode': 'pt',
-        'p': [0, 0],
-        'r': 10,
-        'pen': 1,
-    },
+    # {
+    #     't': 'ellipse',
+    #     'mode': 'pt',
+    #     'p1': [-5, -5],
+    #     'p2': [5, 5],
+    #     'pen': 1,
+    # },
+    # {
+    #     't': 'circle',
+    #     'mode': 'pt',
+    #     'p': [0, 0],
+    #     'r': 10,
+    #     'pen': 1,
+    # },
     {
         't': 'polygon',
         'mode': 'pt',
@@ -247,6 +295,17 @@ class DrawbleGraphicScene(QtWidgets.QGraphicsScene):
 
         self.x0 = int(self.width() / 2) + 1
         self.y0 = int(self.height() / 2) + 1
+
+    def addSmoothLine(self, line: QtCore.QLineF, pen: QtGui.QPen) -> SmoothLineItem:
+        smooth_line = SmoothLineItem(line, pen)
+        self.addItem(smooth_line)
+        return smooth_line
+
+    def addSmoothEllipse(self, rect: QtCore.QRectF, pen: QtGui.QPen,
+                    brush: QtGui.QBrush = Qt.transparent) -> SmoothEllipseItem:
+        smooth_ellipse = SmoothEllipseItem(rect, pen)
+        self.addItem(smooth_ellipse)
+        return smooth_ellipse
 
     def addLineC(self, line: QtCore.QLineF, pen: QtGui.QPen) -> QGraphicsLineItem:
         line = QtCore.QLineF(self._transpose_point(line.p1()), self._transpose_point(line.p2()))
@@ -634,7 +693,8 @@ class PhotoViewer(QtWidgets.QGraphicsView):
             p1 = QPointF(self.lastPoint)
             p2 = QPointF(point)
             line = QLineF(p1, p2)
-            self.temp_item = self._scene.addLine(line, CustomPen.Line)
+            # self.temp_item = self._scene.addLine(line, CustomPen.Line)
+            self.temp_item = self._scene.addSmoothLine(line, CustomPen.Line)
         else:
             p1 = QPointF(self.lastPoint)
             p2 = QPointF(point)
@@ -670,7 +730,8 @@ class PhotoViewer(QtWidgets.QGraphicsView):
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
-            self.temp_item = self._scene.addEllipse(rect, CustomPen.Ellipse)
+            # self.temp_item = self._scene.addEllipse(rect, CustomPen.Ellipse)
+            self.temp_item = self._scene.addSmoothEllipse(rect, CustomPen.Ellipse)
         else:
             self.temp_item.setRect(rect)
 
