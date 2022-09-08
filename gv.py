@@ -6,7 +6,23 @@ from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF
 from PyQt5.QtGui import QPen, QPainter, QPixmap, QImage, QFont, QBrush, QPolygonF
 from PyQt5.QtSvg import QSvgGenerator
 from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QGraphicsPixmapItem, \
-    QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPolygonItem
+    QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPolygonItem, QGraphicsItem
+
+
+class MyCanvas(QGraphicsItem):
+    def __init__(self, parent=None):
+        super(MyCanvas, self).__init__(parent)
+
+        self.pixmap = QPixmap(640, 480)
+        self.pixmap.fill(Qt.transparent)
+
+    def boundingRect(self) -> QtCore.QRectF:
+        return QRectF(0, 0, 640, 480)
+
+    def paint(self, painter, option, widget) -> None:
+        pixmap_rect = QRectF(self.pixmap.rect())
+        painter.drawPixmap(self.boundingRect(), self.pixmap, pixmap_rect)
+
 
 milatcm = 10
 mingridstep_h = 4
@@ -133,7 +149,7 @@ class CenterPainter(QPainter):
         point = self._transpose_point(point)
         return super(CenterPainter, self).drawPoint(point)
 
-    def drawLineC(self, line: QtCore.QLineF) -> None:
+    def drawLineC(self, line: QtCore.QLine) -> None:
         line = QLine(self._transpose_point(line.p1()), self._transpose_point(line.p2()))
         return super(CenterPainter, self).drawLine(line)
 
@@ -240,6 +256,8 @@ class MyCanvasItem(QGraphicsPixmapItem):
     def paint(self, painter, option, widget=None):
         super(MyCanvasItem, self).paint(painter, option, widget)
 
+    # def drawLine(self):
+
 
 class PhotoViewer(QtWidgets.QGraphicsView):
     photoClicked = QtCore.pyqtSignal(QtCore.QPoint)
@@ -288,9 +306,23 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
         self._scene = DrawbleGraphicScene(0, 0, self.w, self.h)
 
-        self._pmap = QtWidgets.QGraphicsPixmapItem()
+        self._pix = QPixmap(639, 479)
+        self._pix.fill(Qt.transparent)
+        # painter = CenterPainter(self._pix)
+        # painter.drawLineC(QLineF(QPointF(20, 20), QPointF(-20, -20)))
+        self._pmap = MyCanvasItem()
+        self._pmap.setPixmap(self._pix)
+        self._pmap.setPos(0.5, 0.5)
 
         self._scene.addItem(self._pmap)
+
+        self._canvas = MyCanvas()
+        self._canvas.setPos(-0.5, -0.5)
+        self._scene.addItem(self._canvas)
+
+        painter = CenterPainter(self._canvas.pixmap)
+        painter.setPen(Qt.red)
+        painter.drawLineC(QLine(QPoint(20, 20), QPoint(-20, -20)))
 
         self.draw_reticle_grid(10, 10, True, True, CustomPen.GridH3)
         self.draw_reticle_grid(self.xs, self.ys, True, False, CustomPen.GridH2)
@@ -507,92 +539,106 @@ class PhotoViewer(QtWidgets.QGraphicsView):
 
         super(PhotoViewer, self).mousePressEvent(event)
 
+    def pencil_mode_draw(self, point, modifiers):
+        p1 = QPointF(self.lastPoint.x(), self.lastPoint.y())
+        p2 = QPointF(point.x(), point.y())
+
+        if modifiers == Qt.ShiftModifier:
+            if abs(p1.x() - p2.x()) < abs(p1.y() - p2.y()):
+                p2.setX(self.lastPoint.x())
+            else:
+                p2.setY(self.lastPoint.y())
+        # self._scene.addLine(QLineF(p1, p2), CustomPen.Pencil)
+        painter = CenterPainter(self._canvas.pixmap)
+        painter.setPen(Qt.red)
+        painter.drawLine(p1, p2)
+        self.lastPoint = point
+        self._scene.update()
+
+    def line_mode_draw(self, point, modifiers):
+        if not self.temp_item:
+            p1 = QPointF(self.lastPoint)
+            p2 = QPointF(point)
+            line = QLineF(p1, p2)
+            self.temp_item = self._scene.addLine(line, CustomPen.Line)
+        else:
+            p1 = QPointF(self.lastPoint)
+            p2 = QPointF(point)
+            if modifiers == Qt.ShiftModifier:
+                if abs(p1.x() - p2.x()) < abs(p1.y() - p2.y()):
+                    p2.setX(p1.x())
+                else:
+                    p2.setY(p1.y())
+            line = QLineF(p1, p2)
+            self.temp_item.setLine(line)
+
+    def rect_mode_draw(self, point, modifiers):
+        p1 = QPointF(self.lastPoint)
+        p2 = QPointF(point)
+        rect = QRectF(p1, p2)
+
+        if not self.temp_item:
+            self.temp_item = self._scene.addRect(rect, CustomPen.Line)
+        else:
+            self.temp_item.setRect(rect)
+
+    def ellipse_draw_mode(self, point, modifiers):
+        delta_x = abs(self.lastPoint.x() - point.x())
+        delta_y = abs(self.lastPoint.y() - point.y())
+
+        if modifiers == Qt.ShiftModifier:
+            p1 = QPointF(self.lastPoint.x() - delta_x, self.lastPoint.y() - delta_x)
+            p2 = QPointF(self.lastPoint.x() + delta_x, self.lastPoint.y() + delta_x)
+        else:
+            p1 = QPointF(self.lastPoint.x() - delta_x, self.lastPoint.y() - delta_y)
+            p2 = QPointF(self.lastPoint.x() + delta_x, self.lastPoint.y() + delta_y)
+
+        rect = QRectF(p1, p2)
+
+        if not self.temp_item:
+            self.temp_item = self._scene.addEllipse(rect, CustomPen.Ellipse)
+        else:
+            self.temp_item.setRect(rect)
+
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         point = self.mapToScene(event.pos()).toPoint()
         modifiers = QApplication.keyboardModifiers()
         if (event.buttons() & Qt.LeftButton) & self.drawing:
             if self.draw_mode == DrawMode.Pencil:
-
-                p1 = QPointF(self.lastPoint.x(), self.lastPoint.y())
-                p2 = QPointF(point.x(), point.y())
-
-                if modifiers == Qt.ShiftModifier:
-                    if abs(p1.x() - p2.x()) < abs(p1.y() - p2.y()):
-                        p2.setX(self.lastPoint.x())
-                    else:
-                        p2.setY(self.lastPoint.y())
-                self._scene.addLine(QLineF(p1, p2), CustomPen.Pencil)
-
-                self.lastPoint = point
+                self.pencil_mode_draw(point, modifiers)
 
             if self.draw_mode == DrawMode.Line:
-
-                if not self.temp_item:
-                    p1 = QPointF(self.lastPoint)
-                    p2 = QPointF(point)
-                    line = QLineF(p1, p2)
-                    self.temp_item = self._scene.addLine(line, CustomPen.Line)
-                else:
-                    p1 = QPointF(self.lastPoint)
-                    p2 = QPointF(point)
-                    if modifiers == Qt.ShiftModifier:
-                        if abs(p1.x() - p2.x()) < abs(p1.y() - p2.y()):
-                            p2.setX(p1.x())
-                        else:
-                            p2.setY(p1.y())
-                    line = QLineF(p1, p2)
-                    self.temp_item.setLine(line)
-
-                # self.lastPoint = point
+                self.line_mode_draw(point, modifiers)
 
             if self.draw_mode == DrawMode.Rect:
-
-                p1 = QPointF(self.lastPoint)
-                p2 = QPointF(point)
-                rect = QRectF(p1, p2)
-
-                if not self.temp_item:
-                    self.temp_item = self._scene.addRect(rect, CustomPen.Line)
-                else:
-                    self.temp_item.setRect(rect)
+                self.rect_mode_draw(point, modifiers)
 
             if self.draw_mode == DrawMode.Ellipse:
-                delta_x = abs(self.lastPoint.x() - point.x())
-                delta_y = abs(self.lastPoint.y() - point.y())
-
-                if modifiers == Qt.ShiftModifier:
-                    p1 = QPointF(self.lastPoint.x() - delta_x, self.lastPoint.y() - delta_x)
-                    p2 = QPointF(self.lastPoint.x() + delta_x, self.lastPoint.y() + delta_x)
-                else:
-                    p1 = QPointF(self.lastPoint.x() - delta_x, self.lastPoint.y() - delta_y)
-                    p2 = QPointF(self.lastPoint.x() + delta_x, self.lastPoint.y() + delta_y)
-
-                rect = QRectF(p1, p2)
-
-                if not self.temp_item:
-                    self.temp_item = self._scene.addEllipse(rect, CustomPen.Ellipse)
-                else:
-                    self.temp_item.setRect(rect)
+                self.ellipse_draw_mode(point, modifiers)
 
         # self.lastPoint = point
-        self.update()
+        # self.update()
         super(PhotoViewer, self).mouseMoveEvent(event)
 
     # method for mouse left button release
     def mouseReleaseEvent(self, event):
         point = self.mapToScene(event.pos()).toPoint()
         if event.button() == Qt.LeftButton:
-            if self.draw_mode == DrawMode.Pencil:
-                p1 = QPointF(self.lastPoint.x(), self.lastPoint.y())
-                self._scene.addPoint(p1, QPen(Qt.black, 0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin), QBrush(Qt.black))
+            if self.draw_mode == DrawMode.Line and self.temp_item:
+                # p1 = QPointF(self.lastPoint.x(), self.lastPoint.y())
+                painter = CenterPainter(self._canvas.pixmap)
+                painter.drawLine(self.temp_item.line())
+                self._scene.update()
+
         self.lastPoint = point
 
         # make drawing flag false
         self.drawing = False
         if self.temp_item:
+            self._scene.removeItem(self.temp_item)
             self.temp_item = None
 
-        self.update()
+        # self.update()
         super(PhotoViewer, self).mouseReleaseEvent(event)
 
 
