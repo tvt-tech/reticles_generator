@@ -33,6 +33,30 @@ class SmoothLineItem(QGraphicsLineItem):
         painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
 
 
+class SmoothRectItem(QGraphicsEllipseItem):
+    def __init__(self, rect: QRectF, pen: QPen, parent=None):
+        super(SmoothRectItem, self).__init__(parent)
+        self.setRect(rect)
+        self.setPen(pen)
+        self.setPos(-0.5, -0.5)
+
+    def boundingRect(self) -> QRectF:
+        return self.scene().sceneRect()
+
+    def redraw_pix(self):
+        pixmap = QPixmap(640, 480)
+        pixmap.fill(Qt.transparent)
+        pix_painter = QPainter(pixmap)
+        pix_painter.drawRect(self.rect())
+        return pixmap
+
+    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
+        painter.setPen(self.pen())
+        pixmap = self.redraw_pix()
+        pixmap_rect = QRectF(pixmap.rect())
+        painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
+
+
 class SmoothEllipseItem(QGraphicsEllipseItem):
     def __init__(self, rect: QRectF, pen: QPen, parent=None):
         super(SmoothEllipseItem, self).__init__(parent)
@@ -61,24 +85,32 @@ class MyCanvas(QGraphicsItem):
     def __init__(self, parent=None):
         super(MyCanvas, self).__init__(parent)
 
+        self.pixmap = None
         self.pixmap = QPixmap(640, 480)
         self.pixmap.fill(Qt.transparent)
 
     def boundingRect(self) -> QRectF:
-        return QRectF(0, 0, 640, 480)
+        return self.scene().sceneRect()
 
     def paint(self, painter, option, widget) -> None:
         pixmap_rect = QRectF(self.pixmap.rect())
         painter.drawPixmap(self.boundingRect(), self.pixmap, pixmap_rect)
 
+    def clear_pixmap(self):
+        self.pixmap = QPixmap(640, 480)
+        self.pixmap.fill(Qt.transparent)
+        self.scene().update()
+
     def drawPoint(self, p: QPoint, pen: QPen):
         painter = CenterPainter(self.pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_Source)
         painter.setPen(pen)
         painter.drawPoint(p)
         self.scene().update()
 
     def drawLine(self, l: QLine, pen: QPen):
         painter = CenterPainter(self.pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_Source)
         painter.setPen(pen)
         painter.drawLine(l)
         self.scene().update()
@@ -308,6 +340,11 @@ class DrawbleGraphicScene(QGraphicsScene):
         self.addItem(smooth_line)
         return smooth_line
 
+    def addSmoothRect(self, rect: QRectF, pen: QPen, brush: QBrush = Qt.transparent) -> SmoothRectItem:
+        smooth_rect = SmoothRectItem(rect, pen)
+        self.addItem(smooth_rect)
+        return smooth_rect
+
     def addSmoothEllipse(self, rect: QRectF, pen: QPen, brush: QBrush = Qt.transparent) -> SmoothEllipseItem:
         smooth_ellipse = SmoothEllipseItem(rect, pen)
         self.addItem(smooth_ellipse)
@@ -364,6 +401,7 @@ class CustomPen:
     GridH2 = QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     GridH3 = QPen(Qt.magenta, 0.05, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     Pencil = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
+    Eraser = QPen(Qt.transparent, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
     Line = QPen(Qt.black, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
     Ellipse = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
 
@@ -459,6 +497,8 @@ class VectoRaster(QGraphicsView):
         self._pmap.setPixmap(self._pix)
         self._pmap.setPos(0.5, 0.5)
 
+
+
         self._scene.addItem(self._pmap)
 
         self.draw_reticle_grid(10, 10, True, True, CustomPen.GridH2)
@@ -468,6 +508,9 @@ class VectoRaster(QGraphicsView):
         self._canvas = MyCanvas()
         self._canvas.setPos(-0.5, -0.5)
         self._scene.addItem(self._canvas)
+
+        self._pen_size_ellipse = QGraphicsEllipseItem(0, 0, 1, 1)
+        self._scene.addItem(self._pen_size_ellipse)
 
         self.setScene(self._scene)
 
@@ -676,7 +719,11 @@ class VectoRaster(QGraphicsView):
 
         super(VectoRaster, self).mousePressEvent(event)
 
+    def clear_raster(self):
+        self._canvas.clear_pixmap()
+
     def pencil_mode_draw(self, point, modifiers):
+        print(CustomPen.Pencil.color().name())
         p1 = QPoint(self.lastPoint.x(), self.lastPoint.y())
         p2 = QPoint(point.x(), point.y())
 
@@ -686,6 +733,20 @@ class VectoRaster(QGraphicsView):
             else:
                 p2.setY(self.lastPoint.y())
         self._canvas.drawLine(QLine(p1, p2), CustomPen.Pencil)
+
+        self.lastPoint = point
+        self._scene.update()
+
+    def eraser_mode_draw(self, point, modifiers):
+        p1 = QPoint(self.lastPoint.x(), self.lastPoint.y())
+        p2 = QPoint(point.x(), point.y())
+
+        if modifiers == Qt.ShiftModifier:
+            if abs(p1.x() - p2.x()) < abs(p1.y() - p2.y()):
+                p2.setX(self.lastPoint.x())
+            else:
+                p2.setY(self.lastPoint.y())
+        self._canvas.drawLine(QLine(p1, p2), CustomPen.Eraser)
 
         self.lastPoint = point
         self._scene.update()
@@ -709,16 +770,31 @@ class VectoRaster(QGraphicsView):
             self.temp_item.setLine(line)
 
     def rect_mode_draw(self, point, modifiers):
+
         p1 = QPointF(self.lastPoint)
         p2 = QPointF(point)
-        rect = QRectF(p1, p2)
+
+        if p2.x() >= p1.x() and p2.y() >= p1.y():
+            rect = QRectF(p1, p2)
+        elif p1.x() > p2.x() and p1.y() > p2.y():
+            rect = QRectF(p2, p1)
+        elif p2.x() >= p1.x() and p2.y() < p1.y():
+            y1, y2 = p2.y(), p1.y()
+            p1.setY(y1)
+            p2.setY(y2)
+            rect = QRectF(p1, p2)
+        else:
+            x1, x2 = p2.x(), p1.x()
+            p1.setX(x1)
+            p2.setX(x2)
+            rect = QRectF(p1, p2)
 
         if not self.temp_item:
-            self.temp_item = self._scene.addRect(rect, CustomPen.Line)
+            self.temp_item = self._scene.addSmoothRect(rect, CustomPen.Line)
         else:
             self.temp_item.setRect(rect)
 
-    def ellipse_draw_mode(self, point, modifiers):
+    def ellipse_draw_mode(self, point, modifiers, pen=CustomPen.Ellipse):
         delta_x = abs(self.lastPoint.x() - point.x())
         delta_y = abs(self.lastPoint.y() - point.y())
 
@@ -738,17 +814,26 @@ class VectoRaster(QGraphicsView):
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
-            # self.temp_item = self._scene.addEllipse(rect, CustomPen.Ellipse)
-            self.temp_item = self._scene.addSmoothEllipse(rect, CustomPen.Ellipse)
+            self.temp_item = self._scene.addSmoothEllipse(rect, pen)
         else:
             self.temp_item.setRect(rect)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         point = self.mapToScene(event.pos()).toPoint()
         modifiers = QApplication.keyboardModifiers()
+
+        if self.draw_mode != DrawMode.Notool:
+            self._pen_size_ellipse.setPos(point.x() - 0.5, point.y() - 0.5)
+            self._pen_size_ellipse.setPen(QPen(Qt.darkBlue, 0, Qt.SolidLine))
+            self._pen_size_ellipse.setBrush(Qt.darkBlue)
+
         if (event.buttons() & Qt.LeftButton) & self.drawing:
+
             if self.draw_mode == DrawMode.Pencil:
                 self.pencil_mode_draw(point, modifiers)
+
+            if self.draw_mode == DrawMode.Eraser:
+                self.eraser_mode_draw(point, modifiers)
 
             if self.draw_mode == DrawMode.Line:
                 self.line_mode_draw(point, modifiers)
@@ -758,9 +843,6 @@ class VectoRaster(QGraphicsView):
 
             if self.draw_mode == DrawMode.Ellipse:
                 self.ellipse_draw_mode(point, modifiers)
-
-        # self.lastPoint = point
-        # self.update()
         super(VectoRaster, self).mouseMoveEvent(event)
 
     # method for mouse left button release
@@ -770,6 +852,9 @@ class VectoRaster(QGraphicsView):
 
             if self.draw_mode == DrawMode.Pencil:
                 self._canvas.drawPoint(point, CustomPen.Pencil)
+
+            if self.draw_mode == DrawMode.Eraser:
+                self._canvas.drawPoint(point, CustomPen.Eraser)
 
             if self.draw_mode == DrawMode.Line and self.temp_item:
                 self._canvas.drawLine(self.temp_item.line(), CustomPen.Line)
@@ -812,9 +897,13 @@ class Window(QWidget):
         self.no_tool_btn.setText('NoTool')
         self.no_tool_btn.clicked.connect(self.on_notool_btn_press)
 
-        self.draw_btn = DrawModeBtn(self)
-        self.draw_btn.setText('Pencil')
-        self.draw_btn.clicked.connect(self.on_draw_btn_press)
+        self.pencil_btn = DrawModeBtn(self)
+        self.pencil_btn.setText('Pencil')
+        self.pencil_btn.clicked.connect(self.on_draw_btn_press)
+
+        self.eraser_btn = DrawModeBtn(self)
+        self.eraser_btn.setText('Eraser')
+        self.eraser_btn.clicked.connect(self.on_eraser_btn_press)
 
         self.line_btn = DrawModeBtn(self)
         self.line_btn.setText('Line')
@@ -863,7 +952,8 @@ class Window(QWidget):
         HBlayout.addWidget(self.btnPixInfo)
         HBlayout.addWidget(self.editPixInfo)
         HBlayout.addWidget(self.no_tool_btn)
-        HBlayout.addWidget(self.draw_btn)
+        HBlayout.addWidget(self.pencil_btn)
+        HBlayout.addWidget(self.eraser_btn)
         HBlayout.addWidget(self.line_btn)
         HBlayout.addWidget(self.rect_btn)
         HBlayout.addWidget(self.ellipse_btn)
@@ -877,6 +967,10 @@ class Window(QWidget):
     def on_draw_btn_press(self):
 
         self.viewer.draw_mode = DrawMode.Pencil
+        self.viewer.toggleDragMode()
+
+    def on_eraser_btn_press(self):
+        self.viewer.draw_mode = DrawMode.Eraser
         self.viewer.toggleDragMode()
 
     def on_line_btn_press(self):
@@ -903,8 +997,7 @@ class Window(QWidget):
         self.viewer.toggleDragMode()
 
     def on_clear_btn_press(self):
-        # self.viewer.remove_drawed()
-        pass
+        self.viewer.clear_raster()
 
     # @hide_grid
     def on_to_svg_btn_press(self, *args, **kwargs):
