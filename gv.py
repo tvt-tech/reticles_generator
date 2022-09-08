@@ -411,6 +411,7 @@ class CustomPen:
 class DrawModeBtn(QToolButton):
     def __init__(self, *args, **kwargs):
         super(DrawModeBtn, self).__init__(*args, **kwargs)
+        self.setFixedSize(50, 40)
         self.setText('Draw')
         self.is_enabled = False
         self.clicked.connect(self.change_mode)
@@ -909,12 +910,18 @@ class Window(QWidget):
         self.btnPixInfo = QToolButton(self)
         self.btnPixInfo.setText('Enter pixel info mode')
         self.btnPixInfo.clicked.connect(self.pixInfo)
+
         self.editPixInfo = QLineEdit(self)
         self.editPixInfo.setReadOnly(True)
         self.viewer.photoClicked.connect(self.photoClicked)
 
+        self.btnLoad.setHidden(True)
+        self.btnPixInfo.setHidden(True)
+        self.editPixInfo.setHidden(True)
+
         self.no_tool_btn = DrawModeBtn(self)
         self.no_tool_btn.setText('NoTool')
+        self.no_tool_btn.setDown(True)
         self.no_tool_btn.clicked.connect(self.on_notool_btn_press)
 
         self.pencil_btn = DrawModeBtn(self)
@@ -930,16 +937,19 @@ class Window(QWidget):
         self.line_btn.clicked.connect(self.on_line_btn_press)
 
         self.clear_btn = QToolButton(self)
+        self.clear_btn.setFixedSize(50, 40)
         self.clear_btn.setText('Clear')
         self.clear_btn.clicked.connect(self.on_clear_btn_press)
 
         self.to_svg_btn = QToolButton(self)
         self.to_svg_btn.setText('To SVG')
+        self.to_svg_btn.setFixedSize(50, 40)
         self.to_svg_btn.clicked.connect(self.on_to_svg_btn_press)
         self.to_svg_btn.setHidden(True)
 
         self.raster_btn = QToolButton(self)
         self.raster_btn.setText('To BMP')
+        self.raster_btn.setFixedSize(50, 40)
         self.raster_btn.clicked.connect(self.on_raster_btn_press)
 
         self.rect_btn = DrawModeBtn()
@@ -978,16 +988,17 @@ class Window(QWidget):
         self.installEventFilter(self.viewer._scene)
 
     def on_draw_btn_press(self):
-
+        self.on_notool_btn_press()
         self.viewer.draw_mode = DrawMode.Pencil
         self.viewer.toggleDragMode()
 
     def on_eraser_btn_press(self):
+        self.on_notool_btn_press()
         self.viewer.draw_mode = DrawMode.Eraser
         self.viewer.toggleDragMode()
 
     def on_line_btn_press(self):
-
+        self.on_notool_btn_press()
         self.viewer.draw_mode = DrawMode.Line
         self.viewer.toggleDragMode()
 
@@ -998,14 +1009,15 @@ class Window(QWidget):
         buttons = self.findChildren(DrawModeBtn)
         for b in buttons:
             b.reset()
+        self.sender().setDown(True)
 
     def on_rect_btn_press(self):
-
+        self.on_notool_btn_press()
         self.viewer.draw_mode = DrawMode.Rect
         self.viewer.toggleDragMode()
 
     def on_ellipse_btn_press(self):
-
+        self.on_notool_btn_press()
         self.viewer.draw_mode = DrawMode.Ellipse
         self.viewer.toggleDragMode()
 
