@@ -1,307 +1,27 @@
-from enum import IntFlag, auto
+from enum import IntFlag, IntEnum, auto
 from functools import wraps
 
-from PyQt5.QtCore import Qt, QLine, QPoint, QLineF, QPointF, QRectF, QRect, pyqtSignal, QSize
-from PyQt5.QtGui import QPen, QPainter, QPixmap, QFont, QBrush, QPolygonF, QPolygon, QTransform, QMouseEvent
+from PyQt5.QtCore import QLine, QPoint, QPointF, QRect, pyqtSignal, QSize, QSizeF
+from PyQt5.QtGui import QBrush, QPolygonF, QTransform, QMouseEvent, QFont
 from PyQt5.QtSvg import QSvgGenerator
-from PyQt5.QtWidgets import QGraphicsLineItem, QLabel, QGraphicsTextItem, QApplication, QGraphicsPixmapItem, \
-    QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPolygonItem, QGraphicsItem, QStyleOptionGraphicsItem, QWidget, \
-    QGraphicsScene, QToolButton, QGraphicsView, QVBoxLayout, QHBoxLayout, QFrame, QLineEdit
+from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, \
+    QToolButton, QGraphicsView, QVBoxLayout, QHBoxLayout, QFrame, \
+    QLineEdit
 
+from canvas import GraphicsCanvas
+from drawable_scene import DrawbleGraphicScene
+from example_grid import example_grid
+from grid_step import *
+from smooth_item import *
 
-class SmoothLineItem(QGraphicsLineItem):
-    def __init__(self, line: QLineF, pen: QPen, parent=None):
-        super(SmoothLineItem, self).__init__(parent)
-        self.setLine(line)
-        self.setPen(pen)
-        self.setPos(-0.5, -0.5)
-
-    def boundingRect(self) -> QRectF:
-        return self.scene().sceneRect()
-
-    def redraw_pix(self):
-        pixmap = QPixmap(self.scene().width(), self.scene().height())
-        pixmap.fill(Qt.transparent)
-        pix_painter = QPainter(pixmap)
-        pix_painter.drawLine(self.line())
-        return pixmap
-
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
-        painter.setPen(self.pen())
-        pixmap = self.redraw_pix()
-        pixmap_rect = QRectF(pixmap.rect())
-        painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
-
-
-class SmoothRectItem(QGraphicsEllipseItem):
-    def __init__(self, rect: QRectF, pen: QPen, parent=None):
-        super(SmoothRectItem, self).__init__(parent)
-        self.setRect(rect)
-        self.setPen(pen)
-        self.setPos(-0.5, -0.5)
-
-    def boundingRect(self) -> QRectF:
-        return self.scene().sceneRect()
-
-    def redraw_pix(self):
-        pixmap = QPixmap(self.scene().width(), self.scene().height())
-        pixmap.fill(Qt.transparent)
-        pix_painter = QPainter(pixmap)
-        pix_painter.drawRect(self.rect())
-        return pixmap
-
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
-        painter.setPen(self.pen())
-        pixmap = self.redraw_pix()
-        pixmap_rect = QRectF(pixmap.rect())
-        painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
-
-
-class SmoothEllipseItem(QGraphicsEllipseItem):
-    def __init__(self, rect: QRectF, pen: QPen, parent=None):
-        super(SmoothEllipseItem, self).__init__(parent)
-        self.setRect(rect)
-        self.setPen(pen)
-        self.setPos(-0.5, -0.5)
-
-    def boundingRect(self) -> QRectF:
-        return self.scene().sceneRect()
-
-    def redraw_pix(self):
-        pixmap = QPixmap(self.scene().width(), self.scene().height())
-        pixmap.fill(Qt.transparent)
-        pix_painter = QPainter(pixmap)
-        pix_painter.drawEllipse(self.rect())
-        return pixmap
-
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
-        painter.setPen(self.pen())
-        pixmap = self.redraw_pix()
-        pixmap_rect = QRectF(pixmap.rect())
-        painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
-
-
-class MyCanvas(QGraphicsItem):
-    def __init__(self, size: QSize, parent=None):
-        super(MyCanvas, self).__init__(parent)
-
-        self.pixmap = None
-        self.pixmap = QPixmap(size.width(), size.height())
-        self.pixmap.fill(Qt.transparent)
-
-    def boundingRect(self) -> QRectF:
-        return self.scene().sceneRect()
-
-    def paint(self, painter, option, widget) -> None:
-        pixmap_rect = QRectF(self.pixmap.rect())
-        painter.drawPixmap(self.boundingRect(), self.pixmap, pixmap_rect)
-
-    def clear_pixmap(self):
-        self.pixmap = QPixmap(self.scene().width(), self.scene().height())
-        self.pixmap.fill(Qt.transparent)
-        self.scene().update()
-
-    def drawPoint(self, p: QPoint, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setCompositionMode(QPainter.CompositionMode_Source)
-        painter.setPen(pen)
-        painter.drawPoint(p)
-        self.scene().update()
-
-    def drawLine(self, l: QLine, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setCompositionMode(QPainter.CompositionMode_Source)
-        painter.setPen(pen)
-        painter.drawLine(l)
-        self.scene().update()
-
-    def drawRect(self, r: QRect, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setPen(pen)
-        painter.drawRect(r)
-        self.scene().update()
-
-    def drawEllipse(self, r: QRect, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setPen(pen)
-        painter.drawEllipse(r)
-        self.scene().update()
-
-    def drawPolygon(self, p: QPolygon, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setPen(pen)
-        painter.drawPolygon(p)
-        self.scene().update()
-
-    def drawPointC(self, p: QPoint, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setPen(pen)
-        painter.drawPointC(p)
-        self.scene().update()
-
-    def drawLineC(self, l: QLine, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setPen(pen)
-        painter.drawLineC(l)
-        self.scene().update()
-
-    def drawRectC(self, r: QRect, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setPen(pen)
-        painter.drawRectC(r)
-        self.scene().update()
-
-    def drawEllipseC(self, r: QRect, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setPen(pen)
-        painter.drawEllipseC(r)
-        self.scene().update()
-
-    def drawPolygonC(self, p: QPolygon, pen: QPen):
-        painter = CenterPainter(self.pixmap)
-        painter.setPen(pen)
-        painter.drawPolygonC(p)
-        self.scene().update()
-
-milatcm = 10
-mingridstep_h = 4
-mingridstep_v = 2
 
 # click = 4.25
-
-
-example = [
-    # {
-    #     't': 'line',
-    #     'mode': 'px',
-    #     'p1': [20, 0],
-    #     'p2': [40, 0],
-    #     'pen': 1,
-    # },
-    # {
-    #     't': 'line',
-    #     'mode': 'px',
-    #     'p1': [-20, 0],
-    #     'p2': [-40, 0],
-    #     'pen': 1,
-    # },
-    # {
-    #     't': 'line',
-    #     'mode': 'px',
-    #     'p1': [0, 30],
-    #     'p2': [0, 50],
-    #     'pen': 1,
-    # },
-    # {
-    #     't': 'line',
-    #     'mode': 'px',
-    #     'p1': [0, -30],
-    #     'p2': [0, -50],
-    #     'pen': 1,
-    # },
-    {
-        't': 'rect',
-        'mode': 'px',
-        'p1': [-10, -20],
-        'p2': [10, 20],
-        'pen': 1,
-    },
-    # {
-    #     't': 'ellipse',
-    #     'mode': 'pt',
-    #     'p1': [-5, -5],
-    #     'p2': [5, 5],
-    #     'pen': 1,
-    # },
-    # {
-    #     't': 'circle',
-    #     'mode': 'pt',
-    #     'p': [0, 0],
-    #     'r': 10,
-    #     'pen': 1,
-    # },
-    # {
-    #     't': 'polygon',
-    #     'mode': 'pt',
-    #     'points': [[-5, 0], [0, -5], [5, 0], [0, 5]],
-    #     'pen': 1,
-    # },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [0, -10],
-        'p2': [0, -1],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [-10, 0],
-        'p2': [-1, 0],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [0, 1],
-        'p2': [0, 10],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [1, 0],
-        'p2': [10, 0],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [-10, -1],
-        'p2': [-10, 1],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [10, -1],
-        'p2': [10, 1],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [-1, 10],
-        'p2': [1, 10],
-        'pen': 1,
-    },
-    {
-        't': 'line',
-        'mode': 'pt',
-        'p1': [-1, -10],
-        'p2': [1, -10],
-        'pen': 1,
-    },
-    # {
-    #     't': 'point',
-    #     'mode': 'pt',
-    #     'p': [0, 0],
-    #     'pen': 0,
-    # },
-    {
-        't': 'rect',
-        'mode': 'px',
-        'p1': [-1, -1],
-        'p2': [1, 1],
-        'pen': 0,
-    },
-]
 
 
 def hide_grid(func: callable):
     @wraps(func)
     def _impl(self, *method_args, **method_kwargs):
-        children = self.viewer._scene.items()
+        children = self._scene.items()
         for ch in children:
             if hasattr(ch, 'pen'):
                 if ch.pen().color() == Qt.darkMagenta or ch.pen().color() == Qt.magenta:
@@ -310,166 +30,38 @@ def hide_grid(func: callable):
             if hasattr(ch, 'defaultTextColor'):
                 if ch.defaultTextColor() == Qt.darkMagenta or ch.defaultTextColor() == Qt.magenta:
                     ch.setVisible(False)
-        self.viewer._pen_size_ellipse.setVisible(False)
+        self._pen_size_ellipse.setVisible(False)
         ret = func(self, *method_args, **method_kwargs)
         for ch in children:
             ch.setVisible(True)
-        self.viewer._pen_size_ellipse.setVisible(True)
+        self._pen_size_ellipse.setVisible(True)
         return ret
 
     return _impl
 
 
-def minmilstep(click, mingridstep):
-    pixatclick = milatcm / click
-    minmilstep = mingridstep / pixatclick
-    return minmilstep
-
-
-def roundmilstep(milstep):
-    rlist = [0.1, 0.2, 0.25, 0.3, 0.5, 1]
-    if milstep > max(rlist):
-        return roundmilstep(milstep / 10) * 10
-    elif milstep < min(rlist):
-        return roundmilstep(milstep * 10) / 10
-    for v in rlist:
-        if v >= milstep:
-            return v
-    return None
-
-
-# for i in range(1, 7):
-#     cl = click / i
-#     mm = minmilstep(cl)
-#     rm = roundmilstep(mm)
-#
-#     print(cl, rm)
-
-
-class CenterPainter(QPainter):
-    def __init__(self, pixmap: QPixmap = None):
-        super(CenterPainter, self).__init__(pixmap)
-
-        self.pixmap = pixmap
-        self.x0 = int(pixmap.width() / 2) + 1
-        self.y0 = int(pixmap.height() / 2) + 1
-
-    def drawPointC(self, point: [QPointF, QPoint]) -> None:
-        point = self._transpose_point(point)
-        return super(CenterPainter, self).drawPoint(point)
-
-    def drawLineC(self, line: QLine) -> None:
-        line = QLine(self._transpose_line_point(line.p1()), self._transpose_line_point(line.p2()))
-        return super(CenterPainter, self).drawLine(line)
-
-    def drawLinesC(self, lines: list) -> None:
-        lines = list(map(lambda line: QLine(self._transpose_line_point(line.p1()), self._transpose_line_point(line.p2())), lines))
-        return super(CenterPainter, self).drawLines(lines)
-
-    def drawRectC(self, r: QRect) -> None:
-        p1 = QPoint(self._transpose_point(QPoint(r.x(), r.y())))
-        p2 = QPoint(self._transpose_point(QPoint(r.width(), r.height())))
-        r = QRect(p1, p2)
-        return super(CenterPainter, self).drawRect(r)
-
-    def drawEllipseC(self, r: QRectF) -> None:
-        p1 = QPoint(self._transpose_point(QPoint(r.x(), r.y())))
-        p2 = QPoint(self._transpose_point(QPoint(r.width(), r.height())))
-        r = QRect(p1, p2)
-        return super(CenterPainter, self).drawEllipse(r)
-
-    def drawPolygonC(self, polygon: QPolygon, fillRule: Qt.FillRule = Qt.OddEvenFill) -> None:
-        points = [self._transpose_line_point(point) for point in polygon]
-        polygon = QPolygon(points)
-        return super(CenterPainter, self).drawPolygon(polygon, fillRule)
-
-    def _transpose_line_point(self, p: [QPointF, QPoint]):
-        return QPoint(self.x0 + p.x(), self.y0 + p.y())
-
-    def _transpose_point(self, p: [QPointF, QPoint]):
-        if p.x() > 0:
-            p.setX(p.x() - 1)
-        if p.y() > 0:
-            p.setY(p.y() - 1)
-        return QPoint(self.x0 + p.x(), self.y0 + p.y())
-
-
-class DrawbleGraphicScene(QGraphicsScene):
-    def __init__(self, *args, **kwargs):
-        super(DrawbleGraphicScene, self).__init__(*args, **kwargs)
-
-        self.x0 = int(self.width() / 2) + 1
-        self.y0 = int(self.height() / 2) + 1
-
-    def addSmoothLine(self, line: QLineF, pen: QPen) -> SmoothLineItem:
-        smooth_line = SmoothLineItem(line, pen)
-        self.addItem(smooth_line)
-        return smooth_line
-
-    def addSmoothRect(self, rect: QRectF, pen: QPen, brush: QBrush = Qt.transparent) -> SmoothRectItem:
-        smooth_rect = SmoothRectItem(rect, pen)
-        self.addItem(smooth_rect)
-        return smooth_rect
-
-    def addSmoothEllipse(self, rect: QRectF, pen: QPen, brush: QBrush = Qt.transparent) -> SmoothEllipseItem:
-        smooth_ellipse = SmoothEllipseItem(rect, pen)
-        self.addItem(smooth_ellipse)
-        return smooth_ellipse
-
-    def addLineC(self, line: QLineF, pen: QPen) -> QGraphicsLineItem:
-        line = QLineF(self._transpose_point(line.p1()), self._transpose_point(line.p2()))
-        return super(DrawbleGraphicScene, self).addLine(line, pen)
-
-    def addTextC(self, text: str, pos: QPoint, font: QFont = QFont()) -> QGraphicsTextItem:
-        text_item = super(DrawbleGraphicScene, self).addText(text, font)
-        text_item.setPos(self._transpose_point(pos))
-        return text_item
-
-    def addRectC(self, rect: QRectF, pen: QPen, brush: QBrush = Qt.transparent) -> QGraphicsRectItem:
-        p1 = QPointF(self._transpose_point(QPointF(rect.x(), rect.y())))
-        p2 = QPointF(self._transpose_point(QPointF(rect.width(), rect.height())))
-        rect = QRectF(p1, p2)
-        super(DrawbleGraphicScene, self).addRect(rect, pen, brush)
-
-    def addEllipseC(self, rect: QRectF, pen: QPen,
-                    brush: QBrush = Qt.transparent) -> QGraphicsEllipseItem:
-        p1 = QPointF(self._transpose_point(QPointF(rect.x(), rect.y())))
-        p2 = QPointF(self._transpose_point(QPointF(rect.width(), rect.height())))
-        rect = QRectF(p1, p2)
-        super(DrawbleGraphicScene, self).addEllipse(rect, pen, brush)
-
-    def addPolygonC(self, polygon: QPolygonF, pen: QPen,
-                    brush: QBrush = Qt.transparent) -> QGraphicsPolygonItem:
-        points = [self._transpose_point(point) for point in polygon]
-        polygon = QPolygonF(points)
-        super(DrawbleGraphicScene, self).addPolygon(polygon, pen, brush)
-
-    def addPoint(self, point: QPointF, pen: QPen = QPen(Qt.black),
-                 brush: QBrush = QBrush(Qt.white)) -> QGraphicsRectItem:
-        rect = QRectF(QPointF(point.x() - 0.5, point.y() - 0.5), QPointF(point.x() + 0.5, point.y() + 0.5))
-        return super(DrawbleGraphicScene, self).addRect(rect, pen, brush)
-
-    def addPointC(self, point: QPointF, pen: QPen = QPen(Qt.black),
-                  brush: QBrush = QBrush(Qt.white)) -> QGraphicsRectItem:
-        point = self._transpose_point(point)
-        rect = QRectF(QPointF(point.x() - 0.5, point.y() - 0.5), QPointF(point.x() + 0.5, point.y() + 0.5))
-        return super(DrawbleGraphicScene, self).addRect(rect, pen, brush)
-
-    def _transpose_point(self, p: [QPointF, QPoint]):
-        return QPointF(self.x0 + p.x(), self.y0 + p.y())
-
-    def drawForeground(self, painter: QPainter, rect: QRectF) -> None:
-        super(DrawbleGraphicScene, self).drawForeground(painter, rect)
+class ItemType(IntEnum):
+    Point = 1
+    Line = 2
+    Rect = 3
+    Ellipse = 4
+    Circle = 5
+    Polygon = 6
+    Text = 7
 
 
 class CustomPen:
-    GridH1 = QPen(Qt.darkMagenta, 0.5, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH2 = QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH1 = QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH2 = QPen(Qt.darkMagenta, 0.15, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     GridH3 = QPen(Qt.magenta, 0.05, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     GridH4 = QPen(Qt.magenta, 0.02, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH5 = QPen(Qt.magenta, 0.01, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     Pencil = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
+    PencilVect = QPen(Qt.black, 0.5, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
+    PointVect = QPen(Qt.transparent, 0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
     Eraser = QPen(Qt.transparent, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
     Line = QPen(Qt.black, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
+    LineVect = QPen(Qt.black, 0.5, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
     Ellipse = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
 
 
@@ -513,89 +105,62 @@ class MyCanvasItem(QGraphicsPixmapItem):
 class VectoRaster(QGraphicsView):
     photoClicked = pyqtSignal(QPoint)
 
-    def __init__(self, parent):
+    def __init__(self, parent=None,
+                 size: QSize = QSize(640, 480),
+                 clicks: QSizeF = QSizeF(2.01, 2.01),
+                 vector_mode: bool = False):
         super(VectoRaster, self).__init__(parent)
-        self._zoom = 0
 
         self.setRenderHint(QPainter.Antialiasing)
-
-        self.click_x = 2.01
-        self.click_y = 2.01
-
-        # for 1px = 0.1mil
-        # self.click_x = 0.25
-        # self.click_y = 0.25
-
-        self.multiplier = 10
-
-        self.x1 = 1
-        self.y1 = 1
-
-        mmsx = minmilstep(self.click_x, mingridstep_h)
-        mmsy = minmilstep(self.click_y, mingridstep_v)
-        self.xs = roundmilstep(mmsx)
-        self.ys = roundmilstep(mmsy)
-
-        print(mmsx)
-
-        # self.xs = mmrx * self.x1
-        # self.ys = mmry * self.y1
-
-        self.set_reticle_scale()
-
-        # self.w = int(640 / self.x1)
-        # self.h = int(480 / self.y1)
-
-        self.w = 640
-        self.h = 480
-        # self.w = 300
-        # self.h = 300
-
-        self.x0 = int(self.w / 2)
-        self.y0 = int(self.h / 2)
-
-        self.setFixedSize(self.w, self.h)
-
         self.setCursor(Qt.CrossCursor)
+        self.setFixedSize(size)
 
+        # drawing flags
+        self._vector_mode = vector_mode
         self.draw_mode = DrawMode.Notool
         self.drawing = False
         self.temp_item = None
         self.lastPoint = None
 
-        self._scene = DrawbleGraphicScene(0, 0, self.w, self.h)
+        self.w = self.width()
+        self.h = self.height()
 
-        self._pix = QPixmap(639, 479)
-        self._pix.fill(Qt.transparent)
-        # painter = CenterPainter(self._pix)
-        # painter.drawLineC(QLineF(QPointF(20, 20), QPointF(-20, -20)))
-        self._pmap = MyCanvasItem()
-        self._pmap.setPixmap(self._pix)
-        self._pmap.setPos(0.5, 0.5)
+        self._zoom = 0
 
-        self._scene.addItem(self._pmap)
+        self._click_x = clicks.width()
+        self._click_y = clicks.height()
 
-        self.draw_reticle_grid(10, 10, True, True, CustomPen.GridH2)
-        self.draw_reticle_grid(1, 1, True, False, CustomPen.GridH3)
-        self.draw_reticle_grid(self.xs, self.ys, True, False, CustomPen.GridH4)
-        self.draw_reticle_grid(100, 100, True, False, CustomPen.GridH1)
+        # for 1px = 0.1mil
+        # self._click_x = 0.25
+        # self._click_y = 0.25
 
-        self._canvas = MyCanvas(QSize(self.w, self.h))
-        self._canvas.setPos(-0.5, -0.5)
-        self._scene.addItem(self._canvas)
+        # init canvas center coords
+        self._x0 = int(self.w / 2)
+        self._y0 = int(self.h / 2)
 
-        self._pen_size_ellipse = QGraphicsEllipseItem(0, 0, 1, 1)
-        self._pen_size_ellipse.setPen(QPen(Qt.darkBlue, 0, Qt.SolidLine))
-        self._pen_size_ellipse.setBrush(Qt.darkBlue)
-        self._scene.addItem(self._pen_size_ellipse)
+        # init reticle scale
+        self._multiplier = 10  # cm/mil
+        self._px_at_1_mil_h = 1
+        self._px_at_1_mil_v = 1
+        self.set_reticle_scale()
 
-        self.setScene(self._scene)
+        # count minimal step
+        _min_mil_h_step = minmilstep(self._click_x, mingridstep_h)  # min horizontal step in mil
+        _min_mil_v_step = minmilstep(self._click_y, mingridstep_v)  # min vertical step in mil
+        self._min_px_h_step = roundmilstep(_min_mil_h_step)  # min horizontal step in pix at mil
+        self._min_px_v_step = roundmilstep(_min_mil_v_step)  # min vertical step in pix at mil
 
+        # set view flags
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        # self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setFrameShape(QFrame.NoFrame)
+        self.setMouseTracking(True)
 
+        # set background
         background_brush = QBrush()
         background_brush.setStyle(Qt.Dense4Pattern)
         background_brush.setColor(Qt.lightGray)
@@ -603,82 +168,115 @@ class VectoRaster(QGraphicsView):
         background_transform.translate(0.5, 0.5)
         background_brush.setTransform(background_transform)
 
-        self.setBackgroundBrush(background_brush)
+        # create scene
+        self._scene = DrawbleGraphicScene(0, 0, self.w, self.h)
+        self._canvas = GraphicsCanvas(QSize(self.w, self.h))
+        self._canvas.setPos(-0.5, -0.5)
+        self._scene.addItem(self._canvas)
 
-        self.setFrameShape(QFrame.NoFrame)
-        self.setMouseTracking(True)
+        if self._vector_mode:
+            self.draw_vector_mode_grid()
+        else:
+            self.setBackgroundBrush(background_brush)
+            self.draw_raster_mode_grid()
+
+        self._pen_size_ellipse = QGraphicsEllipseItem(0, 0, 1, 1)
+        self._pen_size_ellipse.setPen(QPen(Qt.darkBlue, 0.1, Qt.SolidLine))
+        # self._pen_size_ellipse.setBrush(Qt.darkBlue)
+        self._scene.addItem(self._pen_size_ellipse)
+
+        self.setScene(self._scene)
+
+
         self.toggleDragMode()
-        self.draw_example_reticle()
 
-    def draw_example_reticle(self):
+    def draw_raster_mode_grid(self):
+        self.draw_mil_grid(10, 10, True, True, CustomPen.GridH2)
+        self.draw_mil_grid(1, 1, True, False, CustomPen.GridH3)
+        self.draw_mil_grid(self._min_px_h_step, self._min_px_v_step, True, False, CustomPen.GridH4)
+        self.draw_mil_grid(100, 100, True, False, CustomPen.GridH1)
 
-        for item in example:
-            if item['t'] == 'line':
+    def draw_vector_mode_grid(self):
+        self.draw_mil_grid(0.05, 0.05, True, False, CustomPen.GridH5)
+        self.draw_mil_grid(0.1, 0.1, True, False, CustomPen.GridH4)
+        self.draw_mil_grid(1, 1, True, True, CustomPen.GridH3, font_size=5)
+        self.draw_mil_grid(5, 5, True, False, CustomPen.GridH3, font_size=8)
+        self.draw_mil_grid(10, 10, True, False, CustomPen.GridH2)
+        self.draw_mil_grid(100, 100, True, False, CustomPen.GridH1)
+
+    def load_reticle_sketch(self, sketch=example_grid):
+
+        for item in sketch:
+            if item['t'] == ItemType.Line:
 
                 if item['mode'] == 'pt':
-                    p1 = (int(self.x1 * item['p1'][0]), int(self.y1 * item['p1'][1]))
-                    p2 = (int(self.x1 * item['p2'][0]), int(self.y1 * item['p2'][1]))
+                    p1 = (int(self._px_at_1_mil_h * item['p1'][0]), int(self._px_at_1_mil_v * item['p1'][1]))
+                    p2 = (int(self._px_at_1_mil_h * item['p2'][0]), int(self._px_at_1_mil_v * item['p2'][1]))
 
                 else:
                     p1 = item['p1']
                     p2 = item['p2']
 
                 line = QLine(*p1, *p2)
-                pen = CustomPen.Line
+                # pen = CustomPen.Line
+                pen = CustomPen.PencilVect
                 pen.setWidth(item['pen'])
-                self._canvas.drawLineC(line, pen)
+                self._scene.addLineC(line, pen)
 
-            if item['t'] == 'rect':
+            if item['t'] == ItemType.Rect:
                 if item['mode'] == 'pt':
-                    p1 = (int(self.x1 * item['p1'][0]), int(self.y1 * item['p1'][1]))
-                    p2 = (int(self.x1 * item['p2'][0]), int(self.y1 * item['p2'][1]))
+                    p1 = (int(self._px_at_1_mil_h * item['p1'][0]), int(self._px_at_1_mil_v * item['p1'][1]))
+                    p2 = (int(self._px_at_1_mil_h * item['p2'][0]), int(self._px_at_1_mil_v * item['p2'][1]))
 
                 else:
                     p1 = item['p1']
                     p2 = item['p2']
 
                 rect = QRect(*p1, *p2)
-                pen = CustomPen.Line
+                # pen = CustomPen.Line
+                pen = CustomPen.LineVect
                 pen.setWidth(item['pen'])
-                self._canvas.drawRectC(rect, pen)
+                self._scene.addRectC(rect, pen)
 
-            if item['t'] == 'point':
+            if item['t'] == ItemType.Point:
                 if item['mode'] == 'pt':
                     p = (
-                        int(self.x1 * item['p'][0]),
-                        int(self.y1 * item['p'][1])
+                        int(self._px_at_1_mil_h * item['p'][0]),
+                        int(self._px_at_1_mil_v * item['p'][1])
                     )
                 else:
                     p = item['p']
 
                 point = QPoint(*p)
-                pen = CustomPen.Line
+                # pen = CustomPen.Line
+                pen = CustomPen.PencilVect
                 pen.setWidth(item['pen'])
-                self._canvas.drawPointC(point, pen)
+                self._scene.addPointC(point, pen)
 
-            if item['t'] == 'ellipse':
+            if item['t'] == ItemType.Ellipse:
                 if item['mode'] == 'pt':
-                    p1 = (int(self.x1 * item['p1'][0]), int(self.y1 * item['p1'][1]))
-                    p2 = (int(self.x1 * item['p2'][0]), int(self.y1 * item['p2'][1]))
+                    p1 = (int(self._px_at_1_mil_h * item['p1'][0]), int(self._px_at_1_mil_v * item['p1'][1]))
+                    p2 = (int(self._px_at_1_mil_h * item['p2'][0]), int(self._px_at_1_mil_v * item['p2'][1]))
 
                 else:
                     p1 = item['p1']
                     p2 = item['p2']
 
                 rect = QRectF(*p1, *p2)
-                pen = CustomPen.Ellipse
+                # pen = CustomPen.Ellipse
+                pen = CustomPen.PencilVect
                 pen.setWidth(item['pen'])
-                self._canvas.drawEllipseC(rect, pen)
+                self._scene.addEllipseC(rect, pen)
 
-            if item['t'] == 'circle':
+            if item['t'] == ItemType.Circle:
                 if item['mode'] == 'pt':
                     p1 = (
-                        int(self.x1 * (item['p'][0] - item['r'])),
-                        int(self.y1 * (item['p'][1] - item['r']))
+                        int(self._px_at_1_mil_h * (item['p'][0] - item['r'])),
+                        int(self._px_at_1_mil_v * (item['p'][1] - item['r']))
                     )
                     p2 = (
-                        int(self.x1 * (item['p'][0] + item['r'])),
-                        int(self.y1 * (item['p'][1] + item['r']))
+                        int(self._px_at_1_mil_h * (item['p'][0] + item['r'])),
+                        int(self._px_at_1_mil_v * (item['p'][1] + item['r']))
                     )
 
                 else:
@@ -686,66 +284,83 @@ class VectoRaster(QGraphicsView):
                     p2 = (int(item['p'][0] + item['r']), int(item['p'][1] + item['r']))
 
                 rect = QRect(*p1, *p2)
+                # pen = CustomPen.Ellipse
                 pen = CustomPen.Ellipse
                 pen.setWidth(item['pen'])
-                self._canvas.drawEllipseC(rect, pen)
+                self._scene.addEllipseC(rect, pen)
 
-            if item['t'] == 'polygon':
+            if item['t'] == ItemType.Polygon:
                 if item['mode'] == 'pt':
-                    points = [QPoint(int(self.x1 * x), int(self.y1 * y)) for x, y in item['points']]
+                    points = [QPoint(int(self._px_at_1_mil_h * x), int(self._px_at_1_mil_v * y)) for x, y in
+                              item['points']]
                 else:
                     points = [QPoint(x, y) for x, y in item['points']]
                 polygon = QPolygonF(points)
 
+                # pen = CustomPen.Line
                 pen = CustomPen.Line
                 pen.setWidth(item['pen'])
-                self._canvas.drawPolygonC(polygon, pen)
+                self._scene.addPolygonC(polygon, pen)
 
     def set_reticle_scale(self):
-        self.x1 = self.multiplier / self.click_x
-        self.y1 = self.multiplier / self.click_y
+        self._px_at_1_mil_h = self._multiplier / self._click_x
+        self._px_at_1_mil_v = self._multiplier / self._click_y
 
-    def draw_reticle_grid(self, step_h=10, step_v=10, grid=False, mark=False, pen: QPen = QPen()):
-        grid_scale_h = int(self.x1 * step_h)
-        grid_scale_v = int(self.y1 * step_v)
-        grid_scale_h_f = self.x1 * step_h
-        grid_scale_v_f = self.y1 * step_v
+    def draw_mil_grid(self, step_h=10.0, step_v=10.0, grid=False, mark=False, pen: QPen = QPen(), font_size=10):
 
-        for i, x in enumerate(range(0, self.x0, grid_scale_h)):
+        # if self._vector_mode:
+        #     grid_scale_h_f = step_h
+        #     grid_scale_v_f = step_v
+        #     grid_scale_h = grid_scale_h_f
+        #     grid_scale_v = grid_scale_v_f
+        # else:
+        grid_scale_h_f = self._px_at_1_mil_h * step_h
+        grid_scale_v_f = self._px_at_1_mil_v * step_v
+        grid_scale_h = int(grid_scale_h_f)
+        grid_scale_v = int(grid_scale_v_f)
+
+        font = QFont()
+        font.setPixelSize(font_size)
+
+        for i, x in enumerate(range(0, self._x0, grid_scale_h)):
             x_f = int(i * grid_scale_h_f)
             if grid:
-                line = QLineF(x_f, self.y0, x_f, -self.y0-1)
+                line = QLineF(x_f, self._y0, x_f, -self._y0 - 1)
                 self._scene.addLineC(line, pen)
             if mark:
-                text = self._scene.addTextC(str(i * 10), QPoint(x_f, 0))
-                text.setDefaultTextColor(pen.color())
+                if i != 0:
+                    text = self._scene.addTextC(str(round(i * step_h, 1)), QPoint(x_f, 0), font)
+                    text.setDefaultTextColor(pen.color())
 
-        for i, x in enumerate(range(0, self.x0, grid_scale_h)):
+        for i, x in enumerate(range(0, self._x0, grid_scale_h)):
             x_f = int(-i * grid_scale_h_f)
             if grid:
-                line = QLineF(x_f, self.y0, x_f, -self.y0-1)
+                line = QLineF(x_f, self._y0, x_f, -self._y0 - 1)
                 self._scene.addLineC(line, pen)
             if mark:
-                text = self._scene.addTextC(str(i * 10), QPoint(x_f, 0))
-                text.setDefaultTextColor(pen.color())
+                if i != 0:
+                    text = self._scene.addTextC(str(round(i * step_h, 1)), QPoint(x_f, 0), font)
+                    text.setDefaultTextColor(pen.color())
 
-        for i, y in enumerate(range(0, self.y0, grid_scale_v)):
+        for i, y in enumerate(range(0, self._y0, grid_scale_v)):
             y_f = int(i * grid_scale_v_f)
             if grid:
-                line = QLineF(self.x0, y_f, -self.x0-1, y_f)
+                line = QLineF(self._x0, y_f, -self._x0 - 1, y_f)
                 self._scene.addLineC(line, pen)
             if mark:
-                text = self._scene.addTextC(str(i * 10), QPoint(0, y_f))
-                text.setDefaultTextColor(pen.color())
+                if i != 0:
+                    text = self._scene.addTextC(str(round(i * step_v, 1)), QPoint(0, y_f), font)
+                    text.setDefaultTextColor(pen.color())
 
-        for i, y in enumerate(range(1, self.y0, grid_scale_v)):
+        for i, y in enumerate(range(1, self._y0, grid_scale_v)):
             y_f = int(-i * grid_scale_v_f)
             if grid:
-                line = QLineF(self.x0, y_f, -self.x0-1, y_f)
+                line = QLineF(self._x0, y_f, -self._x0 - 1, y_f)
                 self._scene.addLineC(line, pen)
             if mark:
-                text = self._scene.addTextC(str(i * 10), QPoint(0, y_f))
-                text.setDefaultTextColor(pen.color())
+                if i != 0:
+                    text = self._scene.addTextC(str(round(i * step_v, 1)), QPoint(0, y_f), font)
+                    text.setDefaultTextColor(pen.color())
 
     def fitInView(self, scale=True):
         rect = self.sceneRect()
@@ -756,41 +371,59 @@ class VectoRaster(QGraphicsView):
         factor = min(viewrect.width() / scenerect.width(),
                      viewrect.height() / scenerect.height())
         self.scale(factor, factor)
-        self._zoom = 0
+        # self._zoom = 0
 
     def setPhoto(self, pixmap=None):
         self._zoom = 0
         if pixmap and not pixmap.isNull():
             self._empty = False
             self.setDragMode(QGraphicsView.ScrollHandDrag)
-            self._pmap.setPixmap(pixmap)
+            self._canvas.setPixmap(pixmap)
         else:
             self._empty = True
             self.setDragMode(QGraphicsView.NoDrag)
-            self._pmap.setPixmap(QPixmap())
+            self._canvas.setPixmap(QPixmap())
         self.fitInView()
 
     def wheelEvent(self, event):
-        if event.angleDelta().y() > 0:
-            # factor = 1.25
-            # factor = 1.6
-            factor = 2
-            self._zoom += 1
-        else:
-            # factor = 0.8
-            # factor = 0.625
-            factor = 0.5
-            self._zoom -= 1
-        if 6 >= self._zoom > 0:
-            self.scale(factor, factor)
-        elif self._zoom > 6:
-            self._zoom = 6
-        elif self._zoom == 0:
-            self.fitInView()
-        else:
-            self._zoom = 0
 
-        # print(self._zoom)
+        if self._vector_mode:
+            if event.angleDelta().y() > 0:
+                factor = 1.25
+                self._zoom += 1
+            else:
+                factor = 0.8
+                self._zoom -= 1
+
+            if 20 >= self._zoom > 0:
+                self.scale(factor, factor)
+
+            elif self._zoom > 20:
+                self._zoom = 20
+            elif self._zoom > 20:
+                self._zoom = 20
+            elif self._zoom == 0:
+                self.fitInView()
+            else:
+                self._zoom = 0
+
+        else:
+
+            if event.angleDelta().y() > 0:
+                factor = 2  # may be (1.6, 0.625) or (1.25, 0.8)
+                self._zoom += 1
+            else:
+                factor = 0.5  # may be (1.6, 0.625) or (1.25, 0.8)
+                self._zoom -= 1
+            if 6 >= self._zoom > 0:
+                self.scale(factor, factor)
+            elif self._zoom > 6:
+                self._zoom = 6
+            elif self._zoom == 0:
+                self.fitInView()
+            else:
+                self._zoom = 0
+
 
     def toggleDragMode(self):
         if self.draw_mode != DrawMode.Notool:
@@ -810,10 +443,16 @@ class VectoRaster(QGraphicsView):
 
         super(VectoRaster, self).mousePressEvent(event)
 
-    def clear_raster(self):
-        self._canvas.clear_pixmap()
+    @hide_grid
+    def clear_view(self):
+        if self._vector_mode:
+            for item in self._scene.items():
+                if item.isVisible():
+                    self._scene.removeItem(item)
+        else:
+            self._canvas.clear_pixmap()
 
-    def pencil_mode_draw(self, point, modifiers, pen=CustomPen.Pencil):
+    def pencil_tool_draw(self, point, modifiers):
         p1 = QPoint(self.lastPoint.x(), self.lastPoint.y())
         p2 = QPoint(point.x(), point.y())
 
@@ -823,25 +462,41 @@ class VectoRaster(QGraphicsView):
             else:
                 p2.setX(self.lastPoint.x())
 
-        if modifiers == Qt.ControlModifier:
-            pen = CustomPen.Eraser
+        return p1, p2
 
+    def pencil_raster(self, point, modifiers, pen=CustomPen.Pencil):
+        p1, p2 = self.pencil_tool_draw(point, modifiers)
         self._canvas.drawLine(QLine(p1, p2), pen)
-
         self.lastPoint = p2
-        self._scene.update()
 
-    def eraser_mode_draw(self, point, modifiers):
-        self.pencil_mode_draw(point, modifiers, CustomPen.Eraser)
+    def pencil_vector(self, point, modifiers, pen=CustomPen.PencilVect):
+        p1, p2 = self.pencil_tool_draw(point, modifiers)
 
-    def line_mode_draw(self, point, modifiers):
-        if not self.temp_item:
-            p1 = QPointF(self.lastPoint)
-            p2 = QPointF(point)
+        if p1 != p2:
             line = QLineF(p1, p2)
-            # self.temp_item = self._scene.addLine(line, CustomPen.Line)
-            self.temp_item = self._scene.addSmoothLine(line, CustomPen.Line)
-        else:
+            self.temp_item = self._scene.addLine(line, CustomPen.PencilVect)
+            # self._scene.addPoint(p2, CustomPen.PointVect)
+        # if not self.temp_item:
+        #     self.temp_item = self._scene.add(line, CustomPen.Line)
+        # else:
+        #     self.temp_item.setLine(line)
+
+        # if p1 != p2:
+        #
+        #     self._scene.addLine(QLineF(p1, p2), pen)
+            self.lastPoint = p2
+
+    def eraser_raster(self, point, modifiers):
+        p1, p2 = self.pencil_tool_draw(point, modifiers)
+        self._canvas.drawLine(QLine(p1, p2), CustomPen.Eraser)
+        self.lastPoint = p2
+
+    def eraser_vector(self, point, modifiers):
+        grab_item = self._scene.itemAt(point, self.transform())
+        if grab_item is not self._pen_size_ellipse:
+            self._scene.removeItem(grab_item)
+
+    def line_tool_draw(self, point, modifiers):
             p1 = QPointF(self.lastPoint)
             p2 = QPointF(point)
             if modifiers == Qt.ShiftModifier:
@@ -849,46 +504,46 @@ class VectoRaster(QGraphicsView):
                     p2.setX(p1.x())
                 else:
                     p2.setY(p1.y())
-            line = QLineF(p1, p2)
+
+            return p1, p2
+
+    def line_raster(self, point, modifiers):
+        p1, p2 = self.line_tool_draw(point, modifiers)
+        line = QLineF(p1, p2)
+        if not self.temp_item:
+            self.temp_item = self._scene.addSmoothLine(line, CustomPen.Line)
+        else:
             self.temp_item.setLine(line)
 
-    def rect_mode_draw(self, point, modifiers):
+    def line_vector(self, point, modifiers):
+        p1, p2 = self.line_tool_draw(point, modifiers)
+        line = QLineF(p1, p2)
+        if not self.temp_item:
+            self.temp_item = self._scene.addLine(line, CustomPen.PencilVect)
+        else:
+            self.temp_item.setLine(line)
+
+    def rect_tool_draw(self, point, modifiers):
 
         p1 = QPointF(self.lastPoint)
         p2 = QPointF(point)
 
-
-
         if p2.x() >= p1.x() and p2.y() >= p1.y():
-            # rect = QRectF(p1, p2)
-            pass
+            return p1, p2
         elif p1.x() > p2.x() and p1.y() > p2.y():
-            p1, p2 = p2, p1
-            # rect = QRectF(p2, p1)
+            return p2, p1
         elif p2.x() >= p1.x() and p2.y() < p1.y():
             y1, y2 = p2.y(), p1.y()
             p1.setY(y1)
             p2.setY(y2)
-            # rect = QRectF(p1, p2)
         else:
             x1, x2 = p2.x(), p1.x()
             p1.setX(x1)
             p2.setX(x2)
-            # rect = QRectF(p1, p2)
+        return p1, p2
 
-        delta_x = abs(p1.x() - p2.x())
-        delta_y = abs(p1.y() - p2.y())
-
-        # if modifiers == Qt.ShiftModifier:
-        #
-        #     if delta_x > delta_y:
-        #         p1 = QPointF(p1.x() - delta_x, p2.y() - delta_x)
-        #         p2 = QPointF(p1.x() + delta_x, p2.y() + delta_x)
-        #     else:
-        #         p1 = QPointF(p1.x() - delta_y, p2.y() - delta_y)
-        #         p1 = QPointF(p1.x() - delta_y, p2.y() - delta_y)
-        #         p2 = QPointF(p1.x() + delta_y, p2.y() + delta_y)
-
+    def rect_raster(self, point, modifiers):
+        p1, p2 = self.rect_tool_draw(point, modifiers)
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
@@ -896,7 +551,16 @@ class VectoRaster(QGraphicsView):
         else:
             self.temp_item.setRect(rect)
 
-    def ellipse_draw_mode(self, point, modifiers, pen=CustomPen.Ellipse):
+    def rect_vector(self, point, modifiers):
+        p1, p2 = self.rect_tool_draw(point, modifiers)
+        rect = QRectF(p1, p2)
+
+        if not self.temp_item:
+            self.temp_item = self._scene.addRect(rect, CustomPen.LineVect)
+        else:
+            self.temp_item.setRect(rect)
+
+    def ellipse_tool_mode(self, point, modifiers):
         delta_x = abs(self.lastPoint.x() - point.x())
         delta_y = abs(self.lastPoint.y() - point.y())
 
@@ -913,10 +577,23 @@ class VectoRaster(QGraphicsView):
             p1 = QPointF(self.lastPoint.x() - delta_x, self.lastPoint.y() - delta_y)
             p2 = QPointF(self.lastPoint.x() + delta_x, self.lastPoint.y() + delta_y)
 
+        return p1, p2
+
+    def ellipse_raster(self, point, modifiers, pen=CustomPen.Ellipse):
+        p1, p2 = self.ellipse_tool_mode(point, modifiers)
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
             self.temp_item = self._scene.addSmoothEllipse(rect, pen)
+        else:
+            self.temp_item.setRect(rect)
+
+    def ellipse_vector(self, point, modifiers, pen=CustomPen.Ellipse):
+        p1, p2 = self.ellipse_tool_mode(point, modifiers)
+        rect = QRectF(p1, p2)
+
+        if not self.temp_item:
+            self.temp_item = self._scene.addEllipse(rect, pen)
         else:
             self.temp_item.setRect(rect)
 
@@ -929,20 +606,41 @@ class VectoRaster(QGraphicsView):
 
         if (event.buttons() & Qt.LeftButton) & self.drawing:
 
+            if modifiers == Qt.ControlModifier:
+                self.draw_mode = DrawMode.Eraser
+
             if self.draw_mode == DrawMode.Pencil:
-                self.pencil_mode_draw(point, modifiers)
 
-            if self.draw_mode == DrawMode.Eraser:
-                self.eraser_mode_draw(point, modifiers)
+                if self._vector_mode:
+                    self.pencil_vector(point, modifiers)
+                else:
+                    self.pencil_raster(point, modifiers)
 
-            if self.draw_mode == DrawMode.Line:
-                self.line_mode_draw(point, modifiers)
+            elif self.draw_mode == DrawMode.Eraser:
+                if self._vector_mode:
+                    self.eraser_vector(point, modifiers)
+                else:
+                    self.eraser_raster(point, modifiers)
 
-            if self.draw_mode == DrawMode.Rect:
-                self.rect_mode_draw(point, modifiers)
+            elif self.draw_mode == DrawMode.Line:
+                if self._vector_mode:
+                    self.line_vector(point, modifiers)
+                else:
+                    self.line_raster(point, modifiers)
 
-            if self.draw_mode == DrawMode.Ellipse:
-                self.ellipse_draw_mode(point, modifiers)
+            elif self.draw_mode == DrawMode.Rect:
+                if self._vector_mode:
+                    self.rect_vector(point, modifiers)
+                else:
+                    self.rect_raster(point, modifiers)
+
+            elif self.draw_mode == DrawMode.Ellipse:
+                if self._vector_mode:
+                    self.ellipse_vector(point, modifiers)
+                else:
+                    self.ellipse_raster(point, modifiers)
+
+        self._scene.update()
         super(VectoRaster, self).mouseMoveEvent(event)
 
     # method for mouse left button release
@@ -950,37 +648,94 @@ class VectoRaster(QGraphicsView):
         point = self.mapToScene(event.pos()).toPoint()
         if event.button() == Qt.LeftButton:
 
-            if self.draw_mode == DrawMode.Pencil:
-                self._canvas.drawPoint(self.lastPoint, CustomPen.Pencil)
+            if not self._vector_mode:
+                if self.draw_mode == DrawMode.Pencil:
+                    self._canvas.drawPoint(self.lastPoint, CustomPen.Pencil)
 
-            if self.draw_mode == DrawMode.Eraser:
-                self._canvas.drawPoint(self.lastPoint, CustomPen.Eraser)
+                elif self.draw_mode == DrawMode.Eraser:
+                    self._canvas.drawPoint(self.lastPoint, CustomPen.Eraser)
 
-            if self.draw_mode == DrawMode.Line and self.temp_item:
-                self._canvas.drawLine(self.temp_item.line(), CustomPen.Line)
+                elif self.draw_mode == DrawMode.Line and self.temp_item:
+                    self._canvas.drawLine(self.temp_item.line(), CustomPen.Line)
 
-            if self.draw_mode == DrawMode.Rect and self.temp_item:
-                self._canvas.drawRect(self.temp_item.rect(), CustomPen.Line)
+                elif self.draw_mode == DrawMode.Rect and self.temp_item:
+                    self._canvas.drawRect(self.temp_item.item(), CustomPen.Line)
 
-            if self.draw_mode == DrawMode.Ellipse and self.temp_item:
-                self._canvas.drawEllipse(self.temp_item.rect(), CustomPen.Ellipse)
+                elif self.draw_mode == DrawMode.Ellipse and self.temp_item:
+                    self._canvas.drawEllipse(self.temp_item.item(), CustomPen.Ellipse)
+
+                if self.temp_item:
+                    self._scene.removeItem(self.temp_item)
+
+            else:
+                if not self.temp_item:
+                    if self.draw_mode == DrawMode.Pencil:
+                        self._scene.addPoint(self.lastPoint, CustomPen.PointVect)
+
+                    elif self.draw_mode == DrawMode.Eraser:
+                        grab_item = self._scene.itemAt(point, self.transform())
+                        if grab_item is not self._pen_size_ellipse:
+                            self._scene.removeItem(grab_item)
+
+            if self.temp_item:
+                self.temp_item = None
 
         self.lastPoint = point
 
         # make drawing flag false
         self.drawing = False
-        if self.temp_item:
-            self._scene.removeItem(self.temp_item)
-            self.temp_item = None
+
 
         super(VectoRaster, self).mouseReleaseEvent(event)
+
+    @hide_grid
+    def save_svg(self, *args, **kwargs):
+
+        self._canvas.setVisible(False)
+
+        svg_gen = QSvgGenerator()
+        svg_gen.setFileName('test_scene.svg')
+        svg_gen.setSize(self.rect().size())
+        svg_gen.setViewBox(self.rect())
+        svg_gen.setTitle("SVG Generator Example Drawing")
+        svg_gen.setDescription("An SVG drawing created by the SVG Generator "
+                               "Example provided with Qt.")
+
+        painter = QPainter(svg_gen)
+        self._scene.render(painter)
+        painter.end()
+
+        self._canvas.setVisible(True)
+
+
+    @hide_grid
+    def save_raster(self, *args, **kwargs):
+        out_pix = QPixmap(self._scene.width(), self._scene.height())
+        painter = QPainter(out_pix)
+        out_pix.fill(Qt.white)
+
+        self._scene.render(painter, QRectF(out_pix.rect()), QRectF(self._scene.sceneRect()),
+                                  Qt.KeepAspectRatio)
+
+        painter.end()
+        out_pix.save('test_scene.bmp', 'BMP')
 
 
 class Window(QWidget):
     def __init__(self):
         super(Window, self).__init__()
-        self.setFixedSize(640, 600)
-        self.viewer = VectoRaster(self)
+
+        # self.viewer = VectoRaster(self, clicks=QSizeF(3.01, 3.01))
+        # self.viewer = VectoRaster(self, QSize(800, 600), clicks=QSizeF(1, 1), vector_mode=True)
+        self.viewer = VectoRaster(self, QSize(800, 600), clicks=QSizeF(0.5, 0.5), vector_mode=True)
+
+
+        from svg_parser import read_template
+        # self.viewer.load_reticle_sketch()
+        self.viewer.load_reticle_sketch(read_template())
+
+        self.setFixedSize(self.viewer.width(), self.viewer.height() + 120)
+
         # 'Load image' button
         self.btnLoad = QToolButton(self)
         self.btnLoad.setText('Load image')
@@ -1024,7 +779,9 @@ class Window(QWidget):
         self.to_svg_btn.setText('To SVG')
         self.to_svg_btn.setFixedSize(50, 40)
         self.to_svg_btn.clicked.connect(self.on_to_svg_btn_press)
-        self.to_svg_btn.setHidden(True)
+
+        if not self.viewer._vector_mode:
+            self.to_svg_btn.setHidden(True)
 
         self.raster_btn = QToolButton(self)
         self.raster_btn.setText('To BMP')
@@ -1100,34 +857,14 @@ class Window(QWidget):
         self.viewer.draw_mode = DrawMode.Ellipse
         self.viewer.toggleDragMode()
 
-    def on_clear_btn_press(self):
-        self.viewer.clear_raster()
-
-    # @hide_grid
-    def on_to_svg_btn_press(self, *args, **kwargs):
-        svg_gen = QSvgGenerator()
-        svg_gen.setFileName('test_scene.svg')
-        svg_gen.setSize(self.viewer.rect())
-        svg_gen.setViewBox(self.viewer.rect())
-        svg_gen.setTitle("SVG Generator Example Drawing")
-        svg_gen.setDescription("An SVG drawing created by the SVG Generator "
-                               "Example provided with Qt.")
-
-        painter = QPainter(svg_gen)
-        self.viewer._scene.render(painter)
-        painter.end()
-
-    @hide_grid
     def on_raster_btn_press(self, *args, **kwargs):
-        out_pix = QPixmap(self.viewer._scene.width(), self.viewer._scene.height())
-        painter = QPainter(out_pix)
-        out_pix.fill(Qt.white)
+        self.viewer.save_raster(*args, **kwargs)
 
-        print(QRectF(out_pix.rect()))
+    def on_to_svg_btn_press(self, *args, **kwargs):
+        self.viewer.save_svg(*args, **kwargs)
 
-        self.viewer._scene.render(painter, QRectF(out_pix.rect()), QRectF(self.viewer._scene.sceneRect()), Qt.KeepAspectRatio)
-        painter.end()
-        out_pix.save('test_scene.bmp', 'BMP')
+    def on_clear_btn_press(self):
+        self.viewer.clear_view()
 
     def loadImage(self):
         self.viewer.setPhoto(QPixmap('1_3 MIL-R.bmp'))
