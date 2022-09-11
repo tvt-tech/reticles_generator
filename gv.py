@@ -54,11 +54,11 @@ class CustomPen:
     GridH4 = QPen(Qt.magenta, 0.02, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     GridH5 = QPen(Qt.magenta, 0.01, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     Pencil = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
-    PencilVect = QPen(Qt.black, 0.5, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
+    PencilVect = QPen(Qt.black, 0.25, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
     PointVect = QPen(Qt.transparent, 0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
     Eraser = QPen(Qt.transparent, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
     Line = QPen(Qt.black, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
-    LineVect = QPen(Qt.black, 0.5, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
+    LineVect = QPen(Qt.black, 0.25, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
     Ellipse = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
 
 
@@ -326,14 +326,14 @@ class VectoRaster(QGraphicsView):
             if item['t'] == ItemType.Line:
 
                 if item['mode'] == 'pt':
-                    p1 = (int(self._px_at_1_mil_h * item['p1'][0]), int(self._px_at_1_mil_v * item['p1'][1]))
-                    p2 = (int(self._px_at_1_mil_h * item['p2'][0]), int(self._px_at_1_mil_v * item['p2'][1]))
+                    p1 = (self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1])
+                    p2 = (self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1])
 
                 else:
                     p1 = item['p1']
                     p2 = item['p2']
 
-                line = QLine(*p1, *p2)
+                line = QLineF(*p1, *p2)
                 # pen = CustomPen.Line
                 pen = CustomPen.PencilVect
                 pen.setWidth(item['pen'])
@@ -341,14 +341,14 @@ class VectoRaster(QGraphicsView):
 
             if item['t'] == ItemType.Rect:
                 if item['mode'] == 'pt':
-                    p1 = (int(self._px_at_1_mil_h * item['p1'][0]), int(self._px_at_1_mil_v * item['p1'][1]))
-                    p2 = (int(self._px_at_1_mil_h * item['p2'][0]), int(self._px_at_1_mil_v * item['p2'][1]))
+                    p1 = (self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1])
+                    p2 = (self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1])
 
                 else:
                     p1 = item['p1']
                     p2 = item['p2']
 
-                rect = QRect(*p1, *p2)
+                rect = QRectF(*p1, *p2)
                 # pen = CustomPen.Line
                 pen = CustomPen.LineVect
                 pen.setWidth(item['pen'])
@@ -357,22 +357,22 @@ class VectoRaster(QGraphicsView):
             if item['t'] == ItemType.Point:
                 if item['mode'] == 'pt':
                     p = (
-                        int(self._px_at_1_mil_h * item['p'][0]),
-                        int(self._px_at_1_mil_v * item['p'][1])
+                        self._px_at_1_mil_h * item['p'][0],
+                        self._px_at_1_mil_v * item['p'][1]
                     )
                 else:
                     p = item['p']
 
-                point = QPoint(*p)
+                point = QPointF(*p)
                 # pen = CustomPen.Line
-                pen = CustomPen.PencilVect
-                pen.setWidth(item['pen'])
+                pen = CustomPen.PointVect
+                # pen.setWidth(item['pen'])
                 self._scene.addPointC(point, pen)
 
             if item['t'] == ItemType.Ellipse:
                 if item['mode'] == 'pt':
-                    p1 = (int(self._px_at_1_mil_h * item['p1'][0]), int(self._px_at_1_mil_v * item['p1'][1]))
-                    p2 = (int(self._px_at_1_mil_h * item['p2'][0]), int(self._px_at_1_mil_v * item['p2'][1]))
+                    p1 = (self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1])
+                    p2 = (self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1])
 
                 else:
                     p1 = item['p1']
@@ -387,19 +387,19 @@ class VectoRaster(QGraphicsView):
             if item['t'] == ItemType.Circle:
                 if item['mode'] == 'pt':
                     p1 = (
-                        int(self._px_at_1_mil_h * (item['p'][0] - item['r'])),
-                        int(self._px_at_1_mil_v * (item['p'][1] - item['r']))
+                        self._px_at_1_mil_h * (item['p'][0] - item['r']),
+                        self._px_at_1_mil_v * (item['p'][1] - item['r'])
                     )
                     p2 = (
-                        int(self._px_at_1_mil_h * (item['p'][0] + item['r'])),
-                        int(self._px_at_1_mil_v * (item['p'][1] + item['r']))
+                        self._px_at_1_mil_h * (item['p'][0] + item['r']),
+                        self._px_at_1_mil_v * (item['p'][1] + item['r'])
                     )
 
                 else:
-                    p1 = (int(item['p'][0] - item['r']), int(item['p'][1] - item['r']))
-                    p2 = (int(item['p'][0] + item['r']), int(item['p'][1] + item['r']))
+                    p1 = (item['p'][0] - item['r'], item['p'][1] - item['r'])
+                    p2 = (item['p'][0] + item['r'], item['p'][1] + item['r'])
 
-                rect = QRect(*p1, *p2)
+                rect = QRectF(*p1, *p2)
                 # pen = CustomPen.Ellipse
                 pen = CustomPen.Ellipse
                 pen.setWidth(item['pen'])
@@ -407,10 +407,10 @@ class VectoRaster(QGraphicsView):
 
             if item['t'] == ItemType.Polygon:
                 if item['mode'] == 'pt':
-                    points = [QPoint(int(self._px_at_1_mil_h * x), int(self._px_at_1_mil_v * y)) for x, y in
+                    points = [QPointF(self._px_at_1_mil_h * x, self._px_at_1_mil_v * y) for x, y in
                               item['points']]
                 else:
-                    points = [QPoint(x, y) for x, y in item['points']]
+                    points = [QPointF(x, y) for x, y in item['points']]
                 polygon = QPolygonF(points)
 
                 # pen = CustomPen.Line
@@ -782,7 +782,7 @@ class VectoRaster(QGraphicsView):
             else:
                 if not self.temp_item:
                     if self.draw_mode == DrawMode.Pencil:
-                        self._scene.addPoint(self.lastPoint, CustomPen.PointVect)
+                        self._scene.addPoint(self.lastPoint, CustomPen.PencilVect)
 
                     elif self.draw_mode == DrawMode.Eraser:
                         grab_item = self._scene.itemAt(point, self.transform())
@@ -806,8 +806,8 @@ class VectoRaster(QGraphicsView):
 
         svg_gen = QSvgGenerator()
         svg_gen.setFileName('test_scene.svg')
-        svg_gen.setSize(self.rect().size())
-        svg_gen.setViewBox(self.rect())
+        svg_gen.setSize(QSize(int(self.sceneRect().width()), int(self.sceneRect().height())))
+        svg_gen.setViewBox(self.sceneRect())
         svg_gen.setTitle("SVG Generator Example Drawing")
         svg_gen.setDescription("An SVG drawing created by the SVG Generator "
                                "Example provided with Qt.")
@@ -844,7 +844,7 @@ class Window(QWidget):
         # self.viewer = VectoRaster(self, clicks=QSizeF(3.01, 3.01))
         # self.viewer = VectoRaster(self, clicks=QSizeF(1.505, 1.505))
         # self.viewer = VectoRaster(self, clicks=QSizeF(0.5, 0.5))
-        self.viewer = VectoRaster(self, QSize(1280, 960), clicks=QSizeF(0.5, 0.5), vector_mode=True)
+        self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(0.5, 0.5), vector_mode=True)
 
         from svg_parser import read_template
         # self.viewer.load_reticle_sketch()
