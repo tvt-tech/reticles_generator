@@ -1,6 +1,6 @@
 milatcm = 10
-mingridstep_h = 4
-mingridstep_v = 2
+mingridstep_h = 5
+mingridstep_v = 3
 
 
 def minmilstep(click, mingridstep):

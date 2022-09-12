@@ -15,7 +15,7 @@ from ui import Ui_MainWindow
 from widgets import CameraPreview
 from widgets import dump_reticles
 
-DEFAULT_RET = {"name": "Cross", "_multiplier": 10, "template": [
+DEFAULT_RET = {"name": "Cross", "multiplier": 10, "template": [
     {"type": "cross", "margin": 0.5, "size": 1, "mask": 15, "bind": True, "zoomed": True,
      "min_zoom": 1, "max_zoom": 7, "pen": 1}]}
 
@@ -137,7 +137,7 @@ class Window(QMainWindow, Ui_MainWindow):
         return super().mouseMoveEvent(event)
 
     def eventFilter(self, obj, event):
-        multiplier = self.reticle['_multiplier']
+        multiplier = self.reticle['multiplier']
         x1 = multiplier / self.click.x
         y1 = multiplier / self.click.y
         if QApplication.widgetAt(self.cursor().pos()) == self.overlay:
@@ -241,7 +241,7 @@ class Window(QMainWindow, Ui_MainWindow):
     def enable_grid(self, event=None):
 
         if self.grid_on.isChecked():
-            multiplier = self.reticle['_multiplier']
+            multiplier = self.reticle['multiplier']
             x1 = multiplier / self.click.x
             y1 = multiplier / self.click.y
             self.grid.draw(self.x0, self.y0, x1, y1, self.zoom)
@@ -285,7 +285,7 @@ class Window(QMainWindow, Ui_MainWindow):
                 self.draw_magnifier(MagnifierEvent(self.x0, self.y0))
 
     def draw_ret(self, canvas=None, reticle=None, zoom=None, highlited_index=None, highlighter_color=Qt.black):
-        multiplier = reticle['_multiplier']
+        multiplier = reticle['multiplier']
         x1 = multiplier / self.click.x
         y1 = multiplier / self.click.y
         painter = QPainter(canvas)
