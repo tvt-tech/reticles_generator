@@ -1,3 +1,4 @@
+import math
 from enum import IntFlag, IntEnum, auto
 from functools import wraps
 
@@ -13,6 +14,7 @@ from drawable_scene import DrawbleGraphicScene
 from example_grid import example_grid
 from grid_step import *
 from smooth_item import *
+from svg_parser import read_template_int
 
 
 def hide_grid(func: callable):
@@ -144,6 +146,13 @@ class VectoRaster(QGraphicsView):
         self.set_reticle_scale()
 
         # count minimal step
+        # if self._vector_mode:
+        #     mgs_h = 1
+        #     mgs_v = 1
+        # else:
+        #     mgs_h = mingridstep_h
+        #     mgs_v = mingridstep_v
+
         _min_mil_h_step = minmilstep(self._click_x, mingridstep_h)  # min horizontal step in mil
         _min_mil_v_step = minmilstep(self._click_y, mingridstep_v)  # min vertical step in mil
         self._min_mil_h_step = roundmilstep(_min_mil_h_step)
@@ -178,9 +187,9 @@ class VectoRaster(QGraphicsView):
         self._scene.addItem(self._canvas)
 
         if self._vector_mode:
-            self.setBackgroundBrush(background_brush)
+            # self.setBackgroundBrush(background_brush)
             self.draw_vector_mode_grid()
-            # self.setBackgroundBrush(Qt.gray)
+            self.setBackgroundBrush(Qt.gray)
         else:
             self.setBackgroundBrush(background_brush)
             self.draw_raster_mode_grid()
@@ -201,7 +210,7 @@ class VectoRaster(QGraphicsView):
         self.draw_mil_grid(100, 100, True, False, CustomPen.GridH1)
 
     def draw_vector_mode_grid(self):
-        self.draw_mil_grid(0.05, 0.05, True, False, CustomPen.GridH5)
+        # self.draw_mil_grid(0.05, 0.05, True, False, CustomPen.GridH5)
         self.draw_mil_grid(0.1, 0.1, True, False, CustomPen.GridH4)
         self.draw_mil_grid(1, 1, True, True, CustomPen.GridH3, font_size=5)
         self.draw_mil_grid(5, 5, True, False, CustomPen.GridH3, font_size=8)
@@ -215,26 +224,27 @@ class VectoRaster(QGraphicsView):
             if item['t'] == ItemType.Line:
                 if item['mode'] == 'pt':
 
+                    # if item['p1'][0] == item['p2'][0] != 0 and round(item['p1'][0] % self._min_mil_h_step, 32) > 0:
+                    if item['p1'][0] == item['p2'][0] != 0 and math.ceil(item['p1'][0] % self._min_mil_h_step) > 0:
+                        continue
+
+                    if item['p1'][1] == item['p2'][1] != 0 and math.ceil(item['p1'][1] % self._min_mil_v_step) > 0:
+                        continue
+
                     p1 = [self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1]]
                     p2 = [self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1]]
 
-                    if p1[0] == p2[0] > 0 and abs(p1[0]) / self._px_at_1_mil_h < self._min_px_h_step:
-                        continue
-
-                    elif p1[1] == p2[1] > 0 and abs(p1[1]) / self._px_at_1_mil_v < self._min_px_v_step:
-                        continue
-
                     if 0 < abs(p1[0]) < self._min_px_h_step:
-                        p1[0] = p1[0]/abs(p1[0]) * 4
+                        p1[0] = p1[0]/abs(p1[0]) * 1
 
                     if 0 < abs(p2[0]) < self._min_px_h_step:
-                        p2[0] = p2[0]/abs(p2[0]) * 4
+                        p2[0] = p2[0]/abs(p2[0]) * 1
 
                     if 0 < abs(p1[1]) < self._min_px_v_step:
-                        p1[1] = p1[1]/abs(p1[1]) * 4
+                        p1[1] = p1[1]/abs(p1[1]) * 1
 
                     if 0 < abs(p2[1]) < self._min_px_v_step:
-                        p2[1] = p2[1]/abs(p2[1]) * 4
+                        p2[1] = p2[1]/abs(p2[1]) * 1
 
                     p1 = QPoint(*p1)
                     p2 = QPoint(*p2)
@@ -338,16 +348,32 @@ class VectoRaster(QGraphicsView):
             if item['t'] == ItemType.Line:
 
 
-                # if item['p1'][0] == item['p2'][0] > 0 and abs(item['p1'][0]) % self._min_mil_h_step > 0:
-                #     continue
-                #
-                # if item['p1'][1] == item['p2'][1] > 0 and abs(item['p1'][1]) % self._min_mil_v_step > 0:
-                #     continue
+                if not self._vector_mode:
 
+                    # if item['p1'][0] == item['p2'][0] != 0 and round(abs(item['p1'][0]), 2) % self._min_mil_h_step > 0:
+                    if item['p1'][0] == item['p2'][0] != 0 and abs(item['p1'][0]) % self._min_mil_h_step > 1e-2:
+                        continue
+                    #
+                    if item['p1'][1] == item['p2'][1] != 0 and abs(item['p1'][1]) % self._min_mil_v_step > 1e-2:
+                    # if item['p1'][1] == item['p2'][1] != 0 and round(abs(item['p1'][1]), 2) % self._min_mil_v_step > 0:
+                        continue
 
                 if item['mode'] == 'pt':
                     p1 = [self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1]]
                     p2 = [self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1]]
+
+                    if not self._vector_mode:
+                        if 0 < abs(p1[0]) < self._min_px_h_step:
+                            p1[0] = p1[0]/abs(p1[0])
+
+                        if 0 < abs(p2[0]) < self._min_px_h_step:
+                            p2[0] = p2[0]/abs(p2[0])
+
+                        if 0 < abs(p1[1]) < self._min_px_v_step:
+                            p1[1] = p1[1]/abs(p1[1])
+
+                        if 0 < abs(p2[1]) < self._min_px_v_step:
+                            p2[1] = p2[1]/abs(p2[1])
 
                 else:
                     p1 = item['p1']
@@ -823,6 +849,11 @@ class VectoRaster(QGraphicsView):
                         grab_item = self._scene.itemAt(point, self.transform())
                         if grab_item is not self._pen_size_ellipse:
                             self._scene.removeItem(grab_item)
+                    #
+                    # elif self.draw_mode == DrawMode.Notool:
+                    #     grab_item = self._scene.itemAt(point, self.transform())
+                    #     if grab_item is not self._pen_size_ellipse:
+                    #         print(grab_item.line())
 
             if self.temp_item:
                 self.temp_item = None
@@ -838,6 +869,26 @@ class VectoRaster(QGraphicsView):
     def save_svg(self, *args, **kwargs):
 
         self._canvas.setVisible(False)
+
+        """
+        x0 float32
+        x1 float32
+        y0 float32
+        y1 float32
+        type int8
+        pen int8 1:2
+        mode int8 1:2
+        fill int8 1:1
+        // step uint16 2
+        """
+
+        count = 0
+        for i in self._scene.items():
+            # print(i)
+            if i.isVisible():
+                count += 1
+        print(count)
+
 
         svg_gen = QSvgGenerator()
         svg_gen.setFileName('test_scene.svg')
@@ -876,17 +927,19 @@ class Window(QWidget):
 
         # self.setFixedSize(640, 500)
 
-        # self.viewer = VectoRaster(self, clicks=QSizeF(1.505, 1.505))
+        self.viewer = VectoRaster(self, clicks=QSizeF(0.7525, 0.7525))
+        # self.viewer = VectoRaster(self, clicks=QSizeF(0.335, 0.335))
         # self.viewer = VectoRaster(self, clicks=QSizeF(0.5, 0.5))
         # self.viewer = VectoRaster(self, clicks=QSizeF(2.01, 2.01))
         # self.viewer = VectoRaster(self, clicks=QSizeF(1.005, 1.005))
         # self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(0.5, 0.5), vector_mode=True)
-        self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(2.01, 2.01), vector_mode=True)
+        # self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(2.01, 2.01))
+        # self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(2.01, 2.01))
 
         from svg_parser import read_template
         # self.viewer.load_reticle_sketch()
-        self.viewer.load_reticle_sketch(read_template())
-        # self.viewer.rasterize(read_template())
+        # self.viewer.load_reticle_sketch(read_template())
+        self.viewer.rasterize(read_template())
 
         # 'Load image' button
         self.btnLoad = QToolButton(self)

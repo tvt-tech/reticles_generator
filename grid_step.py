@@ -1,5 +1,5 @@
 milatcm = 10
-mingridstep_h = 5
+mingridstep_h = 4
 mingridstep_v = 3
 
 
