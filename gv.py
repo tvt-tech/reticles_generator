@@ -169,10 +169,10 @@ class VectoRaster(QGraphicsView):
 
         _min_mil_h_step = minmilstep(self._click_x, mingridstep_h)  # min horizontal step in mil
         _min_mil_v_step = minmilstep(self._click_y, mingridstep_v)  # min vertical step in mil
-        # self._min_mil_h_step = roundmilstep(_min_mil_h_step)
-        # self._min_mil_v_step = roundmilstep(_min_mil_v_step)
-        self._min_mil_h_step = _min_mil_h_step
-        self._min_mil_v_step = _min_mil_v_step
+        self._min_mil_h_step = roundmilstep(_min_mil_h_step)
+        self._min_mil_v_step = roundmilstep(_min_mil_v_step)
+        # self._min_mil_h_step = _min_mil_h_step
+        # self._min_mil_v_step = _min_mil_v_step
         print(self._min_mil_h_step, self._min_mil_v_step)
         self._min_px_h_step = self._min_mil_h_step * self._px_at_1_mil_h  # min horizontal step in pix at mil
         self._min_px_v_step = self._min_mil_v_step * self._px_at_1_mil_v  # min vertical step in pix at mil
@@ -234,18 +234,22 @@ class VectoRaster(QGraphicsView):
 
     def rasterize(self, sketch=example_grid):
 
+
+        found_trashhold = [100]
+
         for item in sketch:
 
             if item['t'] == ItemType.Line:
                 if item['mode'] == 'pt':
 
-                    if item['p1'][0] == item['p2'][0] != 0 and round(item['p1'][0], 4) % self._min_mil_h_step > self._min_mil_h_step:
-                        print(item['p1'], item['p2'])
+                    if item['p1'][0] == item['p2'][0] != 0 and item['p1'][0] % self._min_mil_h_step > 0:
+                        print(item['p1'][0] % self._min_mil_h_step, item['p1'])
+                        found_trashhold.append(item['p1'][0] % self._min_mil_h_step)
                         pen = QPen(Qt.darkRed, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
                         # continue
 
-                    elif item['p1'][1] == item['p2'][1] != 0 and round(item['p1'][1], 4) % self._min_mil_v_step > self._min_mil_v_step:
-                        print(item['p1'], item['p2'])
+                    elif item['p1'][1] == item['p2'][1] != 0 and item['p1'][1] % self._min_mil_v_step > 0:
+                        print(item['p1'][1] % self._min_mil_v_step, item['p1'])
                         pen = QPen(Qt.darkRed, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
                         # continue
 
@@ -288,7 +292,7 @@ class VectoRaster(QGraphicsView):
 
                     # pen.setWidth(item['pen'])
                     self._canvas.drawLineC(line, pen)
-
+        print(min(found_trashhold))
             # if item['t'] == (ItemType.Rect or ItemType.Ellipse):
             #
             #     if int((item['p1'][0] or item['p2'][0]) % self._min_mil_h_step) > 0:
