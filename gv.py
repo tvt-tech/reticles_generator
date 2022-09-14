@@ -3,7 +3,7 @@ import math
 from enum import IntFlag, IntEnum, auto
 from functools import wraps
 
-from PyQt5.QtCore import QLine, QPoint, QPointF, pyqtSignal, QSize, QSizeF
+from PyQt5.QtCore import QLine, QPoint, QPointF, pyqtSignal, QSize, QSizeF, QRect
 from PyQt5.QtGui import QBrush, QPolygonF, QTransform, QMouseEvent, QFont, QKeySequence
 from PyQt5.QtSvg import QSvgGenerator
 from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, \
@@ -219,10 +219,10 @@ class VectoRaster(QGraphicsView):
         self.toggleDragMode()
 
     def draw_raster_mode_grid(self):
-        self.draw_mil_grid(10, 10, True, True, CustomPen.GridH2)
-        self.draw_mil_grid(1, 1, True, False, CustomPen.GridH3, font_size=5)
-        self.draw_mil_grid(self._min_px_h_step, self._min_px_v_step, True, False, CustomPen.GridH4)
-        self.draw_mil_grid(100, 100, True, False, CustomPen.GridH1)
+        # self.draw_mil_grid(10, 10, True, True, CustomPen.GridH2)
+        # self.draw_mil_grid(1, 1, True, False, CustomPen.GridH3, font_size=5)
+        self.draw_mil_grid(self._min_mil_h_step, self._min_mil_v_step, True, False, CustomPen.GridH3)
+        # self.draw_mil_grid(100, 100, True, False, CustomPen.GridH1)
 
     def draw_vector_mode_grid(self):
         # self.draw_mil_grid(0.05, 0.05, True, False, CustomPen.GridH5)
@@ -235,49 +235,56 @@ class VectoRaster(QGraphicsView):
     def rasterize(self, sketch=example_grid):
 
         def round_point_to_step(v, step):
-            # if v % step > 0.09:
-            #     if round(v % step * 100) < step / 2 * 100:
-            #         print(round(v % step, 2), step, v)
-            #         return True
-            if v % step > 0:
-                # print(v, v % step)
-                # if v - (v % step) % step > 0:
-                    return round_point_to_step(v - v % step, step)
-                # elif v + (v % step) % step > 0:
-                #     return v + (v % step)
 
-            return v
+            half_step = step / 2
+
+            if abs(v) < step:
+                return False
+
+            mod = abs(v % step)
+
+            if mod > 0:
+
+                if step == 0.2 and mod / 0.2 > mod / 0.25:
+                    step = 0.25
+
+                if step == 0.25 and mod / 0.25 > mod / 0.3:
+                    step = 0.3
+
+                if step == 0.3 and mod / 0.3 > mod / 0.5:
+                    step = 0.5
+
+                return round(v / step) * step
+
+            return None
 
         for item in sketch:
-
+            pen = CustomPen.Line
             if item['t'] == ItemType.Line:
-                pen = CustomPen.Line
+
                 if item['mode'] == 'pt':
 
-                    if item['p1'][0] == item['p2'][0] != 0:
-                        r = round_point_to_step(item['p1'][0], self._min_mil_h_step)
-                        # item['p1'][0] = r
-                        # item['p2'][0] = r
+                    p1 = item['p1']
+                    p2 = item['p2']
 
+                    if p1[0] == p2[0] != 0:
+                        r = round_point_to_step(p1[0], self._min_mil_h_step)
                         if r:
-                            pen = QPen(Qt.darkRed, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
-                            p1 = [r, item['p1'][1]]
-                            p2 = [r, item['p2'][1]]
-                        # continue
+                            p1 = [r, p1[1]]
+                            p2 = [r, p2[1]]
+                        elif r is not None:
+                            continue
 
-                    elif item['p1'][1] == item['p2'][1] != 0:
-                        r = round_point_to_step(item['p1'][1], self._min_mil_h_step)
-                        # item['p1'][1] = r
-                        # item['p2'][1] = r
-
-                        # continue
+                    elif p1[1] == p2[1] != 0:
+                        r = round_point_to_step(p1[1], self._min_mil_v_step)
                         if r:
-                            pen = QPen(Qt.darkRed, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
-                            p1 = [item['p1'][0], r]
-                            p2 = [item['p2'][0], r]
+                            p1 = [p1[0], r]
+                            p2 = [p2[0], r]
+                        elif r is not None:
+                            continue
 
-                    p1 = [self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1]]
-                    p2 = [self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1]]
+                    p1 = [self._px_at_1_mil_h * p1[0], self._px_at_1_mil_v * p1[1]]
+                    p2 = [self._px_at_1_mil_h * p2[0], self._px_at_1_mil_v * p2[1]]
 
                     if p1[0] < 0:
                         p1[0] -= 1
@@ -336,27 +343,97 @@ class VectoRaster(QGraphicsView):
             #         pen.setWidth(item['pen'])
             #         self._canvas.drawEllipseC(rect, pen)
             #
-            # if item['t'] == ItemType.Point:
-            #     if item['mode'] == 'pt':
-            #         if int(item['p'][0] % self._min_mil_h_step) > 0:
-            #             continue
+            if item['t'] == ItemType.Point:
+                x = item['p'][0]
+                y = item['p'][1]
+                if item['mode'] == 'pt':
+
+                    if x != 0:
+                        r = round_point_to_step(x, self._min_mil_h_step)
+                        if r:
+                            x = r
+                        elif r is not None:
+                            continue
+
+                    if y != 0:
+                        r = round_point_to_step(y, self._min_mil_v_step)
+                        if r:
+                            y = r
+                        elif r is not None:
+                            continue
+
+
+                    point = QPoint(
+                        int(self._px_at_1_mil_h * x),
+                        int(self._px_at_1_mil_v * y)
+                    )
+                else:
+                    point = QPoint(x, y)
+
+                pen = CustomPen.Line
+                # pen.setWidth(item['pen'])
+                self._canvas.drawPointC(point, pen)
             #
-            #         elif int(item['p'][1] % self._min_mil_v_step) > 0:
-            #             continue
-            #
-            #         point = QPoint(
-            #             int(self._px_at_1_mil_h * item['p'][0]),
-            #             int(self._px_at_1_mil_v * item['p'][1])
-            #         )
-            #     else:
-            #         point = QPoint(*item['p'])
-            #
-            #     pen = CustomPen.Line
-            #     pen.setWidth(item['pen'])
-            #     self._canvas.drawPointC(point, pen)
-            #
-            # if item['t'] == ItemType.Circle:
-            #     if item['mode'] == 'pt':
+            if item['t'] == ItemType.Circle:
+                if item['mode'] == 'pt':
+                    x1 = item['p1'][0]
+                    y1 = item['p1'][1]
+                    x2 = item['p2'][0]
+                    y2 = item['p2'][1]
+
+                    # if x1 != 0:
+                    #     r = round_point_to_step(x1, self._min_mil_h_step)
+                    #     if r:
+                    #         x1 = r
+                    #     elif r is not None:
+                    #         continue
+                    #
+                    # if y1 != 0:
+                    #     r = round_point_to_step(y1, self._min_mil_v_step)
+                    #     if r:
+                    #         y1 = r
+                    #     elif r is not None:
+                    #         continue
+                    #
+                    # if x2 != 0:
+                    #     r = round_point_to_step(x2, self._min_mil_h_step)
+                    #     if r:
+                    #         x2 = r
+                    #     elif r is not None:
+                    #         continue
+                    #
+                    # if y2 != 0:
+                    #     r = round_point_to_step(y2, self._min_mil_v_step)
+                    #     if r:
+                    #         y2 = r
+                    #     elif r is not None:
+                    #         continue
+
+                    # if rad != 0:
+                    #     r = round_point_to_step(rad, self._min_mil_h_step)
+                    #     if r:
+                    #         rad = r
+                    #     elif r is not None:
+                    #         continue
+
+                    pen = CustomPen.Ellipse
+
+                    if x2 < self._min_mil_h_step:
+                        self._canvas.drawPointC(QPoint(x1, y1), pen)
+
+                    else:
+                        x1 = x1 * self._min_px_h_step
+                        x2 = x2 * self._min_px_h_step
+                        y1 = y1 * self._min_px_v_step
+                        y2 = y2 * self._min_px_v_step
+                        rect = QRect(x1, y1, x2, y2)
+
+                        # pen.setWidth(item['pen'])
+                        self._canvas.drawEllipseC(rect, pen)
+
+
+
+
             #         if int(item['p'][0] % self._min_mil_h_step) > 0:
             #             continue
             #
@@ -985,7 +1062,7 @@ class VectoRaster(QGraphicsView):
                            Qt.KeepAspectRatio)
 
         painter.end()
-        out_pix.save('test_scene.bmp', 'BMP')
+        out_pix.save(f'test_scene_{round(self._click_x, 2)}_{round(self._click_y, 2)}.bmp', 'BMP')
 
     def resizeEvent(self, event: 'QResizeEvent') -> None:
         self.fitInView()
@@ -998,20 +1075,10 @@ class Window(QWidget):
 
         # self.setFixedSize(640, 500)
 
-        # self.viewer = VectoRaster(self, clicks=QSizeF(0.7525, 0.7525))
-        # self.viewer = VectoRaster(self, clicks=QSizeF(0.336, 0.336))
-        # self.viewer = VectoRaster(self, clicks=QSizeF(0.5025, 0.5025))
-        self.viewer = VectoRaster(self, clicks=QSizeF(2.01, 2.01))
-        # self.viewer = VectoRaster(self, clicks=QSizeF(1.005, 1.005))
-        # self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(0.5, 0.5), vector_mode=True)
-        # self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(2.01, 2.01))
-        # self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(2.01, 2.01))
-
-
+        self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(0.5, 0.5), vector_mode=True)
         with open('reticle.abcv', 'r') as fp:
-            template = json.load(fp)
-        # self.viewer.load_reticle_sketch(template)
-        self.viewer.rasterize(template)
+            self.template = json.load(fp)
+        self.viewer.load_reticle_sketch(self.template)
 
         # 'Load image' button
         self.btnLoad = QToolButton(self)
@@ -1144,7 +1211,11 @@ class Window(QWidget):
         self.viewer.toggleDragMode()
 
     def on_raster_btn_press(self, *args, **kwargs):
-        self.viewer.save_raster(*args, **kwargs)
+        for i in [1, 2, 3, 4, 6]:
+            viewer = VectoRaster(self, clicks=QSizeF(2.01 / i, 2.01 / i))
+
+            viewer.rasterize(self.template)
+            viewer.save_raster()
 
     def on_to_svg_btn_press(self, *args, **kwargs):
         self.viewer.save_svg(*args, **kwargs)

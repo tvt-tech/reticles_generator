@@ -11,7 +11,9 @@ def minmilstep(click, mingridstep):
 
 def roundmilstep(milstep):
     step = abs(milstep)
-    rlist = [0.1, 0.2, 0.25, 0.3, 0.5, 1]
+    rlist = [0.1, 0.2, 0.25, 0.5, 1]
+    # rlist = [0.1, 0.2, 0.25, 0.3, 0.5, 1]
+    # rlist = [0.1, 0.25, 0.5, 1]
     if step == 0:
         return 0
     if step > max(rlist):
