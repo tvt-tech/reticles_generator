@@ -1061,6 +1061,8 @@ class VectoRaster(QGraphicsView):
         with open('reticle.abcv', 'w') as fp:
             json.dump(template, fp)
 
+        return template
+
         # svg_gen = QSvgGenerator()
         # svg_gen.setFileName('test_scene.svg')
         # svg_gen.setSize(QSize(int(self.sceneRect().width()), int(self.sceneRect().height())))
@@ -1232,9 +1234,9 @@ class Window(QWidget):
 
     def on_raster_btn_press(self, *args, **kwargs):
         for i in [1, 2, 3, 4, 6]:
-            viewer = VectoRaster(self, clicks=QSizeF(2.01 / i, 2.01 / i))
+            viewer = VectoRaster(self, clicks=QSizeF(1.42 / i, 1.42 / i))
 
-            viewer.rasterize(self.template)
+            viewer.rasterize(self.viewer.save_svg())
             viewer.save_raster()
 
     def on_to_svg_btn_press(self, *args, **kwargs):
