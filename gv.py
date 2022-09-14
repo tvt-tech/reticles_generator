@@ -4,11 +4,10 @@ from enum import IntFlag, IntEnum, auto
 from functools import wraps
 
 from PyQt5.QtCore import QLine, QPoint, QPointF, pyqtSignal, QSize, QSizeF, QRect
-from PyQt5.QtGui import QBrush, QPolygonF, QTransform, QMouseEvent, QFont, QKeySequence
-from PyQt5.QtSvg import QSvgGenerator
+from PyQt5.QtGui import QBrush, QMouseEvent, QFont
 from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, \
     QToolButton, QGraphicsView, QVBoxLayout, QHBoxLayout, QFrame, \
-    QLineEdit, QShortcut
+    QLineEdit
 
 from canvas import GraphicsCanvas
 from drawable_scene import DrawbleGraphicScene
@@ -42,7 +41,6 @@ def hide_grid(func: callable):
 def hide_canvas(func: callable):
     @wraps(func)
     def _impl(self, *method_args, **method_kwargs):
-
         self._canvas.setVisible(False)
 
         ret = func(self, *method_args, **method_kwargs)
@@ -235,27 +233,17 @@ class VectoRaster(QGraphicsView):
     def rasterize(self, sketch=example_grid):
 
         def round_point_to_step(v, step):
-
-            half_step = step / 2
-
             if abs(v) < step:
                 return False
-
             mod = abs(v % step)
-
             if mod > 0:
-
                 if step == 0.2 and mod / 0.2 > mod / 0.25:
                     step = 0.25
-
                 if step == 0.25 and mod / 0.25 > mod / 0.3:
                     step = 0.3
-
                 if step == 0.3 and mod / 0.3 > mod / 0.5:
                     step = 0.5
-
                 return round(v / step) * step
-
             return None
 
         for item in sketch:
@@ -343,7 +331,7 @@ class VectoRaster(QGraphicsView):
             #         pen.setWidth(item['pen'])
             #         self._canvas.drawEllipseC(rect, pen)
             #
-            if item['t'] == ItemType.Point:
+            elif item['t'] == ItemType.Point:
                 x = item['p'][0]
                 y = item['p'][1]
                 if item['mode'] == 'pt':
@@ -362,7 +350,6 @@ class VectoRaster(QGraphicsView):
                         elif r is not None:
                             continue
 
-
                     point = QPoint(
                         int(self._px_at_1_mil_h * x),
                         int(self._px_at_1_mil_v * y)
@@ -374,92 +361,128 @@ class VectoRaster(QGraphicsView):
                 # pen.setWidth(item['pen'])
                 self._canvas.drawPointC(point, pen)
             #
-            if item['t'] == ItemType.Circle:
+            elif item['t'] in [ItemType.Circle, ItemType.Ellipse]:
                 if item['mode'] == 'pt':
+
                     x1 = item['p1'][0]
                     y1 = item['p1'][1]
                     x2 = item['p2'][0]
                     y2 = item['p2'][1]
 
-                    # if x1 != 0:
-                    #     r = round_point_to_step(x1, self._min_mil_h_step)
-                    #     if r:
-                    #         x1 = r
-                    #     elif r is not None:
-                    #         continue
-                    #
-                    # if y1 != 0:
-                    #     r = round_point_to_step(y1, self._min_mil_v_step)
-                    #     if r:
-                    #         y1 = r
-                    #     elif r is not None:
-                    #         continue
-                    #
-                    # if x2 != 0:
-                    #     r = round_point_to_step(x2, self._min_mil_h_step)
-                    #     if r:
-                    #         x2 = r
-                    #     elif r is not None:
-                    #         continue
-                    #
-                    # if y2 != 0:
-                    #     r = round_point_to_step(y2, self._min_mil_v_step)
-                    #     if r:
-                    #         y2 = r
-                    #     elif r is not None:
-                    #         continue
+                    if x1 != 0:
+                        r = round_point_to_step(x1, self._min_mil_h_step)
+                        if r:
+                            x1 = r
+                        elif r is not None:
+                            continue
 
-                    # if rad != 0:
-                    #     r = round_point_to_step(rad, self._min_mil_h_step)
-                    #     if r:
-                    #         rad = r
-                    #     elif r is not None:
-                    #         continue
+                    if y1 != 0:
+                        r = round_point_to_step(y1, self._min_mil_v_step)
+                        if r:
+                            y1 = r
+                        elif r is not None:
+                            continue
+
+                    if x2 != 0:
+                        r = round_point_to_step(x2, self._min_mil_h_step)
+                        if r:
+                            x2 = r
+                        elif r is not None:
+                            continue
+
+                    if y2 != 0:
+                        r = round_point_to_step(y2, self._min_mil_v_step)
+                        if r:
+                            y2 = r
+                        elif r is not None:
+                            continue
 
                     pen = CustomPen.Ellipse
+
+                    x1 = x1 * self._px_at_1_mil_h
+                    y1 = y1 * self._px_at_1_mil_v
+                    x2 = x2 * self._px_at_1_mil_h
+                    y2 = y2 * self._px_at_1_mil_v
+
+                    if x1 < 0:
+                        x1 -= 1
+                    if y1 < 0:
+                        y1 -= 1
+                    if x2 < 0:
+                        x2 -= 1
+                    if y2 < 0:
+                        y2 -= 1
 
                     if x2 < self._min_mil_h_step:
                         self._canvas.drawPointC(QPoint(x1, y1), pen)
 
                     else:
-                        x1 = x1 * self._min_px_h_step
-                        x2 = x2 * self._min_px_h_step
-                        y1 = y1 * self._min_px_v_step
-                        y2 = y2 * self._min_px_v_step
-                        rect = QRect(x1, y1, x2, y2)
-
-                        # pen.setWidth(item['pen'])
+                        p = (x1, y1)
+                        s = (x1 + x2, y1 + y2)
+                        rect = QRect(*p, *s)
                         self._canvas.drawEllipseC(rect, pen)
 
+            elif item['t'] == ItemType.Rect:
+                if item['mode'] == 'pt':
 
+                    x1 = item['p1'][0]
+                    y1 = item['p1'][1]
+                    x2 = item['p2'][0]
+                    y2 = item['p2'][1]
 
+                    if x1 != 0:
+                        r = round_point_to_step(x1, self._min_mil_h_step)
+                        if r:
+                            x1 = r
+                        elif r is not None:
+                            continue
 
-            #         if int(item['p'][0] % self._min_mil_h_step) > 0:
-            #             continue
-            #
-            #         elif int(item['p'][1] % self._min_mil_v_step) > 0:
-            #             continue
-            #
-            #         elif int(item['r'] % (self._min_mil_h_step or self._min_mil_v_step)) > 0:
-            #             continue
-            #
-            #         p1 = (
-            #             int(self._px_at_1_mil_h * (item['p'][0] - item['r'])),
-            #             int(self._px_at_1_mil_v * (item['p'][1] - item['r']))
-            #         )
-            #         p2 = (
-            #             int(self._px_at_1_mil_h * (item['p'][0] + item['r'])),
-            #             int(self._px_at_1_mil_v * (item['p'][1] + item['r']))
-            #         )
-            #
-            #     else:
-            #         p1 = (int(item['p'][0] - item['r']), int(item['p'][1] - item['r']))
-            #         p2 = (int(item['p'][0] + item['r']), int(item['p'][1] + item['r']))
-            #
-            #     rect = QRect(*p1, *p2)
-            #     pen = CustomPen.Ellipse
-            #     pen.setWidth(item['pen'])
-            #     self._canvas.drawEllipseC(rect, pen)
+                    if y1 != 0:
+                        r = round_point_to_step(y1, self._min_mil_v_step)
+                        if r:
+                            y1 = r
+                        elif r is not None:
+                            continue
+
+                    if x2 != 0:
+                        r = round_point_to_step(x2, self._min_mil_h_step)
+                        if r:
+                            x2 = r
+                        elif r is not None:
+                            continue
+
+                    if y2 != 0:
+                        r = round_point_to_step(y2, self._min_mil_v_step)
+                        if r:
+                            y2 = r
+                        elif r is not None:
+                            continue
+
+                    pen = CustomPen.Ellipse
+
+                    x1 = x1 * self._px_at_1_mil_h
+                    y1 = y1 * self._px_at_1_mil_v
+                    x2 = x2 * self._px_at_1_mil_h
+                    y2 = y2 * self._px_at_1_mil_v
+
+                    if x1 < 0:
+                        x1 -= 1
+                    if y1 < 0:
+                        y1 -= 1
+                    if x2 < 0:
+                        x2 -= 1
+                    if y2 < 0:
+                        y2 -= 1
+
+                    if x2 < self._min_mil_h_step:
+                        self._canvas.drawPointC(QPoint(x1, y1), pen)
+
+                    else:
+                        p = (x1, y1)
+                        s = (x1 + x2, y1 + y2)
+                        rect = QRect(*p, *s)
+                        self._canvas.drawRectC(rect, pen)
+
             #
             # if item['t'] == ItemType.Polygon:
             #     if item['mode'] == 'pt':
@@ -1144,14 +1167,11 @@ class Window(QWidget):
         # make last point to the point of cursor
         self.lastPoint = QPoint()
 
-
         # hotkey binds
         self.no_tool_btn.setShortcut(Qt.Key_1)
         self.pencil_btn.setShortcut(Qt.Key_2)
         self.eraser_btn.setShortcut(Qt.Key_3)
         self.line_btn.setShortcut(Qt.Key_4)
-
-
 
         # Arrange layout
         VBlayout = QVBoxLayout(self)
