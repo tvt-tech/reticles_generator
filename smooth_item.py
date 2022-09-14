@@ -75,15 +75,37 @@ class SmoothEllipseItem(QGraphicsEllipseItem):
         painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
 
 
-class RulerItem(QGraphicsItem):
-    def __init__(self, parent=None, p1: 'QPointF'=None, p2: 'QPointF'=None):
-        super(RulerItem, self).__init__(parent)
-        self._line = QLineF(p1, p1)
+class PointItem(QGraphicsItem):
+    def __init__(self, point: 'QPointF', pen: QPen, brush: 'QBrush' = Qt.black, parent=None):
+        super(PointItem, self).__init__(parent)
+        self._pen = pen
+        self._brush = brush
+        self.p = point
+        self.x = point.x()
+        self.y = point.y()
+
+    def pen(self):
+        return self._pen
+
+    def brush(self):
+        return self._brush
 
     def boundingRect(self) -> QRectF:
-        return QRectF(self._line.p1, self._line.p2)
+        # return QRectF(self.x, self.y, 0.05, 0.05)
+        return self.scene().sceneRect()
 
     def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
-        painter.drawLine(self._line)
+        painter.setPen(self._pen)
+        painter.setBrush(self._brush)
+        painter.drawPoint(self.x, self.y)
 
-
+# class RulerItem(QGraphicsItem):
+#     def __init__(self, parent=None, p1: 'QPointF'=None, p2: 'QPointF'=None):
+#         super(RulerItem, self).__init__(parent)
+#         self._line = QLineF(p1, p1)
+#
+#     def boundingRect(self) -> QRectF:
+#         return QRectF(self._line.p1, self._line.p2)
+#
+#     def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
+#         painter.drawLine(self._line)

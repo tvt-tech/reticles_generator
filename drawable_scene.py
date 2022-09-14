@@ -2,7 +2,7 @@ from PyQt5.QtCore import QPointF, QRectF, QLineF, Qt
 from PyQt5.QtGui import QPolygonF, QPen, QBrush, QFont
 from PyQt5.QtWidgets import QGraphicsScene
 
-from smooth_item import SmoothRectItem, SmoothEllipseItem, SmoothLineItem
+from smooth_item import SmoothRectItem, SmoothEllipseItem, SmoothLineItem, PointItem
 
 
 class DrawbleGraphicScene(QGraphicsScene):
@@ -57,9 +57,12 @@ class DrawbleGraphicScene(QGraphicsScene):
 
     def addPoint(self, point: 'QPointF', pen: 'QPen' = QPen(Qt.black),
                  brush: QBrush = QBrush(Qt.black)) -> 'QGraphicsRectItem':
-        size = 0.25
-        rect = QRectF(QPointF(point.x() - size, point.y() - size), QPointF(point.x() + size, point.y() + size))
-        return super(DrawbleGraphicScene, self).addEllipse(rect, pen, brush)
+        # size = 0.25
+        # rect = QRectF(QPointF(point.x() - size, point.y() - size), QPointF(point.x() + size, point.y() + size))
+        # return super(DrawbleGraphicScene, self).addEllipse(rect, pen, brush)
+        point_item = PointItem(point, pen, brush)
+        self.addItem(point_item)
+        return point_item
 
     def addPointC(self, point: QPointF, pen: QPen = QPen(Qt.black),
                   brush: QBrush = QBrush(Qt.white)) -> 'QGraphicsRectItem':

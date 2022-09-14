@@ -397,8 +397,6 @@ class VectoRaster(QGraphicsView):
                         elif r is not None:
                             continue
 
-                    pen = CustomPen.Ellipse
-
                     x1 = x1 * self._px_at_1_mil_h
                     y1 = y1 * self._px_at_1_mil_v
                     x2 = x2 * self._px_at_1_mil_h
@@ -413,13 +411,20 @@ class VectoRaster(QGraphicsView):
                     if y2 < 0:
                         y2 -= 1
 
-                    if x2 < self._min_mil_h_step:
-                        self._canvas.drawPointC(QPoint(x1, y1), pen)
+                    print(x1 / x2)
+
+                    if x2 / x1 == 0.1:
+                        pen = CustomPen.Pencil
+                        p = QPoint(x2-x1, y2-y1)
+                        self._canvas.drawPointC(p, pen)
 
                     else:
+
+                        pen = CustomPen.Ellipse
                         p = (x1, y1)
                         s = (x1 + x2, y1 + y2)
                         rect = QRect(*p, *s)
+                        # print(item['t'], item, rect, rect.center())
                         self._canvas.drawEllipseC(rect, pen)
 
             elif item['t'] == ItemType.Rect:
@@ -499,6 +504,20 @@ class VectoRaster(QGraphicsView):
     def load_reticle_sketch(self, sketch=example_grid):
 
         for item in sketch:
+            if item['t'] == ItemType.Point:
+
+                if item['mode'] == 'pt':
+                    p = [self._px_at_1_mil_h * item['p'][0], self._px_at_1_mil_v * item['p'][1]]
+
+                else:
+                    p = [item['p'][0], item['p'][1]]
+
+                point = QPointF(*p)
+
+                pen = CustomPen.PencilVect
+                self._scene.addPoint(point, pen)
+
+
             if item['t'] == ItemType.Line:
 
                 if not self._vector_mode:
@@ -559,8 +578,6 @@ class VectoRaster(QGraphicsView):
                 else:
                     p1 = item['p1']
                     p2 = item['p2']
-
-                print(p1, p2)
 
                 rect = QRectF(*p1, *p2)
                 # pen = CustomPen.Line
@@ -976,17 +993,20 @@ class VectoRaster(QGraphicsView):
             else:
                 if not self.temp_item:
                     if self.draw_mode == DrawMode.Pencil:
-                        self._scene.addPoint(self.lastPoint, CustomPen.PencilVect, brush=Qt.transparent)
+                        # self._scene.addPoint(self.lastPoint, CustomPen.PencilVect, brush=Qt.transparent)
+
+                        point = PointItem(point, CustomPen.LineVect)
+                        self._scene.addItem(point)
 
                     elif self.draw_mode == DrawMode.Eraser:
                         grab_item = self._scene.itemAt(point, self.transform())
                         if grab_item is not self._pen_size_ellipse:
                             self._scene.removeItem(grab_item)
 
-                    elif self.draw_mode == DrawMode.Notool:
-                        grab_item = self._scene.itemAt(point, self.transform())
-                        if grab_item is not self._pen_size_ellipse:
-                            print(grab_item.line())
+                    # elif self.draw_mode == DrawMode.Notool:
+                    #     grab_item = self._scene.itemAt(point, self.transform())
+                    #     if grab_item is not self._pen_size_ellipse:
+                    #         print(grab_item.line())
 
             if self.temp_item:
                 self.temp_item = None
@@ -1007,9 +1027,19 @@ class VectoRaster(QGraphicsView):
         template = []
         count = 0
         for i in self._scene.items():
-            # print(i)
             if i.isVisible():
                 count += 1
+                if isinstance(i, PointItem):
+                    print(i)
+                    template.append({
+                        't': ItemType.Point,
+                        'p': (
+                            i.x * self._click_x / self._multiplier,
+                            i.y * self._click_y / self._multiplier
+                        ),
+                        'mode': 'pt',
+                        'pen': 1,
+                    })
                 if isinstance(i, QGraphicsLineItem):
                     line = i.line()
                     template.append({
@@ -1043,7 +1073,6 @@ class VectoRaster(QGraphicsView):
 
                 if isinstance(i, QGraphicsEllipseItem):
                     rect = i.rect()
-                    print(rect)
                     template.append({
                         't': ItemType.Ellipse if rect.width() != rect.height() else ItemType.Circle,
                         'p1': (
@@ -1234,8 +1263,8 @@ class Window(QWidget):
 
     def on_raster_btn_press(self, *args, **kwargs):
         for i in [1, 2, 3, 4, 6]:
-            viewer = VectoRaster(self, clicks=QSizeF(1.42 / i, 1.42 / i))
-
+            # viewer = VectoRaster(self, clicks=QSizeF(2.01, 2.01) / i)
+            viewer = VectoRaster(self, clicks=QSizeF(1.42, 1.42) / i)
             viewer.rasterize(self.viewer.save_svg())
             viewer.save_raster()
 

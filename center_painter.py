@@ -10,10 +10,9 @@ class CenterPainter(QPainter):
         self.x0 = int(pixmap.width() / 2) + 1
         self.y0 = int(pixmap.height() / 2) + 1
         self.origin = QPoint(self.x0, self.y0)
-        # self.origin = QPoint(1, 1) + QPoint(pixmap.width(), pixmap.height()) / 2
 
     def drawPointC(self, point: [QPointF, QPoint]) -> None:
-        point = self._to_origin_min1(point)
+        point = self._to_origin(point)
         return super(CenterPainter, self).drawPoint(point)
 
     def drawLineC(self, line: QLine) -> None:
@@ -25,14 +24,14 @@ class CenterPainter(QPainter):
         return super(CenterPainter, self).drawLines(lines)
 
     def drawRectC(self, r: QRect) -> None:
-        p1 = QPoint(self._to_origin(QPoint(r.x(), r.y())))
-        p2 = QPoint(self._to_origin_min1(QPoint(r.width(), r.height())))
+        p1 = self._to_origin(QPoint(r.x(), r.y()))
+        p2 = self._to_origin(QPoint(r.width(), r.height()))
         r = QRect(p1, p2)
         return super(CenterPainter, self).drawRect(r)
 
     def drawEllipseC(self, r: QRectF) -> None:
-        p1 = QPoint(self._to_origin_min1(QPoint(r.x(), r.y())))
-        p2 = QPoint(self._to_origin_min1(QPoint(r.width(), r.height())))
+        p1 = self._to_origin(QPoint(r.x(), r.y()))
+        p2 = self._to_origin(QPoint(r.width(), r.height()))
         r = QRect(p1, p2)
         return super(CenterPainter, self).drawEllipse(r)
 
