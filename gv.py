@@ -234,27 +234,47 @@ class VectoRaster(QGraphicsView):
 
     def rasterize(self, sketch=example_grid):
 
+        def round_point_to_step(v, step):
+            # if v % step > 0.09:
+            #     if round(v % step * 100) < step / 2 * 100:
+            #         print(round(v % step, 2), step, v)
+            #         return True
+            if v % step > 0:
+                # print(v, v % step)
+                # if v - (v % step) % step > 0:
+                    return round_point_to_step(v - v % step, step)
+                # elif v + (v % step) % step > 0:
+                #     return v + (v % step)
 
-        found_trashhold = [100]
+            return v
 
         for item in sketch:
 
             if item['t'] == ItemType.Line:
+                pen = CustomPen.Line
                 if item['mode'] == 'pt':
 
-                    if item['p1'][0] == item['p2'][0] != 0 and item['p1'][0] % self._min_mil_h_step > 0:
-                        print(item['p1'][0] % self._min_mil_h_step, item['p1'])
-                        found_trashhold.append(item['p1'][0] % self._min_mil_h_step)
-                        pen = QPen(Qt.darkRed, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
+                    if item['p1'][0] == item['p2'][0] != 0:
+                        r = round_point_to_step(item['p1'][0], self._min_mil_h_step)
+                        # item['p1'][0] = r
+                        # item['p2'][0] = r
+
+                        if r:
+                            pen = QPen(Qt.darkRed, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
+                            p1 = [r, item['p1'][1]]
+                            p2 = [r, item['p2'][1]]
                         # continue
 
-                    elif item['p1'][1] == item['p2'][1] != 0 and item['p1'][1] % self._min_mil_v_step > 0:
-                        print(item['p1'][1] % self._min_mil_v_step, item['p1'])
-                        pen = QPen(Qt.darkRed, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
-                        # continue
+                    elif item['p1'][1] == item['p2'][1] != 0:
+                        r = round_point_to_step(item['p1'][1], self._min_mil_h_step)
+                        # item['p1'][1] = r
+                        # item['p2'][1] = r
 
-                    else:
-                        pen = CustomPen.Line
+                        # continue
+                        if r:
+                            pen = QPen(Qt.darkRed, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
+                            p1 = [item['p1'][0], r]
+                            p2 = [item['p2'][0], r]
 
                     p1 = [self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1]]
                     p2 = [self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1]]
@@ -292,7 +312,7 @@ class VectoRaster(QGraphicsView):
 
                     # pen.setWidth(item['pen'])
                     self._canvas.drawLineC(line, pen)
-        print(min(found_trashhold))
+
             # if item['t'] == (ItemType.Rect or ItemType.Ellipse):
             #
             #     if int((item['p1'][0] or item['p2'][0]) % self._min_mil_h_step) > 0:
@@ -978,10 +998,10 @@ class Window(QWidget):
 
         # self.setFixedSize(640, 500)
 
-        self.viewer = VectoRaster(self, clicks=QSizeF(0.7525, 0.7525))
+        # self.viewer = VectoRaster(self, clicks=QSizeF(0.7525, 0.7525))
         # self.viewer = VectoRaster(self, clicks=QSizeF(0.336, 0.336))
         # self.viewer = VectoRaster(self, clicks=QSizeF(0.5025, 0.5025))
-        # self.viewer = VectoRaster(self, clicks=QSizeF(2.01, 2.01))
+        self.viewer = VectoRaster(self, clicks=QSizeF(2.01, 2.01))
         # self.viewer = VectoRaster(self, clicks=QSizeF(1.005, 1.005))
         # self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(0.5, 0.5), vector_mode=True)
         # self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(2.01, 2.01))

@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QRectF, Qt, QLineF
 from PyQt5.QtGui import QPainter, QPixmap, QPen
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget, QGraphicsLineItem, \
-    QGraphicsRectItem
+    QGraphicsRectItem, QGraphicsItem
 
 
 class SmoothLineItem(QGraphicsLineItem):
@@ -24,8 +24,7 @@ class SmoothLineItem(QGraphicsLineItem):
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
         painter.setPen(self.pen())
         pixmap = self.redraw_pix()
-        pixmap_rect = QRectF(pixmap.rect())
-        painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
+        painter.drawPixmap(self.boundingRect(), pixmap, self.boundingRect())
 
 
 class SmoothRectItem(QGraphicsRectItem):
@@ -74,3 +73,17 @@ class SmoothEllipseItem(QGraphicsEllipseItem):
         pixmap = self.redraw_pix()
         pixmap_rect = QRectF(pixmap.rect())
         painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
+
+
+class RulerItem(QGraphicsItem):
+    def __init__(self, parent=None, p1: 'QPointF'=None, p2: 'QPointF'=None):
+        super(RulerItem, self).__init__(parent)
+        self._line = QLineF(p1, p1)
+
+    def boundingRect(self) -> QRectF:
+        return QRectF(self._line.p1, self._line.p2)
+
+    def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
+        painter.drawLine(self._line)
+
+
