@@ -870,7 +870,7 @@ class VectoRaster(QGraphicsView):
         # if True:
         #     self.photoClicked.emit(self.mapToScene(event.pos()).toPoint())
 
-        if event.button() == Qt.LeftButton and self.draw_mode != DrawMode.Notool:
+        if (event.button() & (Qt.LeftButton | Qt.RightButton)) and self.draw_mode != DrawMode.Notool:
             # make drawing flag true
             self.drawing = True
             # make last point to the point of cursor
@@ -885,14 +885,20 @@ class VectoRaster(QGraphicsView):
         # if self.draw_mode != DrawMode.Notool:
         self._pen_size_ellipse.setPos(point.x() - 0.5, point.y() - 0.5)
 
-        if (event.buttons() & Qt.LeftButton) & self.drawing:
+        if (event.buttons() == Qt.RightButton) & self.drawing:
+            print('right')
+            if self._vector_mode:
+                self.eraser_vector(point, modifiers)
+            else:
+                self.eraser_raster(point, modifiers)
 
+        elif (event.buttons() & Qt.LeftButton) & self.drawing:
+            print('left')
             # if modifiers == Qt.ControlModifier and self.draw_mode != DrawMode.Notool:
-            #     # self.draw_mode = DrawMode.Eraser
-            #     if self._vector_mode:
-            #         self.eraser_vector(point, modifiers)
-            #     else:
-            #         self.eraser_raster(point, modifiers)
+                # if self._vector_mode:
+                #     self.eraser_vector(point, modifiers)
+                # else:
+                #     self.eraser_raster(point, modifiers)
 
             if self.draw_mode == DrawMode.Pencil:
 
@@ -931,7 +937,13 @@ class VectoRaster(QGraphicsView):
     # method for mouse left button release
     def mouseReleaseEvent(self, event):
         point = self.mapToScene(event.pos()).toPoint()
-        if event.button() == Qt.LeftButton:
+
+        if event.buttons() == Qt.RightButton:
+            grab_item = self._scene.itemAt(point, self.transform())
+            if grab_item is not self._pen_size_ellipse:
+                self._scene.removeItem(grab_item)
+
+        elif event.button() == Qt.LeftButton:
 
             if not self._vector_mode:
                 if self.draw_mode == DrawMode.Pencil:
@@ -954,13 +966,14 @@ class VectoRaster(QGraphicsView):
 
             else:
                 if not self.temp_item:
-                    if self.draw_mode == DrawMode.Pencil:
-                        self._scene.addPoint(point, CustomPen.PencilVect, Qt.black)
 
-                    elif self.draw_mode == DrawMode.Eraser:
+                    if self.draw_mode == DrawMode.Eraser:
                         grab_item = self._scene.itemAt(point, self.transform())
                         if grab_item is not self._pen_size_ellipse:
                             self._scene.removeItem(grab_item)
+
+                    elif self.draw_mode == DrawMode.Pencil:
+                        self._scene.addPoint(point, CustomPen.PencilVect, Qt.black)
 
                     # elif self.draw_mode == DrawMode.Notool:
                     #     grab_item = self._scene.itemAt(point, self.transform())
@@ -1161,6 +1174,9 @@ class Window(QWidget):
         self.pencil_btn.setShortcut(Qt.Key_2)
         self.eraser_btn.setShortcut(Qt.Key_3)
         self.line_btn.setShortcut(Qt.Key_4)
+        self.rect_btn.setShortcut(Qt.Key_5)
+        self.ellipse_btn.setShortcut(Qt.Key_6)
+        self.raster_btn.setShortcut(Qt.CTRL + Qt.Key_S)
 
         # Arrange layout
         VBlayout = QVBoxLayout(self)
