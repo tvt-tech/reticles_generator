@@ -4,7 +4,7 @@ from enum import IntFlag, IntEnum, auto
 from functools import wraps
 
 from PyQt5.QtCore import QLine, QPoint, QPointF, pyqtSignal, QSize, QSizeF, QRect
-from PyQt5.QtGui import QBrush, QMouseEvent, QFont, QCursor
+from PyQt5.QtGui import QBrush, QMouseEvent, QFont, QCursor, QImage
 from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, \
     QToolButton, QGraphicsView, QVBoxLayout, QHBoxLayout, QFrame, \
     QLineEdit
@@ -101,6 +101,7 @@ class DrawMode(IntFlag):
     Rect = auto()
     Ellipse = auto()
     Text = auto()
+    Ruler = auto()
 
 
 class MyCanvasItem(QGraphicsPixmapItem):
@@ -137,6 +138,7 @@ class VectoRaster(QGraphicsView):
         self.drawing = False
         self.temp_item = None
         self.lastPoint = None
+        self._selector = None
 
         self.mil_grids = []
 
@@ -825,8 +827,10 @@ class VectoRaster(QGraphicsView):
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
+            self._selector = self._scene.addSelector(rect)
             self.temp_item = self._scene.addRect(rect, CustomPen.LineVect)
         else:
+            self._selector.setRect(rect)
             self.temp_item.setRect(rect)
 
     def ellipse_tool_mode(self, point, modifiers):
@@ -862,8 +866,21 @@ class VectoRaster(QGraphicsView):
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
+            self._selector = self._scene.addSelector(rect)
             self.temp_item = self._scene.addEllipse(rect, pen)
         else:
+            self._selector.setRect(rect)
+            self.temp_item.setRect(rect)
+
+    def ruler_vector(self, point, modifiers, pen=CustomPen.Line):
+        p1, p2 = self.rect_tool_draw(point, modifiers)
+        rect = QRectF(p1, p2)
+
+        if not self.temp_item:
+            self._selector = self._scene.addSelector(rect)
+            self.temp_item = self._scene.addRuler(rect, 1 * self._px_at_1_mil_h, pen)
+        else:
+            self._selector.setRect(rect)
             self.temp_item.setRect(rect)
 
     def mousePressEvent(self, event):
@@ -886,19 +903,12 @@ class VectoRaster(QGraphicsView):
         self._pen_size_ellipse.setPos(point.x() - 0.5, point.y() - 0.5)
 
         if (event.buttons() == Qt.RightButton) & self.drawing:
-            print('right')
             if self._vector_mode:
                 self.eraser_vector(point, modifiers)
             else:
                 self.eraser_raster(point, modifiers)
 
         elif (event.buttons() & Qt.LeftButton) & self.drawing:
-            print('left')
-            # if modifiers == Qt.ControlModifier and self.draw_mode != DrawMode.Notool:
-                # if self._vector_mode:
-                #     self.eraser_vector(point, modifiers)
-                # else:
-                #     self.eraser_raster(point, modifiers)
 
             if self.draw_mode == DrawMode.Pencil:
 
@@ -930,6 +940,10 @@ class VectoRaster(QGraphicsView):
                     self.ellipse_vector(point, modifiers)
                 else:
                     self.ellipse_raster(point, modifiers)
+
+            elif self.draw_mode == DrawMode.Ruler:
+                if self._vector_mode:
+                    self.ruler_vector(point, modifiers)
 
         self._scene.update()
         super(VectoRaster, self).mouseMoveEvent(event)
@@ -987,6 +1001,9 @@ class VectoRaster(QGraphicsView):
 
         # make drawing flag false
         self.drawing = False
+        if self._selector:
+            self._scene.removeItem(self._selector)
+            self._selector = None
 
         super(VectoRaster, self).mouseReleaseEvent(event)
 
@@ -1165,6 +1182,10 @@ class Window(QWidget):
         self.ellipse_btn.setText('Ellipse')
         self.ellipse_btn.clicked.connect(self.on_ellipse_btn_press)
 
+        self.ruler_btn = DrawModeBtn()
+        self.ruler_btn.setText('Ruler')
+        self.ruler_btn.clicked.connect(self.on_ruler_btn_press)
+
         self.drawing = False
         # make last point to the point of cursor
         self.lastPoint = QPoint()
@@ -1176,6 +1197,7 @@ class Window(QWidget):
         self.line_btn.setShortcut(Qt.Key_4)
         self.rect_btn.setShortcut(Qt.Key_5)
         self.ellipse_btn.setShortcut(Qt.Key_6)
+        self.ruler_btn.setShortcut(Qt.Key_7)
         self.raster_btn.setShortcut(Qt.CTRL + Qt.Key_S)
 
         # Arrange layout
@@ -1194,6 +1216,7 @@ class Window(QWidget):
         HBlayout.addWidget(self.line_btn)
         HBlayout.addWidget(self.rect_btn)
         HBlayout.addWidget(self.ellipse_btn)
+        HBlayout.addWidget(self.ruler_btn)
         HBlayout.addWidget(self.clear_btn)
         HBlayout.addWidget(self.to_svg_btn)
         HBlayout.addWidget(self.raster_btn)
@@ -1233,6 +1256,11 @@ class Window(QWidget):
     def on_ellipse_btn_press(self):
         self.on_notool_btn_press()
         self.viewer.draw_mode = DrawMode.Ellipse
+        self.viewer.toggleDragMode()
+
+    def on_ruler_btn_press(self):
+        self.on_notool_btn_press()
+        self.viewer.draw_mode = DrawMode.Ruler
         self.viewer.toggleDragMode()
 
     def on_raster_btn_press(self, *args, **kwargs):
