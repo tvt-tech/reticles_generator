@@ -80,9 +80,27 @@ class PointItem(QGraphicsItem):
         super(PointItem, self).__init__(parent)
         self._pen = pen
         self._brush = brush
-        self.p = point
-        self.x = point.x()
-        self.y = point.y()
+        self._p = point
+        self._x = point.x()
+        self._y = point.y()
+
+    def boundingRect(self) -> QRectF:
+        size = self._pen.width()
+        return QRectF(self._p.x() - size, self._p.y() - size, 0.5, 0.5)
+
+    def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
+        painter.setPen(self._pen)
+        painter.setBrush(self._brush)
+        painter.drawPoint(self._p.x(), self._p.y())
+
+    def x(self):
+        return self._p.x()
+
+    def y(self):
+        return self._p.y()
+
+    def p(self):
+        return self._p
 
     def pen(self):
         return self._pen
@@ -90,14 +108,9 @@ class PointItem(QGraphicsItem):
     def brush(self):
         return self._brush
 
-    def boundingRect(self) -> QRectF:
-        # return QRectF(self.x, self.y, 0.05, 0.05)
-        return self.scene().sceneRect()
+    def setPen(self, p: QPen):
+        self._pen = p
 
-    def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
-        painter.setPen(self._pen)
-        painter.setBrush(self._brush)
-        painter.drawPoint(self.x, self.y)
 
 # class RulerItem(QGraphicsItem):
 #     def __init__(self, parent=None, p1: 'QPointF'=None, p2: 'QPointF'=None):

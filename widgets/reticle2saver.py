@@ -28,7 +28,7 @@ def dump_reticles(self):
             self.draw_ret(canvas, reticle, zoom)
             img = canvas.toImage()
             zooms.append(ImgMap(img))
-            fmt_str = f'{reticle["name"]}, {zoom}X, %p%'
+            fmt_str = f'{reticle["name"]}, {zoom}X, %_p%'
             self.progress.setFormat(fmt_str)
             self.progress.setValue(self.progress.value() + 1)
 
@@ -40,11 +40,11 @@ def dump_reticles(self):
     d = PXL4.dump(SMALL_RETS, [], base, lrf)
     file_data = PXL4.build(d)
 
-    click_x = str(self.click.x).replace('.', '_')
-    click_y = str(self.click.y).replace('.', '_')
+    click_x = str(self.click._x).replace('.', '_')
+    click_y = str(self.click._y).replace('.', '_')
     with open(f'{click_x}x{click_y}_4x.reticle2', 'wb') as fp:
         fp.write(file_data)
-    self.progress.setFormat('%p%')
+    self.progress.setFormat('%_p%')
     self.progress.setValue(0)
     self.zoom = cur_zoom
     self.reticle = cur_reticle

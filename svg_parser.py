@@ -32,8 +32,8 @@ def read_template():
     for item in rects:
         props = item.findParent()
         print(item)
-        x = (float(item['x']) - x0) / 20 - 0.05
-        y = (float(item['y']) - y0) / 20 - 0.05
+        x = (float(item['_x']) - x0) / 20 - 0.05
+        y = (float(item['_y']) - y0) / 20 - 0.05
         w = float(item['width']) / 20
         h = float(item['height']) / 20
         template.append({
@@ -68,7 +68,7 @@ def read_template():
         template.append({
             't': ItemType.Circle,
             'mode': 'pt',
-            'p': [cx, cy],
+            '_p': [cx, cy],
             'r': r,
             'pen': 1,
         })
@@ -86,7 +86,7 @@ def read_template():
             template.append({
                 't': ItemType.Circle,
                 'mode': 'pt',
-                'p': [cx, cy],
+                '_p': [cx, cy],
                 'r': rx,
                 'pen': 1,
             })
@@ -135,8 +135,8 @@ def read_template_int():
     for item in rects:
         props = item.findParent()
         print(item)
-        x = (float(item['x']) - x0) / 20
-        y = (float(item['y']) - y0) / 20
+        x = (float(item['_x']) - x0) / 20
+        y = (float(item['_y']) - y0) / 20
         w = float(item['width']) / 20
         h = float(item['height']) / 20
         template.append({
@@ -171,7 +171,7 @@ def read_template_int():
         template.append({
             't': ItemType.Circle,
             'mode': 'pt',
-            'p': [cx, cy],
+            '_p': [cx, cy],
             'r': r,
             'pen': 1,
         })
@@ -189,7 +189,7 @@ def read_template_int():
             template.append({
                 't': ItemType.Circle,
                 'mode': 'pt',
-                'p': [cx, cy],
+                '_p': [cx, cy],
                 'r': rx,
                 'pen': 1,
             })

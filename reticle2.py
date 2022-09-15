@@ -31,8 +31,8 @@ HEADER2 = Struct(
 )
 
 DATA2 = ByteSwapped(BitStruct(
-    'x' / BitsInteger(12),
-    'y' / BitsInteger(10),
+    '_x' / BitsInteger(12),
+    '_y' / BitsInteger(10),
     'q' / BitsInteger(10),
 ))
 
@@ -190,7 +190,7 @@ class PXL4(object):
             h2 += HEADER2.build(i)
         for i in data['data2']:
             for j in i:
-                d2 += DATA2.build({'x': j[2], 'y': j[1], 'q': j[0]})
+                d2 += DATA2.build({'_x': j[2], '_y': j[1], 'q': j[0]})
         filedata = h + h2 + d2
         return filedata
 
@@ -253,8 +253,8 @@ class PXL4(object):
             # point1_bytes = point1.to_bytes(4, 'little')
             #
             # p_struct = ByteSwapped(BitStruct(
-            #     'x' / BitsInteger(12),
-            #     'y' / BitsInteger(10),
+            #     '_x' / BitsInteger(12),
+            #     '_y' / BitsInteger(10),
             #     'q' / BitsInteger(10),
             # ))
             #

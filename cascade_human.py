@@ -32,14 +32,14 @@ def draw(cv2, src, dst):
         distance = int(1000 * 0.9 / (h / 7))
         cv2.putText(dst, f'{distance}m', (x, y - 3), cv2.FONT_HERSHEY_SIMPLEX, 0.4, thickness=1, color=(255, 0, 255))
 
-    # for (x, y, w, h) in lbs:
-    #     cv2.rectangle(dst, (x, y), (x + w, y + h), (255, 0, 0), 1)
-    #     cv2.line(dst, (x - 3 + int(w / 2), y + int(h / 2)), (x + 3 + int(w / 2), y + int(h / 2)), (255, 0, 0), 1)
-    #     cv2.line(dst, (x + int(w / 2), y - 3 + int(h / 2)), (x + int(w / 2), y + 3 + int(h / 2)), (255, 0, 0), 1)
-    # for (x, y, w, h) in faces:
-    #     cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 1)
-    #     cv2.line(dst, (x - 3 + int(w / 2), y + int(h / 2)), (x + 3 + int(w / 2), y + int(h / 2)), (0, 255, 0), 1)
-    #     cv2.line(dst, (x + int(w / 2), y - 3 + int(h / 2)), (x + int(w / 2), y + 3 + int(h / 2)), (0, 255, 0), 1)
+    # for (_x, _y, w, h) in lbs:
+    #     cv2.rectangle(dst, (_x, _y), (_x + w, _y + h), (255, 0, 0), 1)
+    #     cv2.line(dst, (_x - 3 + int(w / 2), _y + int(h / 2)), (_x + 3 + int(w / 2), _y + int(h / 2)), (255, 0, 0), 1)
+    #     cv2.line(dst, (_x + int(w / 2), _y - 3 + int(h / 2)), (_x + int(w / 2), _y + 3 + int(h / 2)), (255, 0, 0), 1)
+    # for (_x, _y, w, h) in faces:
+    #     cv2.rectangle(img, (_x, _y), (_x + w, _y + h), (0, 255, 0), 1)
+    #     cv2.line(dst, (_x - 3 + int(w / 2), _y + int(h / 2)), (_x + 3 + int(w / 2), _y + int(h / 2)), (0, 255, 0), 1)
+    #     cv2.line(dst, (_x + int(w / 2), _y - 3 + int(h / 2)), (_x + int(w / 2), _y + 3 + int(h / 2)), (0, 255, 0), 1)
 
 import os
 import numpy as np

@@ -204,8 +204,8 @@ class Window(QMainWindow, Ui_MainWindow):
         ret = dlg.exec_()
         if ret:
             click = dlg.get_click()
-            self.spin_x.setValue(click.x)
-            self.spin_y.setValue(click.y)
+            self.spin_x.setValue(click._x)
+            self.spin_y.setValue(click._y)
             self.draw_layers()
 
     def load_table(self):

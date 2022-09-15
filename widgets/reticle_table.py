@@ -60,7 +60,7 @@ class ReticleTable(QtWidgets.QTableView):
 
             item = QtGui.QStandardItem()
             self.table_model.setItem(i, 4, item)
-            if not 'hide' in 'y':
+            if not 'hide' in '_y':
                 template[i]['hide'] = False
                 y['hide'] = False
             self.table_model.item(i, 4).setData(y['hide'], QtCore.Qt.DisplayRole)
