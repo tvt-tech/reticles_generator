@@ -4,7 +4,7 @@ from enum import IntFlag, IntEnum, auto
 from functools import wraps
 
 from PyQt5.QtCore import QLine, QPoint, QPointF, pyqtSignal, QSize, QSizeF, QRect
-from PyQt5.QtGui import QBrush, QMouseEvent, QFont, QCursor, QImage
+from PyQt5.QtGui import QBrush, QMouseEvent, QFont, QCursor, QImage, QIcon
 from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, \
     QToolButton, QGraphicsView, QVBoxLayout, QHBoxLayout, QFrame, \
     QLineEdit
@@ -1183,15 +1183,18 @@ class Window(QWidget):
         self.no_tool_btn.clicked.connect(self.on_notool_btn_press)
 
         self.pencil_btn = DrawModeBtn(self)
-        self.pencil_btn.setText('Pencil')
+        # self.pencil_btn.setText('Pencil')
+        self.pencil_btn.setIcon(QIcon('rsrc/edit_FILL0_wght400_GRAD0_opsz40.svg'))
         self.pencil_btn.clicked.connect(self.on_draw_btn_press)
 
         self.eraser_btn = DrawModeBtn(self)
-        self.eraser_btn.setText('Eraser')
+        # self.eraser_btn.setText('Eraser')
+        self.eraser_btn.setIcon(QIcon('rsrc/auto_fix_normal_FILL0_wght400_GRAD0_opsz40.svg'))
         self.eraser_btn.clicked.connect(self.on_eraser_btn_press)
 
         self.line_btn = DrawModeBtn(self)
-        self.line_btn.setText('Line')
+        # self.line_btn.setText('Line')
+        self.line_btn.setIcon(QIcon('rsrc/polyline_FILL0_wght400_GRAD0_opsz40.svg'))
         self.line_btn.clicked.connect(self.on_line_btn_press)
 
         self.clear_btn = QToolButton(self)
