@@ -34,9 +34,9 @@ class DrawbleGraphicScene(QGraphicsScene):
         return point_item
 
     def addRuler(self, rect: QRectF, step: float, pen: 'QPen', brush: 'QBrush' = Qt.transparent):
-        point_item = RulerItem(rect, step, pen, brush)
-        self.addItem(point_item)
-        return point_item
+        ruler_item = RulerItem(rect, step, pen, brush)
+        self.addItem(ruler_item)
+        return ruler_item
 
     def addSelector(self, rect: QRectF):
         selector = SelectorItem(rect)

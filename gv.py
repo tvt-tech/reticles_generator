@@ -59,6 +59,7 @@ class ItemType(IntEnum):
     Circle = 5
     Polygon = 6
     Text = 7
+    Ruler = 8
 
 
 class CustomPen:
@@ -513,6 +514,19 @@ class VectoRaster(QGraphicsView):
         px_scale = QPointF(self._px_at_1_mil_h, self._px_at_1_mil_v)
 
         for item in sketch:
+            if item['t'] == ItemType.Ruler:
+                if item['p2'][0] > item['p2'][1]:
+                    step = item['step'] * self._px_at_1_mil_h
+                else:
+                    step = item['step'] * self._px_at_1_mil_v
+
+                p1 = (self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1])
+                p2 = (self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1])
+
+                rect = QRectF(*p1, *p2)
+                pen = CustomPen.LineVect
+                self._scene.addRuler(rect, step, pen)
+
             if item['t'] == ItemType.Point:
 
                 if item['mode'] == 'pt':
@@ -765,7 +779,12 @@ class VectoRaster(QGraphicsView):
     def eraser_vector(self, point, modifiers):
         grab_item = self._scene.itemAt(point, self.transform())
         if grab_item is not self._pen_size_ellipse:
-            self._scene.removeItem(grab_item)
+            if isinstance(grab_item, RulerItem):
+                pass
+            elif grab_item.parentItem() is None:
+                self._scene.removeItem(grab_item)
+            else:
+                self._scene.removeItem(grab_item.parentItem())
 
     def line_tool_draw(self, point, modifiers):
         p1 = QPointF(self.lastPoint)
@@ -1009,16 +1028,33 @@ class VectoRaster(QGraphicsView):
 
     @hide_grid
     @hide_canvas
-    def save_svg(self, *args, **kwargs):
+    def get_vectors(self, grouping=True, *args, **kwargs):
 
         # self._canvas.setVisible(False)
 
         template = []
         count = 0
         for i in self._scene.items():
-            if i.isVisible():
+            if i.isVisible() or (i.isVisible() and i.parentItem() is None and grouping):
                 count += 1
-                if isinstance(i, PointItem):
+                if isinstance(i, RulerItem) and grouping:
+                    rect = i.rect()
+                    template.append({
+                        't': ItemType.Ruler,
+                        'step': i.step() * self._click_x / self._multiplier,
+                        'p1': (
+                            rect.x() * self._click_x / self._multiplier,
+                            rect.y() * self._click_y / self._multiplier
+                        ),
+                        'p2': (
+                            rect.width() * self._click_x / self._multiplier,
+                            rect.height() * self._click_y / self._multiplier
+                        ),
+                        'mode': 'pt',
+                        'pen': 1,
+                    })
+
+                elif isinstance(i, PointItem):
                     template.append({
                         't': ItemType.Point,
                         'p': (
@@ -1028,7 +1064,7 @@ class VectoRaster(QGraphicsView):
                         'mode': 'pt',
                         'pen': 1,
                     })
-                if isinstance(i, QGraphicsLineItem):
+                elif isinstance(i, QGraphicsLineItem):
                     line = i.line()
                     template.append({
                         't': ItemType.Line,
@@ -1043,7 +1079,7 @@ class VectoRaster(QGraphicsView):
                         'mode': 'pt',
                         'pen': 1,
                     })
-                if isinstance(i, QGraphicsRectItem):
+                elif isinstance(i, QGraphicsRectItem) and not isinstance(i, RulerItem):
                     rect = i.rect()
                     template.append({
                         't': ItemType.Rect,
@@ -1059,7 +1095,7 @@ class VectoRaster(QGraphicsView):
                         'pen': 1,
                     })
 
-                if isinstance(i, QGraphicsEllipseItem):
+                elif isinstance(i, QGraphicsEllipseItem):
                     rect = i.rect()
                     template.append({
                         't': ItemType.Ellipse if rect.width() != rect.height() else ItemType.Circle,
@@ -1074,9 +1110,6 @@ class VectoRaster(QGraphicsView):
                         'mode': 'pt',
                         'pen': 1,
                     })
-
-        with open('reticle.abcv', 'w') as fp:
-            json.dump(template, fp)
 
         return template
 
@@ -1093,6 +1126,11 @@ class VectoRaster(QGraphicsView):
         # painter.end()
 
         # self._canvas.setVisible(True)
+
+    def save_vectors(self):
+        template = self.get_vectors()
+        with open('reticle.abcv', 'w') as fp:
+            json.dump(template, fp)
 
     @hide_grid
     def save_raster(self, *args, **kwargs):
@@ -1267,11 +1305,11 @@ class Window(QWidget):
         for i in [1, 2, 3, 4, 6]:
             # viewer = VectoRaster(self, clicks=QSizeF(2.01, 2.01) / i)
             viewer = VectoRaster(self, clicks=QSizeF(1.42, 1.42) / i)
-            viewer.rasterize(self.viewer.save_svg())
+            viewer.rasterize(self.viewer.get_vectors(False))
             viewer.save_raster()
 
     def on_to_svg_btn_press(self, *args, **kwargs):
-        self.viewer.save_svg(*args, **kwargs)
+        self.viewer.save_vectors()
 
     def on_clear_btn_press(self):
         self.viewer.clear_view()

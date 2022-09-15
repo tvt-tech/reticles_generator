@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QRectF, Qt, QLineF, QPointF
 from PyQt5.QtGui import QPainter, QPixmap, QPen
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget, QGraphicsLineItem, \
-    QGraphicsRectItem, QGraphicsItem
+    QGraphicsRectItem, QGraphicsItem, QGraphicsItemGroup
 
 
 class SmoothLineItem(QGraphicsLineItem):
@@ -118,34 +118,44 @@ class RulerItem(QGraphicsRectItem):
         self.setPen(pen)
         self.setBrush(brush)
         self._step = step
+        self.items_group = None
 
     def step(self):
         return self._step
 
     def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
         # super(RulerItem, self).paint(painter, option, widget)
-        scene_rect = self.scene().sceneRect()
         rect = self.rect()
-        print(rect.width())
+
+        for item in self.scene().items():
+            if item.parentItem() == self:
+                self.scene().removeItem(item)
 
         if rect.width() > rect.height():
-            items = []
             line_count = abs(int(rect.width() / self._step)) + 1
             for i in range(line_count):
                 x = i * self._step + rect.x()
                 if rect.height() > 0:
                     line = QLineF(x, rect.center().y() - rect.height() / 2, x, rect.center().y() + rect.height() / 2)
-                    items.append(line)
+                    line_item = self.scene().addLine(line, self.pen())
+                    line_item.setParentItem(self)
                 else:
                     point = QPointF(x, rect.center().y())
-                    items.append(point)
+                    point_item = self.scene().addPoint(point, self.pen())
+                    point_item.setParentItem(self)
 
-                if rect.height() > 0:
-                    painter.drawLines(items)
+        elif rect.width() < rect.height():
+            line_count = abs(int(rect.height() / self._step)) + 1
+            for i in range(line_count):
+                y = i * self._step + rect.y()
+                if rect.width() > 0:
+                    line = QLineF(rect.center().x() - rect.width() / 2, y, rect.center().x() + rect.width() / 2, y)
+                    line_item = self.scene().addLine(line, self.pen())
+                    line_item.setParentItem(self)
                 else:
-                    painter.drawPoints(items)
-            # painter.drawLine(rect.center().x() - rect.width() / 2, rect.center().y(),
-            #                  rect.center().x() + rect.width() / 2, rect.center().y())
+                    point = QPointF(rect.center().x(), y)
+                    point_item = self.scene().addPoint(point, self.pen())
+                    point_item.setParentItem(self)
 
 
 class SelectorItem(QGraphicsRectItem):
