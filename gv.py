@@ -5,7 +5,7 @@ from pathlib import Path
 from enum import IntFlag, IntEnum, auto
 from functools import wraps
 
-from PyQt5.QtCore import QLine, QPoint, QPointF, pyqtSignal, QSize, QSizeF, QRect
+from PyQt5.QtCore import QLine, QPoint, QPointF, pyqtSignal, QSize, QSizeF, QRect, Qt
 from PyQt5.QtGui import QBrush, QMouseEvent, QFont, QCursor, QImage, QIcon
 from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, \
     QToolButton, QGraphicsView, QVBoxLayout, QHBoxLayout, QFrame, \
@@ -15,7 +15,7 @@ from canvas import GraphicsCanvas
 from drawable_scene import DrawbleGraphicScene
 from example_grid import example_grid
 from grid_step import *
-from smooth_item import *
+from custom_graphics_item import *
 
 
 def hide_grid(func: callable):
@@ -51,32 +51,6 @@ def hide_canvas(func: callable):
         return ret
 
     return _impl
-
-
-class ItemType(IntEnum):
-    Point = 1
-    Line = 2
-    Rect = 3
-    Ellipse = 4
-    Circle = 5
-    Polygon = 6
-    Text = 7
-    Ruler = 8
-
-
-class CustomPen:
-    GridH1 = QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH2 = QPen(Qt.darkMagenta, 0.15, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH3 = QPen(Qt.darkMagenta, 0.05, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH4 = QPen(Qt.darkMagenta, 0.02, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH5 = QPen(Qt.darkMagenta, 0.01, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    Pencil = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
-    PencilVect = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
-    PointVect = QPen(Qt.transparent, 0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
-    Eraser = QPen(Qt.transparent, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
-    Line = QPen(Qt.black, 1, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin)
-    LineVect = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
-    Ellipse = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
 
 
 class DrawModeBtn(QToolButton):
@@ -230,9 +204,9 @@ class VectoRaster(QGraphicsView):
 
     def draw_vector_mode_grid(self):
         # self.draw_mil_grid(0.05, 0.05, True, False, CustomPen.GridH5)
-        self.draw_mil_grid(0.1, 0.1, True, False, CustomPen.GridH4)
+        # self.draw_mil_grid(0.1, 0.1, True, False, CustomPen.GridH4)
         self.draw_mil_grid(1, 1, True, True, CustomPen.GridH3, font_size=5)
-        self.draw_mil_grid(5, 5, True, False, CustomPen.GridH3, font_size=8)
+        self.draw_mil_grid(5, 5, False, False, CustomPen.GridH3, font_size=8)
         self.draw_mil_grid(10, 10, True, False, CustomPen.GridH2)
         self.draw_mil_grid(100, 100, True, False, CustomPen.GridH1)
 
@@ -531,44 +505,13 @@ class VectoRaster(QGraphicsView):
                 self._scene.addRuler(rect, step, pen)
 
             elif item['t'] == ItemType.Point:
-
-                if item['mode'] == 'pt':
-                    p = [self._px_at_1_mil_h * item['p'][0], self._px_at_1_mil_v * item['p'][1]]
-
-                else:
-                    p = [item['p'][0], item['p'][1]]
-
-                point = QPointF(*p)
-
-                pen = CustomPen.PencilVect
-                self._scene.addPoint(point, pen)
+                point_item = PointItem.fromJson(self._px_at_1_mil_h, self._px_at_1_mil_v, item)
+                self._scene.addItem(point_item)
 
             elif item['t'] == ItemType.Line:
 
-                if item['mode'] == 'pt':
-                    p1 = [self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1]]
-                    p2 = [self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1]]
-
-                    if not self._vector_mode:
-                        if 0 < abs(p1[0]) < self._min_px_h_step:
-                            p1[0] = p1[0] / abs(p1[0])
-
-                        if 0 < abs(p2[0]) < self._min_px_h_step:
-                            p2[0] = p2[0] / abs(p2[0])
-
-                        if 0 < abs(p1[1]) < self._min_px_v_step:
-                            p1[1] = p1[1] / abs(p1[1])
-
-                        if 0 < abs(p2[1]) < self._min_px_v_step:
-                            p2[1] = p2[1] / abs(p2[1])
-
-                else:
-                    p1 = item['p1']
-                    p2 = item['p2']
-
-                line = QLineF(*p1, *p2)
-                pen = CustomPen.PencilVect
-                self._scene.addLine(line, pen)
+                line_item = LineItem.fromJson(self._px_at_1_mil_h, self._px_at_1_mil_v, item)
+                self._scene.addItem(line_item)
 
             elif item['t'] == ItemType.Rect:
                 if item['mode'] == 'pt':
@@ -918,9 +861,10 @@ class VectoRaster(QGraphicsView):
         elif (event.button() & (Qt.LeftButton | Qt.RightButton)) and self.draw_mode == DrawMode.Notool:
             point = self.mapToScene(event.pos()).toPoint()
             grab_item = self._scene.itemAt(point, self.transform())
-            if grab_item is not self._pen_size_ellipse:
-            #     grab_item.setZValue(-1)
-                [print(item) for item in grab_item.collidingItems() if isinstance(item, RulerItem)]
+            # if grab_item is not self._pen_size_ellipse:
+            #     if isinstance(grab_item, RulerItem):
+            #         grab_item.setZValue(-1)
+                # [print(item) for item in grab_item.collidingItems() if isinstance(item, RulerItem)]
 
         super(VectoRaster, self).mousePressEvent(event)
 
@@ -1050,10 +994,6 @@ class VectoRaster(QGraphicsView):
     @hide_canvas
     def get_vectors(self, grouping=True, *args, **kwargs):
 
-        # self._canvas.setVisible(False)
-
-
-
         template = []
         count = 0
         for i in self._scene.items():
@@ -1063,94 +1003,17 @@ class VectoRaster(QGraphicsView):
 
                 count += 1
                 if isinstance(i, RulerItem):
-                    rect = i.rect()
-                    template.append({
-                        't': ItemType.Ruler,
-                        'step': i.step() * self._click_x / self._multiplier,
-                        'p1': (
-                            rect.x() * self._click_x / self._multiplier,
-                            rect.y() * self._click_y / self._multiplier
-                        ),
-                        'p2': (
-                            rect.width() * self._click_x / self._multiplier,
-                            rect.height() * self._click_y / self._multiplier
-                        ),
-                        'mode': 'pt',
-                        'pen': 1,
-                    })
-
+                    template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
                 elif isinstance(i, PointItem):
-                    template.append({
-                        't': ItemType.Point,
-                        'p': (
-                            i.x() * self._click_x / self._multiplier,
-                            i.y() * self._click_y / self._multiplier
-                        ),
-                        'mode': 'pt',
-                        'pen': 1,
-                    })
-                elif isinstance(i, QGraphicsLineItem):
-                    line = i.line()
-                    template.append({
-                        't': ItemType.Line,
-                        'p1': (
-                            line.x1() * self._click_x / self._multiplier,
-                            line.y1() * self._click_y / self._multiplier
-                        ),
-                        'p2': (
-                            line.x2() * self._click_x / self._multiplier,
-                            line.y2() * self._click_y / self._multiplier
-                        ),
-                        'mode': 'pt',
-                        'pen': 1,
-                    })
-                elif isinstance(i, QGraphicsRectItem) and not isinstance(i, RulerItem):
-                    rect = i.rect()
-                    template.append({
-                        't': ItemType.Rect,
-                        'p1': (
-                            rect.x() * self._click_x / self._multiplier,
-                            rect.y() * self._click_y / self._multiplier
-                        ),
-                        'p2': (
-                            rect.width() * self._click_x / self._multiplier,
-                            rect.height() * self._click_y / self._multiplier
-                        ),
-                        'mode': 'pt',
-                        'pen': 1,
-                    })
-
-                elif isinstance(i, QGraphicsEllipseItem):
-                    rect = i.rect()
-                    template.append({
-                        't': ItemType.Ellipse if rect.width() != rect.height() else ItemType.Circle,
-                        'p1': (
-                            rect.x() * self._click_x / self._multiplier,
-                            rect.y() * self._click_y / self._multiplier
-                        ),
-                        'p2': (
-                            rect.width() * self._click_x / self._multiplier,
-                            rect.height() * self._click_y / self._multiplier
-                        ),
-                        'mode': 'pt',
-                        'pen': 1,
-                    })
+                    template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
+                elif isinstance(i, LineItem):
+                    template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
+                elif isinstance(i, RectItem) and not isinstance(i, RulerItem):
+                    template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
+                elif isinstance(i, EllipseItem):
+                    template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
 
         return template
-
-        # svg_gen = QSvgGenerator()
-        # svg_gen.setFileName('test_scene.svg')
-        # svg_gen.setSize(QSize(int(self.sceneRect().width()), int(self.sceneRect().height())))
-        # svg_gen.setViewBox(self.sceneRect())
-        # svg_gen.setTitle("SVG Generator Example Drawing")
-        # svg_gen.setDescription("An SVG drawing created by the SVG Generator "
-        #                        "Example provided with Qt.")
-        #
-        # painter = QPainter(svg_gen)
-        # self._scene.render(painter)
-        # painter.end()
-
-        # self._canvas.setVisible(True)
 
     @hide_grid
     def save_raster(self, *args, **kwargs):
@@ -1172,6 +1035,9 @@ class VectoRaster(QGraphicsView):
 class Window(QWidget):
     def __init__(self, filename=None):
         super(Window, self).__init__()
+        self.setObjectName('RetEdit')
+
+        self.setStyleSheet("#RetEdit {background-color: rgb(72, 72, 72);}")
 
         self.filename = filename if filename is not None else 'reticle.abcv'
 
@@ -1208,7 +1074,8 @@ class Window(QWidget):
         self.editPixInfo.setHidden(True)
 
         self.no_tool_btn = DrawModeBtn(self)
-        self.no_tool_btn.setText('NoTool')
+        # self.no_tool_btn.setText('NoTool')
+        self.no_tool_btn.setIcon(QIcon('rsrc/hand-index.svg'))
         self.no_tool_btn.setDown(True)
         self.no_tool_btn.clicked.connect(self.on_notool_btn_press)
 
