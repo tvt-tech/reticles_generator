@@ -919,13 +919,8 @@ class VectoRaster(QGraphicsView):
             point = self.mapToScene(event.pos()).toPoint()
             grab_item = self._scene.itemAt(point, self.transform())
             if grab_item is not self._pen_size_ellipse:
-                grab_item.setPen(Qt.blue)
-                # if isinstance(grab_item, RulerItem):
-                #     pass
-                # elif grab_item.parentItem() is None:
-                #     self._scene.removeItem(grab_item)
-                # else:
-                #     self._scene.removeItem(grab_item.parentItem())
+            #     grab_item.setZValue(-1)
+                [print(item) for item in grab_item.collidingItems() if isinstance(item, RulerItem)]
 
         super(VectoRaster, self).mousePressEvent(event)
 

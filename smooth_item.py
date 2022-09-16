@@ -4,6 +4,22 @@ from PyQt5.QtWidgets import QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWid
     QGraphicsRectItem, QGraphicsItem, QGraphicsItemGroup
 
 
+class HoveredGraphicsItem:
+    def oninit(self):
+        self.setAcceptHoverEvents(True)
+
+    def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+        pen = self.pen()
+        pen.setColor(Qt.blue)
+        self.setPen(pen)
+
+    def hoverLeaveEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+        pen = self.pen()
+        pen.setColor(Qt.black)
+        self.setPen(pen)
+
+
+
 class SmoothLineItem(QGraphicsLineItem):
     def __init__(self, line: QLineF, pen: QPen, parent=None):
         super(SmoothLineItem, self).__init__(parent)
@@ -75,14 +91,22 @@ class SmoothEllipseItem(QGraphicsEllipseItem):
         painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
 
 
-class PointItem(QGraphicsItem):
+class PointItem(QGraphicsItem, HoveredGraphicsItem):
     def __init__(self, point: 'QPointF', pen: QPen, brush: 'QBrush' = Qt.black, parent=None):
         super(PointItem, self).__init__(parent)
+        self.oninit()
         self._pen = pen
         self._brush = brush
         self._p = point
         self._x = point.x()
         self._y = point.y()
+
+    def setPen(self, p: QPen):
+        self._pen = p
+        self.scene().update()
+
+    def pen(self):
+        return self._pen
 
     def boundingRect(self) -> QRectF:
         size = self._pen.width()
@@ -102,19 +126,15 @@ class PointItem(QGraphicsItem):
     def p(self):
         return self._p
 
-    def pen(self):
-        return self._pen
-
     def brush(self):
         return self._brush
 
-    def setPen(self, p: QPen):
-        self._pen = p
 
-
-class RulerItem(QGraphicsRectItem):
+class RulerItem(QGraphicsRectItem, HoveredGraphicsItem):
     def __init__(self, r: QRectF, step: float, pen: QPen, brush: 'QBrush' = Qt.black, parent=None):
         super(RulerItem, self).__init__(r, parent)
+        # self.setAcceptHoverEvents(True)
+        self.oninit()
         self.setPen(pen)
         self.setBrush(brush)
         self._step = step
