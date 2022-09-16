@@ -15,6 +15,10 @@ class GraphicsCanvas(QGraphicsItem):
         self.pixmap = QPixmap(size.width(), size.height())
         self.pixmap.fill(Qt.transparent)
 
+    def setPixmap(self, pixmap):
+        self.pixmap = pixmap
+        self.scene().update()
+
     def boundingRect(self) -> QRectF:
         return self.scene().sceneRect()
 

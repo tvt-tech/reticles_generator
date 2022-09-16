@@ -1,5 +1,7 @@
 import json
 import math
+import os.path
+from pathlib import Path
 from enum import IntFlag, IntEnum, auto
 from functools import wraps
 
@@ -7,7 +9,7 @@ from PyQt5.QtCore import QLine, QPoint, QPointF, pyqtSignal, QSize, QSizeF, QRec
 from PyQt5.QtGui import QBrush, QMouseEvent, QFont, QCursor, QImage, QIcon
 from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, \
     QToolButton, QGraphicsView, QVBoxLayout, QHBoxLayout, QFrame, \
-    QLineEdit
+    QLineEdit, QComboBox
 
 from canvas import GraphicsCanvas
 from drawable_scene import DrawbleGraphicScene
@@ -140,6 +142,7 @@ class VectoRaster(QGraphicsView):
         self.temp_item = None
         self.lastPoint = None
         self._selector = None
+        self.ruler_step = 1
 
         self.mil_grids = []
 
@@ -527,7 +530,7 @@ class VectoRaster(QGraphicsView):
                 pen = CustomPen.LineVect
                 self._scene.addRuler(rect, step, pen)
 
-            if item['t'] == ItemType.Point:
+            elif item['t'] == ItemType.Point:
 
                 if item['mode'] == 'pt':
                     p = [self._px_at_1_mil_h * item['p'][0], self._px_at_1_mil_v * item['p'][1]]
@@ -540,7 +543,7 @@ class VectoRaster(QGraphicsView):
                 pen = CustomPen.PencilVect
                 self._scene.addPoint(point, pen)
 
-            if item['t'] == ItemType.Line:
+            elif item['t'] == ItemType.Line:
 
                 if item['mode'] == 'pt':
                     p1 = [self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1]]
@@ -567,7 +570,7 @@ class VectoRaster(QGraphicsView):
                 pen = CustomPen.PencilVect
                 self._scene.addLine(line, pen)
 
-            if item['t'] == ItemType.Rect:
+            elif item['t'] == ItemType.Rect:
                 if item['mode'] == 'pt':
                     p1 = (self._px_at_1_mil_h * item['p1'][0], self._px_at_1_mil_v * item['p1'][1])
                     p2 = (self._px_at_1_mil_h * item['p2'][0], self._px_at_1_mil_v * item['p2'][1])
@@ -891,13 +894,13 @@ class VectoRaster(QGraphicsView):
             self._selector.setRect(rect)
             self.temp_item.setRect(rect)
 
-    def ruler_vector(self, point, modifiers, pen=CustomPen.Line):
+    def ruler_vector(self, point, modifiers, pen=CustomPen.LineVect):
         p1, p2 = self.rect_tool_draw(point, modifiers)
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
             self._selector = self._scene.addSelector(rect)
-            self.temp_item = self._scene.addRuler(rect, 1 * self._px_at_1_mil_h, pen)
+            self.temp_item = self._scene.addRuler(rect, self.ruler_step * self._px_at_1_mil_h, pen)
         else:
             self._selector.setRect(rect)
             self.temp_item.setRect(rect)
@@ -911,6 +914,18 @@ class VectoRaster(QGraphicsView):
             self.drawing = True
             # make last point to the point of cursor
             self.lastPoint = self.mapToScene(event.pos()).toPoint()
+
+        elif (event.button() & (Qt.LeftButton | Qt.RightButton)) and self.draw_mode == DrawMode.Notool:
+            point = self.mapToScene(event.pos()).toPoint()
+            grab_item = self._scene.itemAt(point, self.transform())
+            if grab_item is not self._pen_size_ellipse:
+                grab_item.setPen(Qt.blue)
+                # if isinstance(grab_item, RulerItem):
+                #     pass
+                # elif grab_item.parentItem() is None:
+                #     self._scene.removeItem(grab_item)
+                # else:
+                #     self._scene.removeItem(grab_item.parentItem())
 
         super(VectoRaster, self).mousePressEvent(event)
 
@@ -974,7 +989,12 @@ class VectoRaster(QGraphicsView):
         if event.buttons() == Qt.RightButton:
             grab_item = self._scene.itemAt(point, self.transform())
             if grab_item is not self._pen_size_ellipse:
-                self._scene.removeItem(grab_item)
+                if isinstance(grab_item, RulerItem):
+                    pass
+                elif grab_item.parentItem() is None:
+                    self._scene.removeItem(grab_item)
+                else:
+                    self._scene.removeItem(grab_item.parentItem())
 
         elif event.button() == Qt.LeftButton:
 
@@ -1003,7 +1023,12 @@ class VectoRaster(QGraphicsView):
                     if self.draw_mode == DrawMode.Eraser:
                         grab_item = self._scene.itemAt(point, self.transform())
                         if grab_item is not self._pen_size_ellipse:
-                            self._scene.removeItem(grab_item)
+                            if isinstance(grab_item, RulerItem):
+                                pass
+                            elif grab_item.parentItem() is None:
+                                self._scene.removeItem(grab_item)
+                            else:
+                                self._scene.removeItem(grab_item.parentItem())
 
                     elif self.draw_mode == DrawMode.Pencil:
                         self._scene.addPoint(point, CustomPen.PencilVect, Qt.black)
@@ -1032,12 +1057,17 @@ class VectoRaster(QGraphicsView):
 
         # self._canvas.setVisible(False)
 
+
+
         template = []
         count = 0
         for i in self._scene.items():
-            if i.isVisible() or (i.isVisible() and i.parentItem() is None and grouping):
+            rule = (i.parentItem() is None) if grouping else (not isinstance(i, RulerItem))
+
+            if i.isVisible() and rule:
+
                 count += 1
-                if isinstance(i, RulerItem) and grouping:
+                if isinstance(i, RulerItem):
                     rect = i.rect()
                     template.append({
                         't': ItemType.Ruler,
@@ -1127,11 +1157,6 @@ class VectoRaster(QGraphicsView):
 
         # self._canvas.setVisible(True)
 
-    def save_vectors(self):
-        template = self.get_vectors()
-        with open('reticle.abcv', 'w') as fp:
-            json.dump(template, fp)
-
     @hide_grid
     def save_raster(self, *args, **kwargs):
         out_pix = QPixmap(self._scene.width(), self._scene.height())
@@ -1150,15 +1175,25 @@ class VectoRaster(QGraphicsView):
 
 
 class Window(QWidget):
-    def __init__(self):
+    def __init__(self, filename=None):
         super(Window, self).__init__()
 
-        # self.setFixedSize(640, 500)
+        self.filename = filename if filename is not None else 'reticle.abcv'
 
-        self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(0.5, 0.5), vector_mode=True)
-        with open('reticle.abcv', 'r') as fp:
-            self.template = json.load(fp)
-        self.viewer.load_reticle_sketch(self.template)
+        self.filename = Path(self.filename)
+        if self.filename.exists():
+            if self.filename.suffix == '.abcv':
+                self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(0.5, 0.5), vector_mode=True)
+                with open(self.filename, 'r') as fp:
+                    self.template = json.load(fp)
+                self.viewer.load_reticle_sketch(self.template)
+            elif self.filename.suffix == '.bmp':
+                self.viewer = VectoRaster(self, QSize(640, 480), clicks=QSizeF(2.01, 2.01))
+                self.viewer.setPhoto(QPixmap(self.filename))
+            else:
+                sys.exit()
+        else:
+            sys.exit()
 
         # 'Load image' button
         self.btnLoad = QToolButton(self)
@@ -1184,17 +1219,17 @@ class Window(QWidget):
 
         self.pencil_btn = DrawModeBtn(self)
         # self.pencil_btn.setText('Pencil')
-        self.pencil_btn.setIcon(QIcon('rsrc/edit_FILL0_wght400_GRAD0_opsz40.svg'))
+        self.pencil_btn.setIcon(QIcon('rsrc/pencil.svg'))
         self.pencil_btn.clicked.connect(self.on_draw_btn_press)
 
         self.eraser_btn = DrawModeBtn(self)
         # self.eraser_btn.setText('Eraser')
-        self.eraser_btn.setIcon(QIcon('rsrc/auto_fix_normal_FILL0_wght400_GRAD0_opsz40.svg'))
+        self.eraser_btn.setIcon(QIcon('rsrc/eraser.svg'))
         self.eraser_btn.clicked.connect(self.on_eraser_btn_press)
 
         self.line_btn = DrawModeBtn(self)
         # self.line_btn.setText('Line')
-        self.line_btn.setIcon(QIcon('rsrc/polyline_FILL0_wght400_GRAD0_opsz40.svg'))
+        self.line_btn.setIcon(QIcon('rsrc/slash-lg.svg'))
         self.line_btn.clicked.connect(self.on_line_btn_press)
 
         self.clear_btn = QToolButton(self)
@@ -1203,31 +1238,43 @@ class Window(QWidget):
         self.clear_btn.clicked.connect(self.on_clear_btn_press)
 
         self.to_svg_btn = QToolButton(self)
-        self.to_svg_btn.setText('To SVG')
+        # self.to_svg_btn.setText('To SVG')
+        self.to_svg_btn.setIcon(QIcon('rsrc/filetype-json.svg'))
         self.to_svg_btn.setFixedSize(50, 40)
         self.to_svg_btn.clicked.connect(self.on_to_svg_btn_press)
 
-        if not self.viewer._vector_mode:
-            self.to_svg_btn.setHidden(True)
-
         self.raster_btn = QToolButton(self)
-        self.raster_btn.setText('To BMP')
+        # self.raster_btn.setText('To BMP')
+        self.raster_btn.setIcon(QIcon('rsrc/filetype-bmp.svg'))
         self.raster_btn.setFixedSize(50, 40)
         self.raster_btn.clicked.connect(self.on_raster_btn_press)
 
         self.rect_btn = DrawModeBtn()
-        self.rect_btn.setText('Rect')
+        # self.rect_btn.setText('Rect')
+        self.rect_btn.setIcon(QIcon('rsrc/square.svg'))
         self.rect_btn.clicked.connect(self.on_rect_btn_press)
 
         self.ellipse_btn = DrawModeBtn()
-        self.ellipse_btn.setText('Ellipse')
+        # self.ellipse_btn.setText('Ellipse')
+        self.ellipse_btn.setIcon(QIcon('rsrc/circle.svg'))
         self.ellipse_btn.clicked.connect(self.on_ellipse_btn_press)
 
         self.ruler_btn = DrawModeBtn()
-        self.ruler_btn.setText('Ruler')
+        # self.ruler_btn.setText('Ruler')
+        self.ruler_btn.setIcon(QIcon('rsrc/rulers.svg'))
         self.ruler_btn.clicked.connect(self.on_ruler_btn_press)
 
-        self.drawing = False
+        self.ruler_combo = QComboBox()
+        self.ruler_combo.setFixedSize(70, 40)
+        for i in [0.05, 0.1, 0.2, 0.25, 0.3, 0.5, 1, 2, 5, 10]:
+            self.ruler_combo.addItem(f'{i} mil', i)
+        self.ruler_combo.currentIndexChanged.connect(self.ruler_step_change)
+
+        if not self.viewer._vector_mode:
+            self.to_svg_btn.setHidden(True)
+            self.ruler_btn.setHidden(True)
+
+        # self.drawing = False
         # make last point to the point of cursor
         self.lastPoint = QPoint()
 
@@ -1258,6 +1305,7 @@ class Window(QWidget):
         HBlayout.addWidget(self.rect_btn)
         HBlayout.addWidget(self.ellipse_btn)
         HBlayout.addWidget(self.ruler_btn)
+        HBlayout.addWidget(self.ruler_combo)
         HBlayout.addWidget(self.clear_btn)
         HBlayout.addWidget(self.to_svg_btn)
         HBlayout.addWidget(self.raster_btn)
@@ -1312,10 +1360,18 @@ class Window(QWidget):
             viewer.save_raster()
 
     def on_to_svg_btn_press(self, *args, **kwargs):
-        self.viewer.save_vectors()
+        self.save_vectors()
 
     def on_clear_btn_press(self):
         self.viewer.clear_view()
+
+    def ruler_step_change(self, idx):
+        self.viewer.ruler_step = self.ruler_combo.currentData()
+
+    def save_vectors(self):
+        template = self.viewer.get_vectors()
+        with open(self.filename, 'w') as fp:
+            json.dump(template, fp)
 
     def loadImage(self):
         self.viewer.setPhoto(QPixmap('1_3 MIL-R.bmp'))
@@ -1332,7 +1388,8 @@ if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
-    window = Window()
+    filename = app.arguments()[1] if len(app.arguments()) > 1 else None
+    window = Window(filename)
     window.setGeometry(500, 300, 800, 600)
     window.show()
     sys.exit(app.exec_())
