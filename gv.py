@@ -473,53 +473,53 @@ class VectoRaster(QGraphicsView):
 
     def draw_mil_grid(self, step_h=10.0, step_v=10.0, grid=False, mark=False, pen: QPen = QPen(), font_size=10):
 
-        grid_layer = GridItem(self._px_at_mil_h, self._px_at_mil_v, step_h, step_v, grid, mark, pen, font_size)
-        self._scene.addItem(grid_layer)
+        # grid_layer = GridItem(self._px_at_mil_h, self._px_at_mil_v, step_h, step_v, grid, mark, pen, font_size)
+        # self._scene.addItem(grid_layer)
 
-        # grid_scale_h_f = self._px_at_mil_h * step_h
-        # grid_scale_v_f = self._px_at_mil_v * step_v
-        # grid_scale_h = int(grid_scale_h_f)
-        # grid_scale_v = int(grid_scale_v_f)
-        #
-        # if (grid_scale_h and grid_scale_v) == 0:
-        #     return
-        #
-        # scene_rect = self._scene.sceneRect()
-        # max_x = int(scene_rect.width() / 2)
-        # max_y = int(scene_rect.height() / 2)
-        #
-        # font = QFont()
-        # font.setPixelSize(font_size)
-        #
-        # for i, x in enumerate(range(0, max_x, grid_scale_h)):
-        #     xF = i * grid_scale_h_f
-        #     if grid:
-        #         line1 = QLineF(xF, max_y, xF, -max_y)
-        #         line2 = QLineF(-xF, max_y, -xF, -max_y)
-        #         self._scene.addLine(line1, pen)
-        #         self._scene.addLine(line2, pen)
-        #     if mark:
-        #         text1 = self._scene.addText(str(round(i * step_h, 1)), font)
-        #         text1.setPos(QPointF(xF, 0))
-        #         text1.setDefaultTextColor(pen.color())
-        #         text2 = self._scene.addText(str(round(i * step_h, 1)), font)
-        #         text2.setPos(QPointF(-xF, 0))
-        #         text2.setDefaultTextColor(pen.color())
-        #
-        # for i, x in enumerate(range(0, max_x, grid_scale_v)):
-        #     yF = i * grid_scale_v_f
-        #     if grid:
-        #         line1 = QLineF(max_x, yF, -max_x, yF)
-        #         line2 = QLineF(max_x, -yF, -max_x, -yF)
-        #         self._scene.addLine(line1, pen)
-        #         self._scene.addLine(line2, pen)
-        #     if mark:
-        #         text1 = self._scene.addText(str(round(i * step_v, 1)), font)
-        #         text1.setPos(QPointF(0, yF))
-        #         text1.setDefaultTextColor(pen.color())
-        #         text2 = self._scene.addText(str(round(i * step_v, 1)), font)
-        #         text2.setPos(QPointF(0, -yF))
-        #         text2.setDefaultTextColor(pen.color())
+        grid_scale_h_f = self._px_at_mil_h * step_h
+        grid_scale_v_f = self._px_at_mil_v * step_v
+        grid_scale_h = int(grid_scale_h_f)
+        grid_scale_v = int(grid_scale_v_f)
+
+        if (grid_scale_h and grid_scale_v) == 0:
+            return
+
+        scene_rect = self._scene.sceneRect()
+        max_x = int(scene_rect.width() / 2)
+        max_y = int(scene_rect.height() / 2)
+
+        font = QFont()
+        font.setPixelSize(font_size)
+
+        for i, x in enumerate(range(0, max_x, grid_scale_h)):
+            xF = i * grid_scale_h_f
+            if grid:
+                line1 = QLineF(xF, max_y, xF, -max_y)
+                line2 = QLineF(-xF, max_y, -xF, -max_y)
+                self._scene.addLine(line1, pen)
+                self._scene.addLine(line2, pen)
+            if mark:
+                text1 = self._scene.addText(str(round(i * step_h, 1)), font)
+                text1.setPos(QPointF(xF, 0))
+                text1.setDefaultTextColor(pen.color())
+                text2 = self._scene.addText(str(round(i * step_h, 1)), font)
+                text2.setPos(QPointF(-xF, 0))
+                text2.setDefaultTextColor(pen.color())
+
+        for i, x in enumerate(range(0, max_x, grid_scale_v)):
+            yF = i * grid_scale_v_f
+            if grid:
+                line1 = QLineF(max_x, yF, -max_x, yF)
+                line2 = QLineF(max_x, -yF, -max_x, -yF)
+                self._scene.addLine(line1, pen)
+                self._scene.addLine(line2, pen)
+            if mark:
+                text1 = self._scene.addText(str(round(i * step_v, 1)), font)
+                text1.setPos(QPointF(0, yF))
+                text1.setDefaultTextColor(pen.color())
+                text2 = self._scene.addText(str(round(i * step_v, 1)), font)
+                text2.setPos(QPointF(0, -yF))
+                text2.setDefaultTextColor(pen.color())
 
     def fitInView(self, scale=True):
         rect = self.sceneRect()
