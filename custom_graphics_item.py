@@ -1,7 +1,7 @@
 from enum import IntEnum
 
 from PyQt5.QtCore import QRectF, Qt, QLineF, QPointF
-from PyQt5.QtGui import QPainter, QPixmap, QPen, QBrush, QColor
+from PyQt5.QtGui import QPainter, QPixmap, QPen, QBrush, QColor, QFont
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget, QGraphicsLineItem, \
     QGraphicsRectItem, QGraphicsItem, QGraphicsItemGroup
 
@@ -479,3 +479,60 @@ class SelectorItem(QGraphicsRectItem):
             w = round(self.rect().width() * self._view_scale[0] / self._view_scale[2], 2)
             h = round(self.rect().height() * self._view_scale[1] / self._view_scale[2], 2)
             painter.drawText(self.rect(), f'({w}, {h})')
+
+
+class GridItem(QGraphicsItem):
+    def __init__(self, px_at_mil_h, px_at_mil_v,
+                 step_h=10.0, step_v=10.0, grid=False, mark=False, pen: QPen = QPen(), font_size=10, parent=None):
+        super(GridItem, self).__init__(parent)
+        self._px_at_mil_h = px_at_mil_h
+        self._px_at_mil_v = px_at_mil_v
+        self._step_h = step_h
+        self._step_v = step_v
+        self._grid = grid
+        self._mark = mark
+        self._pen = pen
+        self._font_size = font_size
+
+    def boundingRect(self) -> QRectF:
+        return QRectF()
+
+    def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget' = None) -> None:
+        grid_scale_h_f = self._px_at_mil_h * self._step_h
+        grid_scale_v_f = self._px_at_mil_v * self._step_v
+        grid_scale_h = int(grid_scale_h_f)
+        grid_scale_v = int(grid_scale_v_f)
+
+        if (grid_scale_h and grid_scale_v) == 0:
+            return
+
+        scene_rect = self.scene().sceneRect()
+        max_x = int(scene_rect.width() / 2)
+        max_y = int(scene_rect.height() / 2)
+
+        font = QFont()
+        font.setPixelSize(self._font_size)
+
+        painter.setPen(self._pen)
+
+        lines = []
+
+        for i, x in enumerate(range(0, max_x, grid_scale_h)):
+            xF = i * grid_scale_h_f
+            if self._grid:
+                lines.append(QLineF(xF, max_y, xF, -max_y))
+                lines.append(QLineF(-xF, max_y, -xF, -max_y))
+            if self._mark:
+                painter.drawText(QPointF(xF, 0), str(round(i * self._step_h, 1)))
+                painter.drawText(QPointF(-xF, 0), str(round(i * self._step_h, 1)))
+
+        for i, x in enumerate(range(0, max_x, grid_scale_v)):
+            yF = i * grid_scale_v_f
+            if self._grid:
+                lines.append(QLineF(max_x, yF, -max_x, yF))
+                lines.append(QLineF(max_x, -yF, -max_x, -yF))
+            if self._mark:
+                painter.drawText(QPointF(0, yF), str(round(i * self._step_v, 1)))
+                painter.drawText(QPointF(0, -yF), str(round(i * self._step_v, 1)))
+
+        painter.drawLines(lines)
