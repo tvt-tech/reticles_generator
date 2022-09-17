@@ -725,7 +725,7 @@ class VectoRaster(QGraphicsView):
     def eraser_vector(self, point, modifiers):
         grab_item = self._scene.itemAt(point, self.transform())
         if grab_item is not self._pen_size_ellipse:
-            if isinstance(grab_item, RulerItem):
+            if isinstance(grab_item, RulerGroup):
                 pass
             elif grab_item.parentItem() is None:
                 self._scene.removeItem(grab_item)
@@ -792,7 +792,7 @@ class VectoRaster(QGraphicsView):
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
-            self._selector = self._scene.addSelector(rect)
+            self._selector = self._scene.addSelector(rect, (self._click_x, self._click_y, self._multiplier))
             self.temp_item = self._scene.addRect(rect, CustomPen.LineVect)
         else:
             self._selector.setRect(rect)
@@ -831,7 +831,7 @@ class VectoRaster(QGraphicsView):
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
-            self._selector = self._scene.addSelector(rect)
+            self._selector = self._scene.addSelector(rect, (self._click_x, self._click_y, self._multiplier))
             self.temp_item = self._scene.addEllipse(rect, pen)
         else:
             self._selector.setRect(rect)
@@ -842,7 +842,7 @@ class VectoRaster(QGraphicsView):
         rect = QRectF(p1, p2)
 
         if not self.temp_item:
-            self._selector = self._scene.addSelector(rect)
+            self._selector = self._scene.addSelector(rect, (self._click_x, self._click_y, self._multiplier))
             self.temp_item = self._scene.addRuler(rect, self.ruler_step * self._px_at_1_mil_h, pen)
         else:
             self._selector.setRect(rect)
@@ -861,10 +861,8 @@ class VectoRaster(QGraphicsView):
         elif (event.button() & (Qt.LeftButton | Qt.RightButton)) and self.draw_mode == DrawMode.Notool:
             point = self.mapToScene(event.pos()).toPoint()
             grab_item = self._scene.itemAt(point, self.transform())
-            # if grab_item is not self._pen_size_ellipse:
-            #     if isinstance(grab_item, RulerItem):
-            #         grab_item.setZValue(-1)
-                # [print(item) for item in grab_item.collidingItems() if isinstance(item, RulerItem)]
+            if grab_item is not self._pen_size_ellipse:
+                print(grab_item)
 
         super(VectoRaster, self).mousePressEvent(event)
 
@@ -918,7 +916,6 @@ class VectoRaster(QGraphicsView):
                 if self._vector_mode:
                     self.ruler_vector(point, modifiers)
 
-        self._scene.update()
         super(VectoRaster, self).mouseMoveEvent(event)
 
     # method for mouse left button release
@@ -928,7 +925,7 @@ class VectoRaster(QGraphicsView):
         if event.buttons() == Qt.RightButton:
             grab_item = self._scene.itemAt(point, self.transform())
             if grab_item is not self._pen_size_ellipse:
-                if isinstance(grab_item, RulerItem):
+                if isinstance(grab_item, RulerGroup):
                     pass
                 elif grab_item.parentItem() is None:
                     self._scene.removeItem(grab_item)
@@ -962,7 +959,7 @@ class VectoRaster(QGraphicsView):
                     if self.draw_mode == DrawMode.Eraser:
                         grab_item = self._scene.itemAt(point, self.transform())
                         if grab_item is not self._pen_size_ellipse:
-                            if isinstance(grab_item, RulerItem):
+                            if isinstance(grab_item, RulerGroup):
                                 pass
                             elif grab_item.parentItem() is None:
                                 self._scene.removeItem(grab_item)
@@ -997,18 +994,18 @@ class VectoRaster(QGraphicsView):
         template = []
         count = 0
         for i in self._scene.items():
-            rule = (i.parentItem() is None) if grouping else (not isinstance(i, RulerItem))
+            rule = (i.parentItem() is None) if grouping else (not isinstance(i, RulerGroup))
 
             if i.isVisible() and rule:
 
                 count += 1
-                if isinstance(i, RulerItem):
+                if isinstance(i, RulerGroup):
                     template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
                 elif isinstance(i, PointItem):
                     template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
                 elif isinstance(i, LineItem):
                     template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
-                elif isinstance(i, RectItem) and not isinstance(i, RulerItem):
+                elif isinstance(i, RectItem) and not isinstance(i, RulerGroup):
                     template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
                 elif isinstance(i, EllipseItem):
                     template.append(i.toJson(self._click_x, self._click_y, self._multiplier))

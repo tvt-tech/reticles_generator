@@ -1,9 +1,9 @@
 from enum import IntEnum
 
 from PyQt5.QtCore import QRectF, Qt, QLineF, QPointF
-from PyQt5.QtGui import QPainter, QPixmap, QPen
+from PyQt5.QtGui import QPainter, QPixmap, QPen, QBrush, QColor
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget, QGraphicsLineItem, \
-    QGraphicsRectItem, QGraphicsItem
+    QGraphicsRectItem, QGraphicsItem, QGraphicsItemGroup
 
 
 class ItemType(IntEnum):
@@ -40,7 +40,9 @@ class HoveredGraphicsItem:
         self.setPen(pen)
 
     def hoverLeaveEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
-        self.setPen(self.default_pen)
+        pen = self.pen()
+        pen.setColor(self._default_pen_color)
+        self.setPen(pen)
 
     def toJson(self) -> dict:
         return {}
@@ -124,7 +126,7 @@ class PointItem(QGraphicsItem, HoveredGraphicsItem):
     def __init__(self, point: 'QPointF', pen: QPen, brush: 'QBrush' = Qt.black, parent=None):
         super(PointItem, self).__init__(parent)
         self.setAcceptHoverEvents(True)
-        self.default_pen = pen
+        self._default_pen_color = pen.color()
         self._pen = pen
         self._brush = brush
         self._p = point
@@ -133,7 +135,6 @@ class PointItem(QGraphicsItem, HoveredGraphicsItem):
 
     def setPen(self, p: QPen):
         self._pen = p
-        self.scene().update()
 
     def pen(self):
         return self._pen
@@ -187,9 +188,10 @@ class PointItem(QGraphicsItem, HoveredGraphicsItem):
 class RulerItem(QGraphicsRectItem, HoveredGraphicsItem):
     def __init__(self, r: QRectF, step: float, pen: QPen, brush: 'QBrush' = Qt.black, parent=None):
         super(RulerItem, self).__init__(r, parent)
-        self.setAcceptHoverEvents(True)
+        # self.setAcceptHoverEvents(True)
+        self.setFiltersChildEvents(False)
         self.setPen(pen)
-        self.default_pen = pen
+        self._default_pen_color = pen.color()
         self.setBrush(brush)
         self._step = step
         self.items_group = None
@@ -248,11 +250,117 @@ class RulerItem(QGraphicsRectItem, HoveredGraphicsItem):
         }
 
 
+class RulerGroup(QGraphicsItemGroup):
+    def __init__(self, r: QRectF, step: float, pen: QPen, brush: 'QBrush' = Qt.transparent, parent=None):
+        super(RulerGroup, self).__init__(parent)
+        self.setAcceptHoverEvents(True)
+        self._default_pen_color = pen.color()
+        self._step = step
+        self._pen = pen
+        self._brush = brush
+        self._rect = None
+        self.setRect(r)
+
+    def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+        self._pen.setColor(Qt.blue)
+        for item in self.childItems():
+            item.setPen(self._pen)
+
+    def hoverLeaveEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+        self._pen.setColor(self._default_pen_color)
+        for item in self.childItems():
+            item.setPen(self._pen)
+
+    def boundingRect(self) -> QRectF:
+        if self.rect().width() > self.rect().height():
+            return QRectF(self.rect().x(), self.rect().y(), self.rect().width(), 0)
+        elif self.rect().width() < self.rect().height():
+            return QRectF(self.rect().x(), self.rect().y(), 0, self.rect().height())
+        return QRectF()
+
+    def paint(self, painter: QPainter, option: 'QStyleOptionGraphicsItem', widget: QWidget = None) -> None:
+        pass
+
+    def setRect(self, r: QRectF):
+        self._rect = r
+
+        rect = self.rect()
+
+        # print(self._pen.color().name())
+
+        for item in self.childItems():
+            self.scene().removeItem(item)
+
+        if rect.width() > rect.height():
+            line_count = abs(int(rect.width() / self._step)) + 1
+            for i in range(line_count):
+                x = i * self._step + rect.x()
+                if rect.height() > 0:
+                    line = QLineF(x, rect.center().y() - rect.height() / 2, x, rect.center().y() + rect.height() / 2)
+                    line_item = LineItem(line, self._pen)
+                    self.addToGroup(line_item)
+                else:
+                    point = QPointF(x, rect.center().y())
+                    point_item = PointItem(point, self._pen)
+                    self.addToGroup(point_item)
+
+        elif rect.width() < rect.height():
+            line_count = abs(int(rect.height() / self._step)) + 1
+            for i in range(line_count):
+                y = i * self._step + rect.y()
+                if rect.width() > 0:
+                    line = QLineF(rect.center().x() - rect.width() / 2, y, rect.center().x() + rect.width() / 2, y)
+                    line_item = LineItem(line, self._pen)
+                    self.addToGroup(line_item)
+                else:
+                    point = QPointF(rect.center().x(), y)
+                    point_item = PointItem(point, self._pen)
+                    self.addToGroup(point_item)
+
+    def rect(self):
+        return self._rect
+
+    def setPen(self, p: QPen):
+        self._pen = p
+
+    def pen(self):
+        return self._pen
+
+    def setBrush(self, b: 'QBrush'):
+        self._brush = b
+
+    def brush(self):
+        return self._brush
+
+    def setStep(self, step: float):
+        self._step = step
+
+    def step(self):
+        return self._step
+
+    def toJson(self, click_x, click_y, multiplier):
+        return {
+            't': ItemType.Ruler,
+            'step': self.step() * click_x / multiplier,
+            'p1': (
+                self.rect().x() * click_x / multiplier,
+                self.rect().y() * click_y / multiplier
+            ),
+            'p2': (
+                self.rect().width() * click_x / multiplier,
+                self.rect().height() * click_y / multiplier
+            ),
+            'mode': 'pt',
+            'pen': 1,
+        }
+
+
 class LineItem(QGraphicsLineItem, HoveredGraphicsItem):
-    def __init__(self, line: QLineF, pen: QPen):
+    def __init__(self, line: QLineF, pen: QPen, parent=None):
         super(LineItem, self).__init__(line)
+        self.setParentItem(parent)
         self.setPen(pen)
-        self.default_pen = pen
+        self._default_pen_color = pen.color()
         self.setAcceptHoverEvents(True)
 
     def toJson(self, click_x, click_y, multiplier):
@@ -284,7 +392,7 @@ class RectItem(QGraphicsRectItem, HoveredGraphicsItem):
     def __init__(self, rect: QRectF, pen: QPen, brush: 'QBrush' = Qt.transparent):
         super(RectItem, self).__init__(rect)
         self.setPen(pen)
-        self.default_pen = pen
+        self._default_pen_color = pen.color()
         self.setBrush(brush)
         self.setAcceptHoverEvents(True)
 
@@ -308,7 +416,7 @@ class EllipseItem(QGraphicsEllipseItem, HoveredGraphicsItem):
     def __init__(self, rect: QRectF, pen: QPen, brush: 'QBrush' = Qt.transparent):
         super(EllipseItem, self).__init__(rect)
         self.setPen(pen)
-        self.default_pen = pen
+        self._default_pen_color = pen.color()
         self.setBrush(brush)
         self.setAcceptHoverEvents(True)
 
@@ -329,12 +437,17 @@ class EllipseItem(QGraphicsEllipseItem, HoveredGraphicsItem):
 
 
 class SelectorItem(QGraphicsRectItem):
-    def __init__(self, r: QRectF, parent=None):
+    def __init__(self, r: QRectF, view_scale: tuple[float, float, float] = None, parent=None):
         super(SelectorItem, self).__init__(r, parent)
         self.setPen(QPen(Qt.blue, 0.2, Qt.SolidLine, Qt.RoundCap))
+        self.setBrush(QColor(0, 0, 255, 32))
+        self._view_scale = view_scale
 
     def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
         super(SelectorItem, self).paint(painter, option, widget)
         painter.drawLine(self.rect().topLeft(), self.rect().bottomRight())
-        painter.setBrush(Qt.blue)
         painter.drawEllipse(self.rect().center(), 0.3, 0.3)
+        if self._view_scale:
+            w = round(self.rect().width() * self._view_scale[0] / self._view_scale[2], 2)
+            h = round(self.rect().height() * self._view_scale[1] / self._view_scale[2], 2)
+            painter.drawText(self.rect(), f'({w}, {h})')
