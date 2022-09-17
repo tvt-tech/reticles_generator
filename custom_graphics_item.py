@@ -44,12 +44,17 @@ class HoveredGraphicsItem:
         pen.setColor(self._default_pen_color)
         self.setPen(pen)
 
-    def toJson(self) -> dict:
+    def toJson(self, click_x, click_y, multiplier) -> dict:
         return {}
 
     @staticmethod
-    def fromJson(px_at_1_mil_h: float, px_at_1_mil_v: float, data: dict):
+    def fromJson(px_at_mil_h: float,
+                 px_at_mil_v: float,
+                 p1: tuple[float, float],
+                 p2: tuple[float, float],
+                 step: float = 1, *args, **kwargs):
         return
+
 
 class SmoothLineItem(QGraphicsLineItem):
     def __init__(self, line: QLineF, pen: QPen, parent=None):
@@ -140,12 +145,10 @@ class PointItem(QGraphicsItem, HoveredGraphicsItem):
         return self._pen
 
     def boundingRect(self) -> QRectF:
-        size = self._pen.width()
-        return QRectF(self._p.x() - size, self._p.y() - size, 0.5, 0.5)
+        return QRectF(-0.5, -0.5, 1, 1)
 
     def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
         painter.setPen(self._pen)
-        painter.setBrush(self._brush)
         painter.drawPoint(self._p.x(), self._p.y())
 
     def x(self):
@@ -163,91 +166,89 @@ class PointItem(QGraphicsItem, HoveredGraphicsItem):
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Point,
-            'p': (
+            'step': 0.0,
+            'p1': (
                 self.x() * click_x / multiplier,
                 self.y() * click_y / multiplier
             ),
-            'mode': 'pt',
+            'p2': (0.0, 0.0),
             'pen': 1,
         }
 
     @staticmethod
-    def fromJson(px_at_1_mil_h: float, px_at_1_mil_v: float, data: dict):
-        if data['mode'] == 'pt':
-            p = [px_at_1_mil_h * data['p'][0], px_at_1_mil_v * data['p'][1]]
-
-        else:
-            p = [data['p'][0], data['p'][1]]
-
-        point = QPointF(*p)
-
+    def fromJson(px_at_mil_h: float,
+                 px_at_mil_v: float,
+                 p1: tuple[float, float],
+                 p2: tuple[float, float],
+                 step: float = 1, *args, **kwargs):
+        point = QPointF(px_at_mil_h * p1[0], px_at_mil_v * p1[1])
         pen = CustomPen.PencilVect
         return PointItem(point, pen)
 
 
-class RulerItem(QGraphicsRectItem, HoveredGraphicsItem):
-    def __init__(self, r: QRectF, step: float, pen: QPen, brush: 'QBrush' = Qt.black, parent=None):
-        super(RulerItem, self).__init__(r, parent)
-        # self.setAcceptHoverEvents(True)
-        self.setFiltersChildEvents(False)
-        self.setPen(pen)
-        self._default_pen_color = pen.color()
-        self.setBrush(brush)
-        self._step = step
-        self.items_group = None
-
-    def step(self):
-        return self._step
-
-    def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
-        # super(RulerItem, self).paint(painter, option, widget)
-        rect = self.rect()
-
-        for item in self.scene().items():
-            if item.parentItem() == self:
-                self.scene().removeItem(item)
-
-        if rect.width() > rect.height():
-            line_count = abs(int(rect.width() / self._step)) + 1
-            for i in range(line_count):
-                x = i * self._step + rect.x()
-                if rect.height() > 0:
-                    line = QLineF(x, rect.center().y() - rect.height() / 2, x, rect.center().y() + rect.height() / 2)
-                    line_item = self.scene().addLine(line, self.pen())
-                    line_item.setParentItem(self)
-                else:
-                    point = QPointF(x, rect.center().y())
-                    point_item = self.scene().addPoint(point, self.pen())
-                    point_item.setParentItem(self)
-
-        elif rect.width() < rect.height():
-            line_count = abs(int(rect.height() / self._step)) + 1
-            for i in range(line_count):
-                y = i * self._step + rect.y()
-                if rect.width() > 0:
-                    line = QLineF(rect.center().x() - rect.width() / 2, y, rect.center().x() + rect.width() / 2, y)
-                    line_item = self.scene().addLine(line, self.pen())
-                    line_item.setParentItem(self)
-                else:
-                    point = QPointF(rect.center().x(), y)
-                    point_item = self.scene().addPoint(point, self.pen())
-                    point_item.setParentItem(self)
-
-    def toJson(self, click_x, click_y, multiplier):
-        return {
-            't': ItemType.Ruler,
-            'step': self.step() * click_x / multiplier,
-            'p1': (
-                self.rect().x() * click_x / multiplier,
-                self.rect().y() * click_y / multiplier
-            ),
-            'p2': (
-                self.rect().width() * click_x / multiplier,
-                self.rect().height() * click_y / multiplier
-            ),
-            'mode': 'pt',
-            'pen': 1,
-        }
+# class RulerItem(QGraphicsRectItem, HoveredGraphicsItem):
+#     def __init__(self, r: QRectF, step: float, pen: QPen, brush: 'QBrush' = Qt.black, parent=None):
+#         super(RulerItem, self).__init__(r, parent)
+#         # self.setAcceptHoverEvents(True)
+#         self.setFiltersChildEvents(False)
+#         self.setPen(pen)
+#         self._default_pen_color = pen.color()
+#         self.setBrush(brush)
+#         self._step = step
+#         self.items_group = None
+#
+#     def step(self):
+#         return self._step
+#
+#     def paint(self, painter: 'QPainter', option: 'QStyleOptionGraphicsItem', widget: 'QWidget') -> None:
+#         # super(RulerItem, self).paint(painter, option, widget)
+#         rect = self.rect()
+#
+#         for item in self.scene().items():
+#             if item.parentItem() == self:
+#                 self.scene().removeItem(item)
+#
+#         if rect.width() > rect.height():
+#             line_count = abs(int(rect.width() / self._step)) + 1
+#             for i in range(line_count):
+#                 x = i * self._step + rect.x()
+#                 if rect.height() > 0:
+#                     line = QLineF(x, rect.center().y() - rect.height() / 2, x, rect.center().y() + rect.height() / 2)
+#                     line_item = self.scene().addLine(line, self.pen())
+#                     line_item.setParentItem(self)
+#                 else:
+#                     point = QPointF(x, rect.center().y())
+#                     point_item = self.scene().addPoint(point, self.pen())
+#                     point_item.setParentItem(self)
+#
+#         elif rect.width() < rect.height():
+#             line_count = abs(int(rect.height() / self._step)) + 1
+#             for i in range(line_count):
+#                 y = i * self._step + rect.y()
+#                 if rect.width() > 0:
+#                     line = QLineF(rect.center().x() - rect.width() / 2, y, rect.center().x() + rect.width() / 2, y)
+#                     line_item = self.scene().addLine(line, self.pen())
+#                     line_item.setParentItem(self)
+#                 else:
+#                     point = QPointF(rect.center().x(), y)
+#                     point_item = self.scene().addPoint(point, self.pen())
+#                     point_item.setParentItem(self)
+#
+#     def toJson(self, click_x, click_y, multiplier):
+#         return {
+#             't': ItemType.Ruler,
+#             'step': self.step() * click_x / multiplier,
+#             'p1': (
+#                 self.rect().x() * click_x / multiplier,
+#                 self.rect().y() * click_y / multiplier
+#             ),
+#             'p2': (
+#                 self.rect().width() * click_x / multiplier,
+#                 self.rect().height() * click_y / multiplier
+#             ),
+#             'mode': 'pt',
+#             'pen': 1,
+#         }
 
 
 class RulerGroup(QGraphicsItemGroup):
@@ -283,11 +284,7 @@ class RulerGroup(QGraphicsItemGroup):
 
     def setRect(self, r: QRectF):
         self._rect = r
-
         rect = self.rect()
-
-        # print(self._pen.color().name())
-
         for item in self.childItems():
             self.scene().removeItem(item)
 
@@ -350,9 +347,19 @@ class RulerGroup(QGraphicsItemGroup):
                 self.rect().width() * click_x / multiplier,
                 self.rect().height() * click_y / multiplier
             ),
-            'mode': 'pt',
             'pen': 1,
         }
+
+    @staticmethod
+    def fromJson(px_at_mil_h: float,
+                 px_at_mil_v: float,
+                 p1: tuple[float, float],
+                 p2: tuple[float, float],
+                 step: float, *args, **kwargs):
+        s = step * px_at_mil_h if p2[0] > p2[1] else step * px_at_mil_v
+        rect = QRectF(px_at_mil_h * p1[0], px_at_mil_v * p1[1], px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        pen = CustomPen.LineVect
+        return RulerGroup(rect, s, pen)
 
 
 class LineItem(QGraphicsLineItem, HoveredGraphicsItem):
@@ -366,6 +373,7 @@ class LineItem(QGraphicsLineItem, HoveredGraphicsItem):
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Line,
+            'step': 0.0,
             'p1': (
                 self.line().x1() * click_x / multiplier,
                 self.line().y1() * click_y / multiplier
@@ -374,17 +382,17 @@ class LineItem(QGraphicsLineItem, HoveredGraphicsItem):
                 self.line().x2() * click_x / multiplier,
                 self.line().y2() * click_y / multiplier
             ),
-            'mode': 'pt',
             'pen': 1,
         }
 
     @staticmethod
-    def fromJson(px_at_1_mil_h: float, px_at_1_mil_v: float, data: dict):
-        # if data['mode'] == 'pt':
-        p1 = [px_at_1_mil_h * data['p1'][0], px_at_1_mil_v * data['p1'][1]]
-        p2 = [px_at_1_mil_h * data['p2'][0], px_at_1_mil_v * data['p2'][1]]
-        line = QLineF(*p1, *p2)
-        pen = CustomPen.PencilVect
+    def fromJson(px_at_mil_h: float,
+                 px_at_mil_v: float,
+                 p1: tuple[float, float],
+                 p2: tuple[float, float],
+                 step: float = 1, *args, **kwarg):
+        line = QLineF(px_at_mil_h * p1[0], px_at_mil_v * p1[1], px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        pen = CustomPen.LineVect
         return LineItem(line, pen)
 
 
@@ -399,6 +407,7 @@ class RectItem(QGraphicsRectItem, HoveredGraphicsItem):
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Rect,
+            'step': 0.0,
             'p1': (
                 self.rect().x() * click_x / multiplier,
                 self.rect().y() * click_y / multiplier
@@ -407,9 +416,18 @@ class RectItem(QGraphicsRectItem, HoveredGraphicsItem):
                 self.rect().width() * click_x / multiplier,
                 self.rect().height() * click_y / multiplier
             ),
-            'mode': 'pt',
             'pen': 1,
         }
+
+    @staticmethod
+    def fromJson(px_at_mil_h: float,
+                 px_at_mil_v: float,
+                 p1: tuple[float, float],
+                 p2: tuple[float, float],
+                 step: float = 1, *args, **kwargs):
+        rect = QRectF(px_at_mil_h * p1[0], px_at_mil_v * p1[1], px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        pen = CustomPen.LineVect
+        return RectItem(rect, pen)
 
 
 class EllipseItem(QGraphicsEllipseItem, HoveredGraphicsItem):
@@ -423,6 +441,7 @@ class EllipseItem(QGraphicsEllipseItem, HoveredGraphicsItem):
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Ellipse if self.rect().width() != self.rect().height() else ItemType.Circle,
+            'step': 0.0,
             'p1': (
                 self.rect().x() * click_x / multiplier,
                 self.rect().y() * click_y / multiplier
@@ -431,9 +450,18 @@ class EllipseItem(QGraphicsEllipseItem, HoveredGraphicsItem):
                 self.rect().width() * click_x / multiplier,
                 self.rect().height() * click_y / multiplier
             ),
-            'mode': 'pt',
             'pen': 1,
         }
+
+    @staticmethod
+    def fromJson(px_at_mil_h: float,
+                 px_at_mil_v: float,
+                 p1: tuple[float, float],
+                 p2: tuple[float, float],
+                 step: float = 1, *args, **kwargs):
+        rect = QRectF(px_at_mil_h * p1[0], px_at_mil_v * p1[1], px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        pen = CustomPen.PencilVect
+        return EllipseItem(rect, pen)
 
 
 class SelectorItem(QGraphicsRectItem):
