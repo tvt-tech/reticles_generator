@@ -23,13 +23,15 @@ def hide_grid(func: callable):
     def _impl(self, *method_args, **method_kwargs):
         children = self._scene.items()
         for ch in children:
-            if hasattr(ch, 'pen'):
-                if ch.pen().color() == Qt.darkMagenta or ch.pen().color() == Qt.magenta:
-                    ch.setVisible(False)
-
-            if hasattr(ch, 'defaultTextColor'):
-                if ch.defaultTextColor() == Qt.darkMagenta or ch.defaultTextColor() == Qt.magenta:
-                    ch.setVisible(False)
+            if isinstance(ch, GridItem):
+                ch.setVisible(False)
+            # if hasattr(ch, 'pen'):
+            #     if ch.pen().color() == Qt.darkMagenta or ch.pen().color() == Qt.magenta:
+            #         ch.setVisible(False)
+            #
+            # if hasattr(ch, 'defaultTextColor'):
+            #     if ch.defaultTextColor() == Qt.darkMagenta or ch.defaultTextColor() == Qt.magenta:
+            #         ch.setVisible(False)
         self._pen_size_ellipse.setVisible(False)
         ret = func(self, *method_args, **method_kwargs)
         for ch in children:
@@ -230,57 +232,52 @@ class VectoRaster(QGraphicsView):
             pen = CustomPen.Line
             if item['t'] == ItemType.Line:
 
-                if item['mode'] == 'pt':
+                p1 = item['p1']
+                p2 = item['p2']
 
-                    p1 = item['p1']
-                    p2 = item['p2']
+                if p1[0] == p2[0] != 0:
+                    r = round_point_to_step(p1[0], self._min_mil_h_step)
+                    if r:
+                        p1 = [r, p1[1]]
+                        p2 = [r, p2[1]]
+                    elif r is not None:
+                        continue
 
-                    if p1[0] == p2[0] != 0:
-                        r = round_point_to_step(p1[0], self._min_mil_h_step)
-                        if r:
-                            p1 = [r, p1[1]]
-                            p2 = [r, p2[1]]
-                        elif r is not None:
-                            continue
+                elif p1[1] == p2[1] != 0:
+                    r = round_point_to_step(p1[1], self._min_mil_v_step)
+                    if r:
+                        p1 = [p1[0], r]
+                        p2 = [p2[0], r]
+                    elif r is not None:
+                        continue
 
-                    elif p1[1] == p2[1] != 0:
-                        r = round_point_to_step(p1[1], self._min_mil_v_step)
-                        if r:
-                            p1 = [p1[0], r]
-                            p2 = [p2[0], r]
-                        elif r is not None:
-                            continue
+                p1 = [self._px_at_mil_h * p1[0], self._px_at_mil_v * p1[1]]
+                p2 = [self._px_at_mil_h * p2[0], self._px_at_mil_v * p2[1]]
 
-                    p1 = [self._px_at_mil_h * p1[0], self._px_at_mil_v * p1[1]]
-                    p2 = [self._px_at_mil_h * p2[0], self._px_at_mil_v * p2[1]]
+                if p1[0] < 0:
+                    p1[0] -= 1
+                if p1[1] < 0:
+                    p1[1] -= 1
+                if p2[0] < 0:
+                    p2[0] -= 1
+                if p2[1] < 0:
+                    p2[1] -= 1
 
-                    if p1[0] < 0:
-                        p1[0] -= 1
-                    if p1[1] < 0:
-                        p1[1] -= 1
-                    if p2[0] < 0:
-                        p2[0] -= 1
-                    if p2[1] < 0:
-                        p2[1] -= 1
+                # if 0 < abs(p1[0]) < self._min_px_h_step:
+                #     p1[0] = p1[0] / abs(p1[0]) * 1
+                #
+                # if 0 < abs(p2[0]) < self._min_px_h_step:
+                #     p2[0] = p2[0] / abs(p2[0]) * 1
+                #
+                # if 0 < abs(p1[1]) < self._min_px_v_step:
+                #     p1[1] = p1[1] / abs(p1[1]) * 1
+                #
+                # if 0 < abs(p2[1]) < self._min_px_v_step:
+                #     p2[1] = p2[1] / abs(p2[1]) * 1
 
-                    # if 0 < abs(p1[0]) < self._min_px_h_step:
-                    #     p1[0] = p1[0] / abs(p1[0]) * 1
-                    #
-                    # if 0 < abs(p2[0]) < self._min_px_h_step:
-                    #     p2[0] = p2[0] / abs(p2[0]) * 1
-                    #
-                    # if 0 < abs(p1[1]) < self._min_px_v_step:
-                    #     p1[1] = p1[1] / abs(p1[1]) * 1
-                    #
-                    # if 0 < abs(p2[1]) < self._min_px_v_step:
-                    #     p2[1] = p2[1] / abs(p2[1]) * 1
+                p1 = QPoint(math.ceil(p1[0]), math.ceil(p1[1]))
+                p2 = QPoint(math.ceil(p2[0]), math.ceil(p2[1]))
 
-                    p1 = QPoint(math.ceil(p1[0]), math.ceil(p1[1]))
-                    p2 = QPoint(math.ceil(p2[0]), math.ceil(p2[1]))
-
-                else:
-                    p1 = QPoint(item['p1'])
-                    p2 = QPoint(item['p2'])
 
                 if item['t'] == ItemType.Line:
                     line = QLine(p1, p2)
@@ -288,166 +285,153 @@ class VectoRaster(QGraphicsView):
                     self._canvas.drawLineC(line, pen)
 
             elif item['t'] == ItemType.Point:
-                x = item['p'][0]
-                y = item['p'][1]
-                if item['mode'] == 'pt':
+                x = item['p1'][0]
+                y = item['p1'][1]
 
-                    if x != 0:
-                        r = round_point_to_step(x, self._min_mil_h_step)
-                        if r:
-                            x = r
-                        elif r is not None:
-                            continue
+                if x != 0:
+                    r = round_point_to_step(x, self._min_mil_h_step)
+                    if r:
+                        x = r
+                    elif r is not None:
+                        continue
 
-                    if y != 0:
-                        r = round_point_to_step(y, self._min_mil_v_step)
-                        if r:
-                            y = r
-                        elif r is not None:
-                            continue
+                if y != 0:
+                    r = round_point_to_step(y, self._min_mil_v_step)
+                    if r:
+                        y = r
+                    elif r is not None:
+                        continue
 
-                    p = [int(self._px_at_mil_h * x), int(self._px_at_mil_v * y)]
+                p = [int(self._px_at_mil_h * x), int(self._px_at_mil_v * y)]
 
-                    if p[0] < 0:
-                        p[0] -= 1
-                    if p[1] < 0:
-                        p[1] -= 1
-                    if p[0] > 0:
-                        p[0] += 1
-                    if p[1] > 0:
-                        p[1] += 1
+                if p[0] < 0:
+                    p[0] -= 1
+                if p[1] < 0:
+                    p[1] -= 1
+                if p[0] > 0:
+                    p[0] += 1
+                if p[1] > 0:
+                    p[1] += 1
 
-                    point = QPoint(*p)
-                else:
-                    point = QPoint(x, y)
+                point = QPoint(*p)
 
                 pen = CustomPen.Line
                 # pen.setWidth(item['pen'])
                 self._canvas.drawPointC(point, pen)
             #
             elif item['t'] in [ItemType.Circle, ItemType.Ellipse]:
-                if item['mode'] == 'pt':
 
-                    x1 = item['p1'][0]
-                    y1 = item['p1'][1]
-                    x2 = item['p2'][0]
-                    y2 = item['p2'][1]
+                x1 = item['p1'][0]
+                y1 = item['p1'][1]
+                x2 = item['p2'][0]
+                y2 = item['p2'][1]
 
-                    if x1 != 0:
-                        r = round_point_to_step(x1, self._min_mil_h_step)
-                        if r:
-                            x1 = r
-                        elif r is not None:
-                            continue
+                if x1 != 0:
+                    r = round_point_to_step(x1, self._min_mil_h_step)
+                    if r:
+                        x1 = r
+                    elif r is not None:
+                        continue
 
-                    if y1 != 0:
-                        r = round_point_to_step(y1, self._min_mil_v_step)
-                        if r:
-                            y1 = r
-                        elif r is not None:
-                            continue
+                if y1 != 0:
+                    r = round_point_to_step(y1, self._min_mil_v_step)
+                    if r:
+                        y1 = r
+                    elif r is not None:
+                        continue
 
-                    if x2 != 0:
-                        r = round_point_to_step(x2, self._min_mil_h_step)
-                        if r:
-                            x2 = r
-                        elif r is not None:
-                            continue
+                if x2 != 0:
+                    r = round_point_to_step(x2, self._min_mil_h_step)
+                    if r:
+                        x2 = r
+                    elif r is not None:
+                        continue
 
-                    if y2 != 0:
-                        r = round_point_to_step(y2, self._min_mil_v_step)
-                        if r:
-                            y2 = r
-                        elif r is not None:
-                            continue
+                if y2 != 0:
+                    r = round_point_to_step(y2, self._min_mil_v_step)
+                    if r:
+                        y2 = r
+                    elif r is not None:
+                        continue
 
-                    x1 = x1 * self._px_at_mil_h
-                    y1 = y1 * self._px_at_mil_v
-                    x2 = x2 * self._px_at_mil_h
-                    y2 = y2 * self._px_at_mil_v
+                x1 = x1 * self._px_at_mil_h
+                y1 = y1 * self._px_at_mil_v
+                x2 = x2 * self._px_at_mil_h
+                y2 = y2 * self._px_at_mil_v
 
-                    if x1 < 0:
-                        x1 -= 1
-                    if y1 < 0:
-                        y1 -= 1
-                    if x2 < 0:
-                        x2 -= 1
-                    if y2 < 0:
-                        y2 -= 1
+                if x1 < 0:
+                    x1 -= 1
+                if y1 < 0:
+                    y1 -= 1
+                if x2 < 0:
+                    x2 -= 1
+                if y2 < 0:
+                    y2 -= 1
 
-                    if x2 / x1 == 0.1:
-                        pen = CustomPen.Pencil
-                        p = QPoint(x2 - x1, y2 - y1)
-                        self._canvas.drawPointC(p, pen)
-
-                    else:
-
-                        pen = CustomPen.Ellipse
-                        p = (x1, y1)
-                        s = (x1 + x2, y1 + y2)
-                        rect = QRect(*p, *s)
-                        self._canvas.drawEllipseC(rect, pen)
+                if x2 / x1 == 0.1:
+                    pen = CustomPen.Pencil
+                    p = QPoint(x2 - x1, y2 - y1)
+                    self._canvas.drawPointC(p, pen)
 
             elif item['t'] == ItemType.Rect:
-                if item['mode'] == 'pt':
 
-                    x1 = item['p1'][0]
-                    y1 = item['p1'][1]
-                    x2 = item['p2'][0]
-                    y2 = item['p2'][1]
+                x1 = item['p1'][0]
+                y1 = item['p1'][1]
+                x2 = item['p2'][0]
+                y2 = item['p2'][1]
 
-                    if x1 != 0:
-                        r = round_point_to_step(x1, self._min_mil_h_step)
-                        if r:
-                            x1 = r
-                        elif r is not None:
-                            continue
+                if x1 != 0:
+                    r = round_point_to_step(x1, self._min_mil_h_step)
+                    if r:
+                        x1 = r
+                    elif r is not None:
+                        continue
 
-                    if y1 != 0:
-                        r = round_point_to_step(y1, self._min_mil_v_step)
-                        if r:
-                            y1 = r
-                        elif r is not None:
-                            continue
+                if y1 != 0:
+                    r = round_point_to_step(y1, self._min_mil_v_step)
+                    if r:
+                        y1 = r
+                    elif r is not None:
+                        continue
 
-                    if x2 != 0:
-                        r = round_point_to_step(x2, self._min_mil_h_step)
-                        if r:
-                            x2 = r
-                        elif r is not None:
-                            continue
+                if x2 != 0:
+                    r = round_point_to_step(x2, self._min_mil_h_step)
+                    if r:
+                        x2 = r
+                    elif r is not None:
+                        continue
 
-                    if y2 != 0:
-                        r = round_point_to_step(y2, self._min_mil_v_step)
-                        if r:
-                            y2 = r
-                        elif r is not None:
-                            continue
+                if y2 != 0:
+                    r = round_point_to_step(y2, self._min_mil_v_step)
+                    if r:
+                        y2 = r
+                    elif r is not None:
+                        continue
 
-                    pen = CustomPen.Ellipse
+                pen = CustomPen.Ellipse
 
-                    x1 = x1 * self._px_at_mil_h
-                    y1 = y1 * self._px_at_mil_v
-                    x2 = x2 * self._px_at_mil_h
-                    y2 = y2 * self._px_at_mil_v
+                x1 = x1 * self._px_at_mil_h
+                y1 = y1 * self._px_at_mil_v
+                x2 = x2 * self._px_at_mil_h
+                y2 = y2 * self._px_at_mil_v
 
-                    if x1 < 0:
-                        x1 -= 1
-                    if y1 < 0:
-                        y1 -= 1
-                    if x2 < 0:
-                        x2 -= 1
-                    if y2 < 0:
-                        y2 -= 1
+                if x1 < 0:
+                    x1 -= 1
+                if y1 < 0:
+                    y1 -= 1
+                if x2 < 0:
+                    x2 -= 1
+                if y2 < 0:
+                    y2 -= 1
 
-                    if x2 < self._min_mil_h_step:
-                        self._canvas.drawPointC(QPoint(x1, y1), pen)
+                if x2 < self._min_mil_h_step:
+                    self._canvas.drawPointC(QPoint(x1, y1), pen)
 
-                    else:
-                        p = (x1, y1)
-                        s = (x1 + x2, y1 + y2)
-                        rect = QRect(*p, *s)
-                        self._canvas.drawRectC(rect, pen)
+                else:
+                    p = (x1, y1)
+                    s = (x1 + x2, y1 + y2)
+                    rect = QRect(*p, *s)
+                    self._canvas.drawRectC(rect, pen)
 
     def load_reticle_sketch(self, sketch=example_grid):
 
@@ -473,53 +457,9 @@ class VectoRaster(QGraphicsView):
 
     def draw_mil_grid(self, step_h=10.0, step_v=10.0, grid=False, mark=False, pen: QPen = QPen(), font_size=10):
 
-        # grid_layer = GridItem(self._px_at_mil_h, self._px_at_mil_v, step_h, step_v, grid, mark, pen, font_size)
-        # self._scene.addItem(grid_layer)
-
-        grid_scale_h_f = self._px_at_mil_h * step_h
-        grid_scale_v_f = self._px_at_mil_v * step_v
-        grid_scale_h = int(grid_scale_h_f)
-        grid_scale_v = int(grid_scale_v_f)
-
-        if (grid_scale_h and grid_scale_v) == 0:
-            return
-
-        scene_rect = self._scene.sceneRect()
-        max_x = int(scene_rect.width() / 2)
-        max_y = int(scene_rect.height() / 2)
-
-        font = QFont()
-        font.setPixelSize(font_size)
-
-        for i, x in enumerate(range(0, max_x, grid_scale_h)):
-            xF = i * grid_scale_h_f
-            if grid:
-                line1 = QLineF(xF, max_y, xF, -max_y)
-                line2 = QLineF(-xF, max_y, -xF, -max_y)
-                self._scene.addLine(line1, pen)
-                self._scene.addLine(line2, pen)
-            if mark:
-                text1 = self._scene.addText(str(round(i * step_h, 1)), font)
-                text1.setPos(QPointF(xF, 0))
-                text1.setDefaultTextColor(pen.color())
-                text2 = self._scene.addText(str(round(i * step_h, 1)), font)
-                text2.setPos(QPointF(-xF, 0))
-                text2.setDefaultTextColor(pen.color())
-
-        for i, x in enumerate(range(0, max_x, grid_scale_v)):
-            yF = i * grid_scale_v_f
-            if grid:
-                line1 = QLineF(max_x, yF, -max_x, yF)
-                line2 = QLineF(max_x, -yF, -max_x, -yF)
-                self._scene.addLine(line1, pen)
-                self._scene.addLine(line2, pen)
-            if mark:
-                text1 = self._scene.addText(str(round(i * step_v, 1)), font)
-                text1.setPos(QPointF(0, yF))
-                text1.setDefaultTextColor(pen.color())
-                text2 = self._scene.addText(str(round(i * step_v, 1)), font)
-                text2.setPos(QPointF(0, -yF))
-                text2.setDefaultTextColor(pen.color())
+        grid_layer = GridItem(self._px_at_mil_h, self._px_at_mil_v, step_h, step_v, grid, mark, pen, font_size,
+                              self._scene.sceneRect())
+        self._scene.addItem(grid_layer)
 
     def fitInView(self, scale=True):
         rect = self.sceneRect()
@@ -619,7 +559,7 @@ class VectoRaster(QGraphicsView):
 
         if p1 != p2:
             line = QLineF(p1, p2)
-            self.temp_item = self._scene.addLine(line, CustomPen.PencilVect)
+            self.temp_item = self._scene.addLine(line, CustomPen.LineVect)
             # self._scene.addPoint(p2, CustomPen.PointVect)
             # if not self.temp_item:
             #     self.temp_item = self._scene.add(line, CustomPen.Line)
@@ -669,7 +609,7 @@ class VectoRaster(QGraphicsView):
         p1, p2 = self.line_tool_draw(point, modifiers)
         line = QLineF(p1, p2)
         if not self.temp_item:
-            self.temp_item = self._scene.addLine(line, CustomPen.PencilVect)
+            self.temp_item = self._scene.addLine(line, CustomPen.LineVect)
         else:
             self.temp_item.setLine(line)
 
@@ -881,7 +821,7 @@ class VectoRaster(QGraphicsView):
                                 self._scene.removeItem(grab_item.parentItem())
 
                     elif self.draw_mode == DrawMode.Pencil:
-                        self._scene.addPoint(point, CustomPen.PencilVect, Qt.black)
+                        self._scene.addPoint(point, CustomPen.PencilVect, CustomBrush.Black)
 
                     # elif self.draw_mode == DrawMode.Notool:
                     #     grab_item = self._scene.itemAt(point, self.transform())

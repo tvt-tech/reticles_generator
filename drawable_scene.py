@@ -27,12 +27,12 @@ class DrawbleGraphicScene(QGraphicsScene):
         smooth_ellipse = SmoothEllipseItem(rect, pen)
         return self.addItem(smooth_ellipse)
 
-    def addPoint(self, point: 'QPointF', pen: 'QPen' = QPen(Qt.black),
+    def addPoint(self, point: 'QPointF', pen: 'QPen' = CustomPen.PointVect,
                  brush: QBrush = QBrush(Qt.black)) -> 'QGraphicsRectItem':
         point_item = PointItem(point, pen, brush)
         return self.addItem(point_item)
 
-    def addRuler(self, rect: QRectF, step: float, pen: 'QPen', brush: 'QBrush' = Qt.transparent) -> RulerGroup:
+    def addRuler(self, rect: QRectF, step: float, pen: 'QPen', brush: 'QBrush' = CustomBrush.Transparent) -> RulerGroup:
         ruler_group = RulerGroup(rect, step, pen, brush)
         return self.addItem(ruler_group)
 
@@ -44,10 +44,10 @@ class DrawbleGraphicScene(QGraphicsScene):
         line_item = LineItem(line, pen)
         return self.addItem(line_item)
 
-    def addRect(self, rect: 'QRectF', pen: 'QPen', brush: QBrush = Qt.transparent) -> RectItem:
+    def addRect(self, rect: 'QRectF', pen: 'QPen', brush: QBrush = CustomBrush.Transparent) -> RectItem:
         rect_item = RectItem(rect, pen, brush)
         return self.addItem(rect_item)
 
-    def addEllipse(self, rect: 'QRectF', pen: 'QPen', brush: QBrush = Qt.transparent) -> QGraphicsEllipseItem:
+    def addEllipse(self, rect: 'QRectF', pen: 'QPen', brush: QBrush = CustomBrush.Transparent) -> QGraphicsEllipseItem:
         ellipse_item = EllipseItem(rect, pen, brush)
         return self.addItem(ellipse_item)
