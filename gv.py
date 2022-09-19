@@ -12,6 +12,8 @@ from drawable_scene import DrawbleGraphicScene
 from example_grid import example_grid
 from grid_step import *
 
+from pathlib import Path
+
 
 def hide_grid(func: callable):
     @wraps(func)
@@ -844,17 +846,18 @@ class VectoRaster(QGraphicsView):
 
     @hide_grid
     def save_raster(self, *args, **kwargs):
+        path = Path('compiled')
+        if not path.exists():
+            Path.mkdir(path)
         out_pix = QPixmap(self._scene.width(), self._scene.height())
         out_pix.fill(Qt.transparent)
         painter = QPainter(out_pix)
         painter.setCompositionMode(painter.CompositionMode_Source)
-
-
         self._scene.render(painter, QRectF(out_pix.rect()), QRectF(self._scene.sceneRect()),
                            Qt.KeepAspectRatio)
-
         painter.end()
-        out_pix.save(f'test_scene_{round(self._click_x, 2)}_{round(self._click_y, 2)}.png', 'PNG')
+        fpath = Path(path, f'ret_{round(self._click_x, 2)}_{round(self._click_y, 2)}.png')
+        out_pix.save(str(fpath), 'PNG')
 
     def resizeEvent(self, event: 'QResizeEvent') -> None:
         self.fitInView()
