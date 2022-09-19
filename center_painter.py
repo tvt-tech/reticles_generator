@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QPointF, QPoint, QLine, QRect, QRectF, Qt
+from PyQt5.QtCore import QPointF, QPoint, QLine, QRect, QRectF, Qt, QLineF
 from PyQt5.QtGui import QPainter, QPixmap, QPolygon
 
 
@@ -16,7 +16,7 @@ class CenterPainter(QPainter):
         return super(CenterPainter, self).drawPoint(point)
 
     def drawLineC(self, line: QLine) -> None:
-        line = QLine(self._to_origin(line.p1()), self._to_origin(line.p2()))
+        line = QLineF(self._to_origin(line.p1()), self._to_origin(line.p2()))
         return super(CenterPainter, self).drawLine(line)
 
     def drawLinesC(self, lines: list) -> None:

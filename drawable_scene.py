@@ -1,3 +1,4 @@
+from PyQt5.QtCore import QPoint
 from PyQt5.QtGui import QBrush
 from PyQt5.QtWidgets import QGraphicsScene
 
@@ -7,9 +8,11 @@ from custom_graphics_item import *
 class DrawbleGraphicScene(QGraphicsScene):
     def __init__(self, *args, **kwargs):
         super(DrawbleGraphicScene, self).__init__(*args, **kwargs)
+        self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
 
         self.x0 = int(self.width() / 2) + 1
         self.y0 = int(self.height() / 2) + 1
+        self.origin = QPoint(self.x0, self.y0)
 
     def addItem(self, item: QGraphicsItem) -> QGraphicsItem:
         super(DrawbleGraphicScene, self).addItem(item)
@@ -51,3 +54,8 @@ class DrawbleGraphicScene(QGraphicsScene):
     def addEllipse(self, rect: 'QRectF', pen: 'QPen', brush: QBrush = CustomBrush.Transparent) -> QGraphicsEllipseItem:
         ellipse_item = EllipseItem(rect, pen, brush)
         return self.addItem(ellipse_item)
+
+    # def removeItem(self, item: 'QGraphicsItem') -> None:
+    #     for child_item in item.childItems():
+    #         super().removeItem(child_item)
+    #     super().removeItem(item)

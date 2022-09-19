@@ -5,6 +5,8 @@ from PyQt5.QtGui import QPainter, QPixmap, QPen, QBrush, QColor, QFont
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget, QGraphicsLineItem, \
     QGraphicsRectItem, QGraphicsItem, QGraphicsItemGroup
 
+from center_painter import CenterPainter
+
 
 class ItemType(IntEnum):
     Point = 1
@@ -70,8 +72,8 @@ class SmoothLineItem(QGraphicsLineItem):
         self.setPen(pen)
         self.setPos(-0.5, -0.5)
 
-    def boundingRect(self) -> QRectF:
-        return self.scene().sceneRect()
+    # def boundingRect(self) -> QRectF:
+    #     return self.scene().sceneRect()
 
     def redraw_pix(self):
         pixmap = QPixmap(self.scene().width(), self.scene().height())
@@ -94,13 +96,13 @@ class SmoothRectItem(QGraphicsRectItem):
         self.setPos(-0.5, -0.5)
 
     def boundingRect(self) -> QRectF:
-        return self.scene().sceneRect()
+        return self.rect()
 
     def redraw_pix(self):
         pixmap = QPixmap(self.scene().width(), self.scene().height())
         pixmap.fill(Qt.transparent)
-        pix_painter = QPainter(pixmap)
-        pix_painter.drawRect(self.rect())
+        pix_painter = CenterPainter(pixmap)
+        pix_painter.drawRectC(self.rect())
         return pixmap
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
@@ -117,8 +119,8 @@ class SmoothEllipseItem(QGraphicsEllipseItem):
         self.setPen(pen)
         self.setPos(-0.5, -0.5)
 
-    def boundingRect(self) -> QRectF:
-        return self.scene().sceneRect()
+    # def boundingRect(self) -> QRectF:
+    #     return self.scene().sceneRect()
 
     def redraw_pix(self):
         pixmap = QPixmap(self.scene().width(), self.scene().height())
@@ -260,6 +262,11 @@ class RulerGroup(QGraphicsItemGroup):
         self._brush = brush
         self._rect = None
         self.setRect(r)
+        self._removing = False
+
+    def removeSelf(self):
+        self._removing = True
+        self.scene().removeItem(self)
 
     def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
         self._pen.setColor(Qt.blue)
@@ -280,11 +287,14 @@ class RulerGroup(QGraphicsItemGroup):
                 item.setBrush(self._brush)
 
     def boundingRect(self) -> QRectF:
-        if self.rect().width() > self.rect().height():
-            return QRectF(self.rect().x(), self.rect().y(), self.rect().width(), 0)
+        if self._removing:
+            return self.rect()
+        elif self.rect().width() > self.rect().height():
+            return QRectF(self.rect().x(), self.rect().y(), self.rect().width(), 1)
         elif self.rect().width() < self.rect().height():
-            return QRectF(self.rect().x(), self.rect().y(), 0, self.rect().height())
+            return QRectF(self.rect().x(), self.rect().y(), 1, self.rect().height())
         return QRectF()
+        # return self.rect()
 
     def setRect(self, r: QRectF):
         self._rect = r
