@@ -29,11 +29,13 @@ def hide_grid(func: callable):
             # if hasattr(ch, 'defaultTextColor'):
             #     if ch.defaultTextColor() == Qt.darkMagenta or ch.defaultTextColor() == Qt.magenta:
             #         ch.setVisible(False)
-        self._pen_size_ellipse.setVisible(False)
+        if hasattr(self, '_pen_size_ellipse'):
+            self._pen_size_ellipse.setVisible(False)
         ret = func(self, *method_args, **method_kwargs)
         for ch in children:
             ch.setVisible(True)
-        self._pen_size_ellipse.setVisible(True)
+        if hasattr(self, '_pen_size_ellipse'):
+            self._pen_size_ellipse.setVisible(True)
         return ret
 
     return _impl
@@ -148,7 +150,7 @@ class VectoRaster(QGraphicsView):
         self.setMouseTracking(True)
 
         # create scene
-        self._scene = DrawbleGraphicScene()
+        self._scene = DrawbleGraphicScene(self)
 
         rect = QRectF(-self.w / 2, -self.h / 2, self.w, self.h)
 
@@ -169,9 +171,11 @@ class VectoRaster(QGraphicsView):
         self._canvas.setPos(-0.5, -0.5)
         self._scene.addItem(self._canvas)
 
-        self._pen_size_ellipse = QGraphicsEllipseItem(0, 0, 1, 1)
-        self._pen_size_ellipse.setPen(QPen(Qt.darkBlue, 0.1, Qt.SolidLine))
+        # self._pen_size_ellipse = QGraphicsEllipseItem(0, 0, 1, 1)
+        # self._pen_size_ellipse.setPen(QPen(Qt.darkBlue, 0.1, Qt.SolidLine))
         # self._pen_size_ellipse.setBrush(Qt.darkBlue)
+
+        self._pen_size_ellipse = PenCircle()
         self._scene.addItem(self._pen_size_ellipse)
 
         self.setScene(self._scene)
@@ -674,7 +678,7 @@ class VectoRaster(QGraphicsView):
             self.temp_item.setRect(rect)
 
     def del_item(self, grab_item):
-        if grab_item is not self._pen_size_ellipse:
+        if not isinstance(grab_item, PenCircle):
             if isinstance(grab_item, GridItem):
                 pass
             elif isinstance(grab_item, RulerGroup):
@@ -699,7 +703,7 @@ class VectoRaster(QGraphicsView):
         elif (event.button() & (Qt.LeftButton | Qt.RightButton)) and self.draw_mode == DrawMode.Notool:
             point = self.mapToScene(event.pos()).toPoint()
             grab_item = self._scene.itemAt(point, self.transform())
-            if grab_item is not self._pen_size_ellipse:
+            if not isinstance(grab_item, PenCircle):
                 print(grab_item)
 
         super(VectoRaster, self).mousePressEvent(event)
@@ -762,7 +766,7 @@ class VectoRaster(QGraphicsView):
 
         if event.buttons() == Qt.RightButton:
             grab_item = self._scene.itemAt(point, self.transform())
-            if grab_item is not self._pen_size_ellipse:
+            if not isinstance(grab_item, PenCircle):
                 if isinstance(grab_item, RulerGroup):
                     pass
                 elif grab_item.parentItem() is None:
@@ -800,11 +804,6 @@ class VectoRaster(QGraphicsView):
 
                     elif self.draw_mode == DrawMode.Pencil:
                         self._scene.addPoint(point, CustomPen.PencilVect, CustomBrush.Black)
-
-                    # elif self.draw_mode == DrawMode.Notool:
-                    #     grab_item = self._scene.itemAt(point, self.transform())
-                    #     if grab_item is not self._pen_size_ellipse:
-                    #         print(grab_item.line())
 
             if self.temp_item:
                 self.temp_item = None

@@ -202,6 +202,7 @@ class Window(QWidget):
         toolbar.addWidget(self.raster_btn)
         toolbar.addWidget(self.sb_click_x)
         toolbar.addWidget(self.sb_click_y)
+
         mainLayout.addLayout(toolbar)
         mainLayout.addWidget(self.viewer)
 

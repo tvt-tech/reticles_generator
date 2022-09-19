@@ -566,3 +566,10 @@ class GridItem(QGraphicsItemGroup):
             # if self._mark:
             #     painter.drawText(QPointF(0, yF), str(round(i * self._step_v, 1)))
             #     painter.drawText(QPointF(0, -yF), str(round(i * self._step_v, 1)))
+
+
+class PenCircle(QGraphicsEllipseItem):
+    def __init__(self, parent=None):
+        super(PenCircle, self).__init__(parent)
+        self.setRect(0, 0, 1, 1)
+        self.setPen(QPen(Qt.darkBlue, 0.1, Qt.SolidLine))

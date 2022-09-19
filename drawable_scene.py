@@ -6,8 +6,8 @@ from custom_graphics_item import *
 
 
 class DrawbleGraphicScene(QGraphicsScene):
-    def __init__(self, *args, **kwargs):
-        super(DrawbleGraphicScene, self).__init__(*args, **kwargs)
+    def __init__(self, parent=None):
+        super(DrawbleGraphicScene, self).__init__(parent)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
 
         self.x0 = int(self.width() / 2) + 1
@@ -17,6 +17,9 @@ class DrawbleGraphicScene(QGraphicsScene):
     def addItem(self, item: QGraphicsItem) -> QGraphicsItem:
         super(DrawbleGraphicScene, self).addItem(item)
         return item
+
+    def removeItem(self, item: QGraphicsItem) -> None:
+        super(DrawbleGraphicScene, self).removeItem(item)
 
     def addSmoothLine(self, line: QLineF, pen: 'QPen') -> SmoothLineItem:
         smooth_line = SmoothLineItem(line, pen)
