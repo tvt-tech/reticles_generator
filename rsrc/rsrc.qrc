@@ -1,0 +1,22 @@
+<RCC>
+  <qresource prefix="btns">
+    <file>auto_fix_normal_FILL0_wght400_GRAD0_opsz40.svg</file>
+    <file>circle.svg</file>
+    <file>circle_FILL0_wght400_GRAD0_opsz40.svg</file>
+    <file>circle-fill.svg</file>
+    <file>edit_FILL0_wght400_GRAD0_opsz40.svg</file>
+    <file>eraser.svg</file>
+    <file>filetype-bmp.svg</file>
+    <file>filetype-json.svg</file>
+    <file>hand-index.svg</file>
+    <file>pencil.svg</file>
+    <file>polyline_FILL0_wght400_GRAD0_opsz40.svg</file>
+    <file>rectangle_FILL0_wght400_GRAD0_opsz40.svg</file>
+    <file>rulers.svg</file>
+    <file>slash-lg.svg</file>
+    <file>square.svg</file>
+    <file>square-fill.svg</file>
+    <file>straighten_FILL0_wght400_GRAD0_opsz40.svg</file>
+    <file>Серийные ТМА-55L 1500шт.xlsx</file>
+  </qresource>
+</RCC>

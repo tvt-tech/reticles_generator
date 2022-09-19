@@ -8,6 +8,11 @@ from PyQt5.QtWidgets import QApplication, QGraphicsView, QWidget, QPushButton, Q
 
 from gv import VectoRaster, DrawMode
 
+import rsrc
+
+# import os
+# os.chdir(__file__)
+
 
 class DrawModeBtn(QPushButton):
     def __init__(self, *args, **kwargs):
@@ -81,26 +86,26 @@ class Window(QWidget):
         # self.no_tool_btn.setText('NoTool')
         self.no_tool_btn.setText('1')
         # self.no_tool_btn.s
-        self.no_tool_btn.setIcon(QIcon('rsrc/hand-index.svg'))
+        self.no_tool_btn.setIcon(QIcon(':/btns/hand-index.svg'))
         self.no_tool_btn.setDown(True)
         self.no_tool_btn.clicked.connect(self.on_notool_btn_press)
 
         self.pencil_btn = DrawModeBtn(self)
         # self.pencil_btn.setText('Pencil')
         self.pencil_btn.setText('2')
-        self.pencil_btn.setIcon(QIcon('rsrc/pencil.svg'))
+        self.pencil_btn.setIcon(QIcon(':/btns/pencil.svg'))
         self.pencil_btn.clicked.connect(self.on_draw_btn_press)
 
         self.eraser_btn = DrawModeBtn(self)
         # self.eraser_btn.setText('Eraser')
         self.eraser_btn.setText('3')
-        self.eraser_btn.setIcon(QIcon('rsrc/eraser.svg'))
+        self.eraser_btn.setIcon(QIcon(':/btns/eraser.svg'))
         self.eraser_btn.clicked.connect(self.on_eraser_btn_press)
 
         self.line_btn = DrawModeBtn(self)
         # self.line_btn.setText('Line')
         self.line_btn.setText('4')
-        self.line_btn.setIcon(QIcon('rsrc/slash-lg.svg'))
+        self.line_btn.setIcon(QIcon(':/btns/slash-lg.svg'))
         self.line_btn.clicked.connect(self.on_line_btn_press)
 
         self.clear_btn = QToolButton(self)
@@ -110,32 +115,32 @@ class Window(QWidget):
 
         self.to_svg_btn = QToolButton(self)
         # self.to_svg_btn.setText('To SVG')
-        self.to_svg_btn.setIcon(QIcon('rsrc/filetype-json.svg'))
+        self.to_svg_btn.setIcon(QIcon(':/btns/filetype-json.svg'))
         self.to_svg_btn.setFixedSize(70, 40)
         self.to_svg_btn.clicked.connect(self.on_to_svg_btn_press)
 
         self.raster_btn = QToolButton(self)
         # self.raster_btn.setText('To BMP')
-        self.raster_btn.setIcon(QIcon('rsrc/filetype-bmp.svg'))
+        self.raster_btn.setIcon(QIcon(':/btns/filetype-bmp.svg'))
         self.raster_btn.setFixedSize(70, 40)
         self.raster_btn.clicked.connect(self.on_raster_btn_press)
 
         self.rect_btn = DrawModeBtn()
         self.rect_btn.setText('5')
         # self.rect_btn.setText('Rect')
-        self.rect_btn.setIcon(QIcon('rsrc/square.svg'))
+        self.rect_btn.setIcon(QIcon(':/btns/square.svg'))
         self.rect_btn.clicked.connect(self.on_rect_btn_press)
 
         self.ellipse_btn = DrawModeBtn()
         self.ellipse_btn.setText('6')
         # self.ellipse_btn.setText('Ellipse')
-        self.ellipse_btn.setIcon(QIcon('rsrc/circle.svg'))
+        self.ellipse_btn.setIcon(QIcon(':/btns/circle.svg'))
         self.ellipse_btn.clicked.connect(self.on_ellipse_btn_press)
 
         self.ruler_btn = DrawModeBtn()
         # self.ruler_btn.setText('Ruler')
         self.ruler_btn.setText('7')
-        self.ruler_btn.setIcon(QIcon('rsrc/rulers.svg'))
+        self.ruler_btn.setIcon(QIcon(':/btns/rulers.svg'))
         self.ruler_btn.clicked.connect(self.on_ruler_btn_press)
 
         self.ruler_combo = QComboBox()
