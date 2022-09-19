@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-from PyQt5.QtCore import QRectF, Qt, QLineF, QPointF
+from PyQt5.QtCore import QRectF, Qt, QLineF, QPointF, QSizeF
 from PyQt5.QtGui import QPainter, QPixmap, QPen, QBrush, QColor, QFont
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget, QGraphicsLineItem, \
     QGraphicsRectItem, QGraphicsItem, QGraphicsItemGroup
@@ -72,20 +72,22 @@ class SmoothLineItem(QGraphicsLineItem):
         self.setPen(pen)
         self.setPos(-0.5, -0.5)
 
-    # def boundingRect(self) -> QRectF:
-    #     return self.scene().sceneRect()
+    def boundingRect(self) -> QRectF:
+        return self.scene().sceneRect()
 
     def redraw_pix(self):
         pixmap = QPixmap(self.scene().width(), self.scene().height())
+        print(pixmap.rect())
         pixmap.fill(Qt.transparent)
-        pix_painter = QPainter(pixmap)
-        pix_painter.drawLine(self.line())
+        pix_painter = CenterPainter(pixmap)
+        pix_painter.drawRect(pixmap.rect())
+        pix_painter.drawLineC(self.line())
         return pixmap
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
         painter.setPen(self.pen())
         pixmap = self.redraw_pix()
-        painter.drawPixmap(self.boundingRect(), pixmap, self.boundingRect())
+        painter.drawPixmap(self.boundingRect(), pixmap, QRectF(0, 0, pixmap.width(), pixmap.height()))
 
 
 class SmoothRectItem(QGraphicsRectItem):
@@ -93,23 +95,23 @@ class SmoothRectItem(QGraphicsRectItem):
         super(SmoothRectItem, self).__init__(parent)
         self.setRect(rect)
         self.setPen(pen)
-        self.setPos(-0.5, -0.5)
+        # self.setPos(-0.5, -0.5)
 
     def boundingRect(self) -> QRectF:
-        return self.rect()
+        return self.scene().sceneRect()
 
     def redraw_pix(self):
         pixmap = QPixmap(self.scene().width(), self.scene().height())
         pixmap.fill(Qt.transparent)
         pix_painter = CenterPainter(pixmap)
+        print(self.rect())
         pix_painter.drawRectC(self.rect())
         return pixmap
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
         painter.setPen(self.pen())
         pixmap = self.redraw_pix()
-        pixmap_rect = QRectF(pixmap.rect())
-        painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
+        painter.drawPixmap(self.boundingRect(), pixmap, QRectF(1, 1, pixmap.width()-1, pixmap.height()-1))
 
 
 class SmoothEllipseItem(QGraphicsEllipseItem):
@@ -117,23 +119,22 @@ class SmoothEllipseItem(QGraphicsEllipseItem):
         super(SmoothEllipseItem, self).__init__(parent)
         self.setRect(rect)
         self.setPen(pen)
-        self.setPos(-0.5, -0.5)
+        # self.setPos(-0.5, -0.5)
 
-    # def boundingRect(self) -> QRectF:
-    #     return self.scene().sceneRect()
+    def boundingRect(self) -> QRectF:
+        return self.scene().sceneRect()
 
     def redraw_pix(self):
         pixmap = QPixmap(self.scene().width(), self.scene().height())
         pixmap.fill(Qt.transparent)
-        pix_painter = QPainter(pixmap)
-        pix_painter.drawEllipse(self.rect())
+        pix_painter = CenterPainter(pixmap)
+        pix_painter.drawEllipseC(self.rect())
         return pixmap
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
         painter.setPen(self.pen())
         pixmap = self.redraw_pix()
-        pixmap_rect = QRectF(pixmap.rect())
-        painter.drawPixmap(self.boundingRect(), pixmap, pixmap_rect)
+        painter.drawPixmap(self.boundingRect(), pixmap, QRectF(1, 1, pixmap.width()-1, pixmap.height()-1))
 
 
 class PointItem(QGraphicsEllipseItem, HoveredGraphicsItem):
@@ -371,7 +372,9 @@ class RulerGroup(QGraphicsItemGroup):
                  p2: tuple[float, float],
                  step: float, *args, **kwargs):
         s = step * px_at_mil_h if p2[0] > p2[1] else step * px_at_mil_v
-        rect = QRectF(px_at_mil_h * p1[0], px_at_mil_v * p1[1], px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        point = QPointF(px_at_mil_h * p1[0], px_at_mil_v * p1[1])
+        size = QSizeF(px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        rect = QRectF(point, size)
         pen = CustomPen.LineVect
         return RulerGroup(rect, s, pen)
 
@@ -446,7 +449,9 @@ class RectItem(QGraphicsRectItem, HoveredGraphicsItem):
                  p1: tuple[float, float],
                  p2: tuple[float, float],
                  step: float = 1, *args, **kwargs):
-        rect = QRectF(px_at_mil_h * p1[0], px_at_mil_v * p1[1], px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        p = QPointF(px_at_mil_h * p1[0], px_at_mil_v * p1[1])
+        s = QSizeF(px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        rect = QRectF(p, s)
         pen = CustomPen.LineVect
         return RectItem(rect, pen)
 
@@ -480,7 +485,9 @@ class EllipseItem(QGraphicsEllipseItem, HoveredGraphicsItem):
                  p1: tuple[float, float],
                  p2: tuple[float, float],
                  step: float = 1, *args, **kwargs):
-        rect = QRectF(px_at_mil_h * p1[0], px_at_mil_v * p1[1], px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        p = QPointF(px_at_mil_h * p1[0], px_at_mil_v * p1[1])
+        s = QSizeF(px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        rect = QRectF(p, s)
         pen = CustomPen.PencilVect
         return EllipseItem(rect, pen)
 

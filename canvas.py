@@ -82,7 +82,7 @@ class GraphicsCanvas(QGraphicsItem):
         painter.drawLineC(l)
         self.scene().update()
 
-    def drawRectC(self, r: 'QRect', pen: 'QPen'):
+    def drawRectC(self, r: 'QRectF', pen: 'QPen'):
         painter = CenterPainter(self.pixmap)
         painter.setCompositionMode(CenterPainter.CompositionMode_Source)
         painter.setPen(pen)

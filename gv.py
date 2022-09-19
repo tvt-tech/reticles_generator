@@ -1,14 +1,10 @@
-import json
 import math
 from enum import IntFlag, auto
 from functools import wraps
-from pathlib import Path
 
 from PyQt5.QtCore import QLine, QPoint, pyqtSignal, QSize, QSizeF, QRect
-from PyQt5.QtGui import QMouseEvent, QIcon
-from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, \
-    QToolButton, QGraphicsView, QVBoxLayout, QHBoxLayout, QFrame, \
-    QLineEdit, QComboBox, QPushButton, QDoubleSpinBox
+from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, QFrame, QGraphicsView
 
 from canvas import GraphicsCanvas
 from custom_graphics_item import *
@@ -52,27 +48,6 @@ def hide_canvas(func: callable):
         return ret
 
     return _impl
-
-
-class DrawModeBtn(QPushButton):
-    def __init__(self, *args, **kwargs):
-        super(DrawModeBtn, self).__init__(*args, **kwargs)
-        self.setFixedSize(70, 40)
-        self.setText('Draw')
-        self.is_enabled = False
-        self.clicked.connect(self.change_mode)
-        self.setStyleSheet("""
-        QPushButton:pressed {
-        background-color: rgb(72, 72, 72);
-        }""")
-
-    def change_mode(self):
-        self.is_enabled = not self.is_enabled
-        self.setDown(self.is_enabled)
-
-    def reset(self):
-        self.is_enabled = False
-        self.setDown(self.is_enabled)
 
 
 class DrawMode(IntFlag):
@@ -189,7 +164,7 @@ class VectoRaster(QGraphicsView):
 
         # self._scene = DrawbleGraphicScene(-self.w, -self.h, self.w, self.h)
         self._canvas = GraphicsCanvas(self._scene.sceneRect().size())
-        self._canvas.setPos(-1.5, -1.5)
+        self._canvas.setPos(-0.5, -0.5)
         self._scene.addItem(self._canvas)
 
         self._pen_size_ellipse = QGraphicsEllipseItem(0, 0, 1, 1)
@@ -318,9 +293,8 @@ class VectoRaster(QGraphicsView):
                 point = QPoint(*p)
 
                 pen = CustomPen.Line
-                # pen.setWidth(item['pen'])
                 self._canvas.drawPointC(point, pen)
-            #
+
             elif item['t'] in [ItemType.Circle, ItemType.Ellipse]:
 
                 x1 = item['p1'][0]
@@ -356,24 +330,34 @@ class VectoRaster(QGraphicsView):
                     elif r is not None:
                         continue
 
-                x1 = x1 * self._px_at_mil_h
-                y1 = y1 * self._px_at_mil_v
-                x2 = x2 * self._px_at_mil_h
-                y2 = y2 * self._px_at_mil_v
+                x1 = x1 * self._px_at_mil_h - 1
+                y1 = y1 * self._px_at_mil_v - 1
+                x2 = x2 * self._px_at_mil_h + 2
+                y2 = y2 * self._px_at_mil_v + 2
 
-                if x1 < 0:
-                    x1 -= 1
-                if y1 < 0:
-                    y1 -= 1
-                if x2 < 0:
-                    x2 -= 1
-                if y2 < 0:
-                    y2 -= 1
+                # x1 += (1 if x1 > 0 else -2 if x1 < 0 else 0)
+                # x2 = x2 + 1 if x2 > 0 else x2 - 2 if x2 < 0 else x2
+                # y1 = y1 + 1 if y1 > 0 else y1 - 1 if y1 < 0 else y1
+                # y2 = y2 + 1 if y2 > 0 else y2 - 1 if y2 < 0 else y2
 
-                if x2 / x1 == 0.1:
-                    pen = CustomPen.Pencil
-                    p = QPoint(x2 - x1, y2 - y1)
-                    self._canvas.drawPointC(p, pen)
+                # if x1 < 0:
+                #     x1 -= 1
+                # if y1 < 0:
+                #     y1 -= 1
+                # if x2 < 0:
+                #     x2 -= 1
+                # if y2 < 0:
+                #     y2 -= 1
+
+                # if x2 / x1 == 0.1:
+                if x2 < self._min_mil_h_step:
+                    self._canvas.drawPointC(QPoint(x1, y1), pen)
+
+                else:
+                    p = QPointF(x1, y1)
+                    s = QSizeF(x2, y2)
+                    rect = QRectF(p, s)
+                    self._canvas.drawEllipseC(rect, pen)
 
             elif item['t'] == ItemType.Rect:
 
@@ -417,22 +401,19 @@ class VectoRaster(QGraphicsView):
                 x2 = x2 * self._px_at_mil_h
                 y2 = y2 * self._px_at_mil_v
 
-                if x1 < 0:
-                    x1 -= 1
-                if y1 < 0:
-                    y1 -= 1
-                if x2 < 0:
-                    x2 -= 1
-                if y2 < 0:
-                    y2 -= 1
+                # x1 = x1 + 1 if x1 > 0 else x1 - 2 if x1 < 0 else x1
+                x1 += (1 if x1 > 0 else -2 if x1 < 0 else 0)
+                x2 = x2 + 1 if x2 > 0 else x2 - 2 if x2 < 0 else x2
+                y1 = y1 + 1 if y1 > 0 else y1 - 1 if y1 < 0 else y1
+                y2 = y2 + 1 if y2 > 0 else y2 - 1 if y2 < 0 else y2
 
                 if x2 < self._min_mil_h_step:
                     self._canvas.drawPointC(QPoint(x1, y1), pen)
 
                 else:
-                    p = (x1, y1)
-                    s = (x1 + x2, y1 + y2)
-                    rect = QRect(*p, *s)
+                    p = QPointF(x1, y1)
+                    s = QSizeF(x2, y2)
+                    rect = QRectF(p, s)
                     self._canvas.drawRectC(rect, pen)
 
     def load_reticle_sketch(self, sketch=example_grid):
@@ -588,7 +569,8 @@ class VectoRaster(QGraphicsView):
         p1, p2 = self.line_tool_draw(point, modifiers)
         line = QLineF(p1, p2)
         if not self.temp_item:
-            self.temp_item = self._scene.addSmoothLine(line, CustomPen.Line)
+            # self.temp_item = self._scene.addSmoothLine(line, CustomPen.Line)
+            self.temp_item = self._scene.addLine(line, CustomPen.Line)
         else:
             self.temp_item.setLine(line)
 
@@ -796,13 +778,13 @@ class VectoRaster(QGraphicsView):
                     self._canvas.drawPoint(self.lastPoint, CustomPen.Eraser)
 
                 elif self.draw_mode == DrawMode.Line and self.temp_item:
-                    self._canvas.drawLine(self.temp_item.line(), CustomPen.Line)
+                    self._canvas.drawLineC(self.temp_item.line(), CustomPen.Line)
 
                 elif self.draw_mode == DrawMode.Rect and self.temp_item:
-                    self._canvas.drawRect(self.temp_item.rect(), CustomPen.Line)
+                    self._canvas.drawRectC(self.temp_item.rect(), CustomPen.Line)
 
                 elif self.draw_mode == DrawMode.Ellipse and self.temp_item:
-                    self._canvas.drawEllipse(self.temp_item.rect(), CustomPen.Ellipse)
+                    self._canvas.drawEllipseC(self.temp_item.rect(), CustomPen.Ellipse)
 
                 if self.temp_item:
                     self._scene.removeItem(self.temp_item)
@@ -879,257 +861,4 @@ class VectoRaster(QGraphicsView):
         return super(VectoRaster, self).resizeEvent(event)
 
 
-class Window(QWidget):
-    def __init__(self, filename=None):
-        super(Window, self).__init__()
-        self.setObjectName('RetEdit')
 
-        self.setStyleSheet("#RetEdit {background-color: rgb(72, 72, 72);}")
-
-        self.filename = filename if filename is not None else 'reticle.abcv'
-
-        self.filename = Path(self.filename)
-        if self.filename.exists():
-            if self.filename.suffix == '.abcv':
-                clicks = QSizeF(0.5, 0.5)
-                self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks, vector_mode=True)
-                with open(self.filename, 'r') as fp:
-                    self.template = json.load(fp)
-                self.viewer.load_reticle_sketch(self.template)
-            elif self.filename.suffix == '.png':
-
-                fn = str(self.filename).replace('.png', '').split('_')
-                x, y = float(fn[2]), float(fn[3])
-
-                clicks = QSizeF(x, y)
-                self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks)
-                self.viewer.setPhoto(QPixmap(str(self.filename)))
-            else:
-                sys.exit()
-        else:
-            sys.exit()
-
-        # 'Load image' button
-        self.btnLoad = QToolButton(self)
-        self.btnLoad.setText('Load image')
-        self.btnLoad.clicked.connect(self.loadImage)
-        # Button to change from drag/pan to getting pixel info
-        self.btnPixInfo = QToolButton(self)
-        self.btnPixInfo.setText('Enter pixel info mode')
-        self.btnPixInfo.clicked.connect(self.pixInfo)
-
-        self.editPixInfo = QLineEdit(self)
-        self.editPixInfo.setReadOnly(True)
-        self.viewer.photoClicked.connect(self.photoClicked)
-
-        self.btnLoad.setHidden(True)
-        self.btnPixInfo.setHidden(True)
-        self.editPixInfo.setHidden(True)
-
-        self.no_tool_btn = DrawModeBtn(self)
-        # self.no_tool_btn.setText('NoTool')
-        self.no_tool_btn.setText('1')
-        # self.no_tool_btn.s
-        self.no_tool_btn.setIcon(QIcon('rsrc/hand-index.svg'))
-        self.no_tool_btn.setDown(True)
-        self.no_tool_btn.clicked.connect(self.on_notool_btn_press)
-
-        self.pencil_btn = DrawModeBtn(self)
-        # self.pencil_btn.setText('Pencil')
-        self.pencil_btn.setText('2')
-        self.pencil_btn.setIcon(QIcon('rsrc/pencil.svg'))
-        self.pencil_btn.clicked.connect(self.on_draw_btn_press)
-
-        self.eraser_btn = DrawModeBtn(self)
-        # self.eraser_btn.setText('Eraser')
-        self.eraser_btn.setText('3')
-        self.eraser_btn.setIcon(QIcon('rsrc/eraser.svg'))
-        self.eraser_btn.clicked.connect(self.on_eraser_btn_press)
-
-        self.line_btn = DrawModeBtn(self)
-        # self.line_btn.setText('Line')
-        self.line_btn.setText('4')
-        self.line_btn.setIcon(QIcon('rsrc/slash-lg.svg'))
-        self.line_btn.clicked.connect(self.on_line_btn_press)
-
-        self.clear_btn = QToolButton(self)
-        self.clear_btn.setFixedSize(70, 40)
-        self.clear_btn.setText('Clear')
-        self.clear_btn.clicked.connect(self.on_clear_btn_press)
-
-        self.to_svg_btn = QToolButton(self)
-        # self.to_svg_btn.setText('To SVG')
-        self.to_svg_btn.setIcon(QIcon('rsrc/filetype-json.svg'))
-        self.to_svg_btn.setFixedSize(70, 40)
-        self.to_svg_btn.clicked.connect(self.on_to_svg_btn_press)
-
-        self.raster_btn = QToolButton(self)
-        # self.raster_btn.setText('To BMP')
-        self.raster_btn.setIcon(QIcon('rsrc/filetype-bmp.svg'))
-        self.raster_btn.setFixedSize(70, 40)
-        self.raster_btn.clicked.connect(self.on_raster_btn_press)
-
-        self.rect_btn = DrawModeBtn()
-        self.rect_btn.setText('5')
-        # self.rect_btn.setText('Rect')
-        self.rect_btn.setIcon(QIcon('rsrc/square.svg'))
-        self.rect_btn.clicked.connect(self.on_rect_btn_press)
-
-        self.ellipse_btn = DrawModeBtn()
-        self.ellipse_btn.setText('6')
-        # self.ellipse_btn.setText('Ellipse')
-        self.ellipse_btn.setIcon(QIcon('rsrc/circle.svg'))
-        self.ellipse_btn.clicked.connect(self.on_ellipse_btn_press)
-
-        self.ruler_btn = DrawModeBtn()
-        # self.ruler_btn.setText('Ruler')
-        self.ruler_btn.setText('7')
-        self.ruler_btn.setIcon(QIcon('rsrc/rulers.svg'))
-        self.ruler_btn.clicked.connect(self.on_ruler_btn_press)
-
-        self.ruler_combo = QComboBox()
-        self.ruler_combo.setFixedSize(70, 25)
-        for i in [0.05, 0.1, 0.2, 0.25, 0.3, 0.5, 1, 2, 5, 10]:
-            self.ruler_combo.addItem(f'{i} mil', i)
-        self.ruler_combo.currentIndexChanged.connect(self.ruler_step_change)
-
-        self.sb_click_x = QDoubleSpinBox()
-        self.sb_click_y = QDoubleSpinBox()
-        self.sb_click_x.setValue(clicks.width())
-        self.sb_click_y.setValue(clicks.height())
-        self.sb_click_x.setMinimum(0.01)
-        self.sb_click_x.setMaximum(10)
-        self.sb_click_x.setSingleStep(0.01)
-        self.sb_click_y.setMinimum(0.01)
-        self.sb_click_y.setMaximum(10)
-        self.sb_click_y.setSingleStep(0.01)
-
-        if not self.viewer._vector_mode:
-            self.to_svg_btn.setHidden(True)
-            self.ruler_btn.setHidden(True)
-            self.ruler_combo.setHidden(True)
-
-        # self.drawing = False
-        # make last point to the point of cursor
-        self.lastPoint = QPoint()
-
-        # hotkey binds
-        self.no_tool_btn.setShortcut(Qt.Key_1)
-        self.pencil_btn.setShortcut(Qt.Key_2)
-        self.eraser_btn.setShortcut(Qt.Key_3)
-        self.line_btn.setShortcut(Qt.Key_4)
-        self.rect_btn.setShortcut(Qt.Key_5)
-        self.ellipse_btn.setShortcut(Qt.Key_6)
-        self.ruler_btn.setShortcut(Qt.Key_7)
-        self.raster_btn.setShortcut(Qt.CTRL + Qt.Key_S)
-
-        # Arrange layout
-        mainLayout = QHBoxLayout(self)
-        mainLayout.setContentsMargins(0, 0, 0, 0)
-
-        toolbar = QVBoxLayout()
-        toolbar.setAlignment(Qt.AlignTop)
-        toolbar.addWidget(self.btnLoad)
-        toolbar.addWidget(self.btnPixInfo)
-        toolbar.addWidget(self.editPixInfo)
-        toolbar.addWidget(self.no_tool_btn)
-        toolbar.addWidget(self.pencil_btn)
-        toolbar.addWidget(self.eraser_btn)
-        toolbar.addWidget(self.line_btn)
-        toolbar.addWidget(self.rect_btn)
-        toolbar.addWidget(self.ellipse_btn)
-        toolbar.addWidget(self.ruler_btn)
-        toolbar.addWidget(self.ruler_combo)
-        toolbar.addWidget(self.clear_btn)
-        toolbar.addWidget(self.to_svg_btn)
-        toolbar.addWidget(self.raster_btn)
-        toolbar.addWidget(self.sb_click_x)
-        toolbar.addWidget(self.sb_click_y)
-        mainLayout.addLayout(toolbar)
-        mainLayout.addWidget(self.viewer)
-
-        self.installEventFilter(self.viewer._scene)
-
-    def on_draw_btn_press(self):
-        self.on_notool_btn_press()
-        self.viewer.draw_mode = DrawMode.Pencil
-        self.viewer.toggleDragMode()
-
-    def on_eraser_btn_press(self):
-        self.on_notool_btn_press()
-        self.viewer.draw_mode = DrawMode.Eraser
-        self.viewer.toggleDragMode()
-
-    def on_line_btn_press(self):
-        self.on_notool_btn_press()
-        self.viewer.draw_mode = DrawMode.Line
-        self.viewer.toggleDragMode()
-
-    def on_notool_btn_press(self):
-        self.viewer.draw_mode = DrawMode.Notool
-        self.viewer.toggleDragMode()
-
-        buttons = self.findChildren(DrawModeBtn)
-        for b in buttons:
-            b.reset()
-        self.sender().setDown(True)
-
-    def on_rect_btn_press(self):
-        self.on_notool_btn_press()
-        self.viewer.draw_mode = DrawMode.Rect
-        self.viewer.toggleDragMode()
-
-    def on_ellipse_btn_press(self):
-        self.on_notool_btn_press()
-        self.viewer.draw_mode = DrawMode.Ellipse
-        self.viewer.toggleDragMode()
-
-    def on_ruler_btn_press(self):
-        self.on_notool_btn_press()
-        self.viewer.draw_mode = DrawMode.Ruler
-        self.viewer.toggleDragMode()
-
-    def on_raster_btn_press(self, *args, **kwargs):
-        if self.viewer._vector_mode:
-            for i in [1, 2, 3, 4, 6]:
-                # viewer = VectoRaster(self, clicks=QSizeF(2.01, 2.01) / i)
-                viewer = VectoRaster(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / i)
-                viewer.rasterize(self.viewer.get_vectors(False))
-                viewer.save_raster()
-        else:
-            self.viewer.save_raster()
-
-    def on_to_svg_btn_press(self, *args, **kwargs):
-        self.save_vectors()
-
-    def on_clear_btn_press(self):
-        self.viewer.clear_view()
-
-    def ruler_step_change(self, idx):
-        self.viewer.ruler_step = self.ruler_combo.currentData()
-
-    def save_vectors(self):
-        template = self.viewer.get_vectors()
-        with open(self.filename, 'w') as fp:
-            json.dump(template, fp)
-
-    def loadImage(self):
-        self.viewer.setPhoto(QPixmap('1_3 MIL-R.bmp'))
-
-    def pixInfo(self):
-        self.viewer.toggleDragMode()
-
-    def photoClicked(self, pos):
-        if self.viewer.dragMode() == QGraphicsView.NoDrag:
-            self.editPixInfo.setText('%d, %d' % (pos.x(), pos.y()))
-
-
-if __name__ == '__main__':
-    import sys
-
-    app = QApplication(sys.argv)
-    filename = app.arguments()[1] if len(app.arguments()) > 1 else None
-    window = Window(filename)
-    window.setGeometry(500, 300, 800, 600)
-    window.show()
-    sys.exit(app.exec_())
