@@ -42,28 +42,35 @@ class Window(QWidget):
 
         self.setStyleSheet("#RetEdit {background-color: rgb(72, 72, 72);}")
 
-        self.filename = filename if filename is not None else 'reticle.abcv'
+        # self.filename = filename if filename is not None else 'reticle.abcv'
+        self.filename = filename
 
-        self.filename = Path(self.filename)
-        if self.filename.exists():
-            if self.filename.suffix == '.abcv':
-                clicks = QSizeF(0.5, 0.5)
-                self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks, vector_mode=True)
-                with open(self.filename, 'r') as fp:
-                    self.template = json.load(fp)
-                self.viewer.load_reticle_sketch(self.template)
-            elif self.filename.suffix == '.png':
+        if self.filename is not None:
 
-                fn = str(self.filename).replace('.png', '').split('_')
-                x, y = float(fn[2]), float(fn[3])
+            self.filename = Path(self.filename)
+            if self.filename.exists():
+                if self.filename.suffix == '.abcv':
+                    clicks = QSizeF(0.5, 0.5)
+                    self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks, vector_mode=True)
+                    with open(self.filename, 'r') as fp:
+                        self.template = json.load(fp)
+                    self.viewer.load_reticle_sketch(self.template)
+                elif self.filename.suffix == '.png':
 
-                clicks = QSizeF(x, y)
-                self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks)
-                self.viewer.setPhoto(QPixmap(str(self.filename)))
+                    fn = str(self.filename).replace('.png', '').split('_')
+                    x, y = float(fn[2]), float(fn[3])
+
+                    clicks = QSizeF(x, y)
+                    self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks)
+                    self.viewer.setPhoto(QPixmap(str(self.filename)))
+                else:
+                    sys.exit()
             else:
                 sys.exit()
+
         else:
-            sys.exit()
+            clicks = QSizeF(0.5, 0.5)
+            self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks, vector_mode=True)
 
         # 'Load image' button
         self.btnLoad = QToolButton(self)
