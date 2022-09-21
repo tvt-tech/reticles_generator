@@ -275,7 +275,7 @@ class Window(QWidget):
 
     def save_vectors(self):
         template = self.viewer.get_vectors()
-        if template:
+        if self.filename:
             with open(self.filename, 'w') as fp:
                 json.dump(template, fp)
 

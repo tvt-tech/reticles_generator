@@ -840,7 +840,6 @@ class VectoRaster(QGraphicsView):
                     template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
                 elif isinstance(i, EllipseItem):
                     template.append(i.toJson(self._click_x, self._click_y, self._multiplier))
-
         return template
 
     @hide_grid
