@@ -275,8 +275,9 @@ class Window(QWidget):
 
     def save_vectors(self):
         template = self.viewer.get_vectors()
-        with open(self.filename, 'w') as fp:
-            json.dump(template, fp)
+        if template:
+            with open(self.filename, 'w') as fp:
+                json.dump(template, fp)
 
     def loadImage(self):
         self.viewer.setPhoto(QPixmap('1_3 MIL-R.bmp'))
