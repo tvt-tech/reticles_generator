@@ -372,40 +372,54 @@ class VectoRaster(QGraphicsView):
                 x2 = item['p2'][0]
                 y2 = item['p2'][1]
 
-                if x1 != 0:
+                if abs(x1) < self._min_mil_h_step:
+                    x1 = x1/abs(x1)
+
+                elif x1 != 0:
                     r = round_point_to_step(x1, self._min_mil_h_step)
                     if r:
                         x1 = r
+                        x1 = x1 * self._px_at_mil_h
                     elif r is not None:
                         continue
 
-                if y1 != 0:
+                if abs(y1) < self._min_mil_v_step:
+                    y1 = y1/abs(y1)
+
+                elif y1 != 0:
                     r = round_point_to_step(y1, self._min_mil_v_step)
                     if r:
                         y1 = r
+                        y1 = y1 * self._px_at_mil_v
+
                     elif r is not None:
                         continue
 
-                if x2 != 0:
+                if abs(x2) < self._min_mil_h_step:
+                    x2 = x2/abs(x2)
+
+                elif x2 != 0:
                     r = round_point_to_step(x2, self._min_mil_h_step)
                     if r:
                         x2 = r
+                        x2 = x2 * self._px_at_mil_h
                     elif r is not None:
                         continue
 
-                if y2 != 0:
+                if abs(y2) < self._min_mil_v_step:
+                    y2 = y2/abs(y2)
+
+                elif y2 != 0:
                     r = round_point_to_step(y2, self._min_mil_v_step)
                     if r:
                         y2 = r
+                        y2 = y2 * self._px_at_mil_v
                     elif r is not None:
                         continue
 
                 pen = CustomPen.Ellipse
 
-                x1 = x1 * self._px_at_mil_h
-                y1 = y1 * self._px_at_mil_v
-                x2 = x2 * self._px_at_mil_h
-                y2 = y2 * self._px_at_mil_v
+                print(x1, y1, x2, y2)
 
                 # x1 = x1 + 1 if x1 > 0 else x1 - 2 if x1 < 0 else x1
                 x1 += (1 if x1 > 0 else -2 if x1 < 0 else 0)
