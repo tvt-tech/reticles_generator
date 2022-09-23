@@ -191,13 +191,26 @@ class Window(QWidget):
 
         # hotkey binds
         self.no_tool_btn.setShortcut(Qt.Key_1)
+        self.no_tool_btn.setToolTip("1")
         self.pencil_btn.setShortcut(Qt.Key_2)
+        self.pencil_btn.setToolTip("2")
         self.eraser_btn.setShortcut(Qt.Key_3)
+        self.eraser_btn.setToolTip("3")
         self.line_btn.setShortcut(Qt.Key_4)
+        self.line_btn.setToolTip("4")
         self.rect_btn.setShortcut(Qt.Key_5)
+        self.rect_btn.setToolTip("5")
         self.ellipse_btn.setShortcut(Qt.Key_6)
+        self.ellipse_btn.setToolTip("6")
         self.ruler_btn.setShortcut(Qt.Key_7)
+        self.ruler_btn.setToolTip("7")
         self.raster_btn.setShortcut(Qt.CTRL + Qt.Key_S)
+        self.raster_btn.setToolTip("Ctrl + S")
+
+        self.undo_btn.setShortcut(Qt.CTRL + Qt.Key_Z)
+        self.undo_btn.setToolTip("Ctrl + Z")
+        self.redo_btn.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Z)
+        self.redo_btn.setToolTip("Ctrl + Shift + Z")
 
         # Arrange layout
         mainLayout = QHBoxLayout(self)
