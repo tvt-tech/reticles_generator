@@ -4,14 +4,14 @@ from pathlib import Path
 from PyQt5.QtCore import QSizeF, QSize, Qt
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QApplication, QGraphicsView, QWidget, QPushButton, QToolButton, QLineEdit, QDoubleSpinBox, \
-    QComboBox, QHBoxLayout, QVBoxLayout, QSizePolicy
+    QComboBox, QHBoxLayout, QVBoxLayout
 
-from gv import VectoRaster, DrawMode
+from vector_viever import VectorViewer
+from raster_view import RasterViewer
+from gv import DrawMode
 
 import rsrc
-
-# import os
-# os.chdir(__file__)
+assert rsrc
 
 
 class DrawModeBtn(QPushButton):
@@ -45,24 +45,27 @@ class Window(QWidget):
         # self.filename = filename if filename is not None else 'reticle.abcv'
         self.filename = filename
 
+        self._vector_mode = False
+
         if self.filename is not None:
 
             self.filename = Path(self.filename)
             if self.filename.exists():
                 if self.filename.suffix == '.abcv':
                     clicks = QSizeF(0.5, 0.5)
-                    self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks, vector_mode=True)
+                    self._vector_mode = True
+                    self.viewer = VectorViewer(self, QSize(640, 480), clicks=clicks)
                     with open(self.filename, 'r') as fp:
                         self.template = json.load(fp)
-                    self.viewer.load_reticle_sketch(self.template)
+                    self.viewer.draw_sketch(self.template)
                 elif self.filename.suffix == '.png':
 
                     fn = str(self.filename).replace('.png', '').split('_')
                     x, y = float(fn[2]), float(fn[3])
 
                     clicks = QSizeF(x, y)
-                    self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks)
-                    self.viewer.setPhoto(QPixmap(str(self.filename)))
+                    self.viewer = RasterViewer(self, QSize(640, 480), clicks=clicks)
+                    self.viewer.setPix(QPixmap(str(self.filename)))
                 else:
                     sys.exit()
             else:
@@ -70,26 +73,10 @@ class Window(QWidget):
 
         else:
             clicks = QSizeF(0.5, 0.5)
-            self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks, vector_mode=True)
+            self._vector_mode = True
+            self.viewer = VectorViewer(self, QSize(640, 480), clicks=clicks)
 
-        self.viewer.history_append()
-
-        # 'Load image' button
-        self.btnLoad = QToolButton(self)
-        self.btnLoad.setText('Load image')
-        self.btnLoad.clicked.connect(self.loadImage)
-        # Button to change from drag/pan to getting pixel info
-        self.btnPixInfo = QToolButton(self)
-        self.btnPixInfo.setText('Enter pixel info mode')
-        self.btnPixInfo.clicked.connect(self.pixInfo)
-
-        self.editPixInfo = QLineEdit(self)
-        self.editPixInfo.setReadOnly(True)
-        self.viewer.photoClicked.connect(self.photoClicked)
-
-        self.btnLoad.setHidden(True)
-        self.btnPixInfo.setHidden(True)
-        self.editPixInfo.setHidden(True)
+        self.viewer._history_append()
 
         self.no_tool_btn = DrawModeBtn(self)
         # self.no_tool_btn.setText('NoTool')
@@ -179,7 +166,7 @@ class Window(QWidget):
         self.redo_btn.setIcon(QIcon(':/btns/arrow-clockwise.svg'))
         self.redo_btn.clicked.connect(self.viewer.redo)
 
-        if not self.viewer._vector_mode:
+        if not self._vector_mode:
             self.to_svg_btn.setHidden(True)
             self.ruler_btn.setHidden(True)
             self.ruler_combo.setHidden(True)
@@ -226,9 +213,6 @@ class Window(QWidget):
 
         toolbar.setAlignment(Qt.AlignTop)
         toolbar.addLayout(do_undo)
-        toolbar.addWidget(self.btnLoad)
-        toolbar.addWidget(self.btnPixInfo)
-        toolbar.addWidget(self.editPixInfo)
         toolbar.addWidget(self.no_tool_btn)
         toolbar.addWidget(self.pencil_btn)
         toolbar.addWidget(self.eraser_btn)
@@ -288,11 +272,10 @@ class Window(QWidget):
         self.viewer.toggleDragMode()
 
     def on_raster_btn_press(self, *args, **kwargs):
-        if self.viewer._vector_mode:
+        if self._vector_mode:
             for i in [1, 2, 3, 4, 6]:
-                # viewer = VectoRaster(self, clicks=QSizeF(2.01, 2.01) / i)
-                viewer = VectoRaster(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / i)
-                viewer.rasterize(self.viewer.get_vectors(False))
+                viewer = RasterViewer(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / i)
+                viewer.draw_sketch(self.viewer.get_vectors(False))
                 viewer.save_raster()
         else:
             self.viewer.save_raster()
@@ -313,14 +296,10 @@ class Window(QWidget):
                 json.dump(template, fp)
 
     def loadImage(self):
-        self.viewer.setPhoto(QPixmap('1_3 MIL-R.bmp'))
+        self.viewer.setPix(QPixmap('1_3 MIL-R.bmp'))
 
     def pixInfo(self):
         self.viewer.toggleDragMode()
-
-    def photoClicked(self, pos):
-        if self.viewer.dragMode() == QGraphicsView.NoDrag:
-            self.editPixInfo.setText('%d, %d' % (pos.x(), pos.y()))
 
 
 if __name__ == '__main__':
