@@ -72,6 +72,8 @@ class Window(QWidget):
             clicks = QSizeF(0.5, 0.5)
             self.viewer = VectoRaster(self, QSize(640, 480), clicks=clicks, vector_mode=True)
 
+        self.viewer.history_append()
+
         # 'Load image' button
         self.btnLoad = QToolButton(self)
         self.btnLoad.setText('Load image')
@@ -167,6 +169,12 @@ class Window(QWidget):
         self.sb_click_y.setMaximum(10)
         self.sb_click_y.setSingleStep(0.01)
 
+        self.undo_btn = QPushButton('Undo')
+        self.undo_btn.clicked.connect(self.viewer.undo)
+
+        self.redo_btn = QPushButton('Redo')
+        self.redo_btn.clicked.connect(self.viewer.redo)
+
         if not self.viewer._vector_mode:
             self.to_svg_btn.setHidden(True)
             self.ruler_btn.setHidden(True)
@@ -209,6 +217,9 @@ class Window(QWidget):
         toolbar.addWidget(self.raster_btn)
         toolbar.addWidget(self.sb_click_x)
         toolbar.addWidget(self.sb_click_y)
+
+        toolbar.addWidget(self.undo_btn)
+        toolbar.addWidget(self.redo_btn)
 
         mainLayout.addLayout(toolbar)
         mainLayout.addWidget(self.viewer)

@@ -102,6 +102,9 @@ class VectoRaster(QGraphicsView):
         self._selector = None
         self.ruler_step = 1
 
+        self._history = []
+        self._history_idx = -1
+
         self.mil_grids = []
 
         self.w = size.width()
@@ -419,8 +422,6 @@ class VectoRaster(QGraphicsView):
 
                 pen = CustomPen.Ellipse
 
-                print(x1, y1, x2, y2)
-
                 # x1 = x1 + 1 if x1 > 0 else x1 - 2 if x1 < 0 else x1
                 x1 += (1 if x1 > 0 else -2 if x1 < 0 else 0)
                 x2 = x2 + 1 if x2 > 0 else x2 - 2 if x2 < 0 else x2
@@ -535,7 +536,7 @@ class VectoRaster(QGraphicsView):
     def clear_view(self):
         if self._vector_mode:
             for item in self._scene.items():
-                if item.isVisible():
+                if item.isVisible() and item.scene() == self._scene:
                     self._scene.removeItem(item)
         else:
             self._canvas.clear_pixmap()
@@ -718,7 +719,8 @@ class VectoRaster(QGraphicsView):
             point = self.mapToScene(event.pos()).toPoint()
             grab_item = self._scene.itemAt(point, self.transform())
             if not isinstance(grab_item, PenCircle):
-                print(grab_item)
+                # print(grab_item)
+                pass
 
         super(VectoRaster, self).mousePressEvent(event)
 
@@ -831,6 +833,52 @@ class VectoRaster(QGraphicsView):
             self._selector = None
 
         super(VectoRaster, self).mouseReleaseEvent(event)
+
+        self.history_append()
+
+    def undo(self):
+        hist_size = len(self._history)
+        max_idx = hist_size - 1
+        if -1 < self._history_idx <= 20 and self._history_idx <= max_idx:
+            self._history_idx -= 1
+            if self._history_idx > -1:
+                self.clear_view()
+                self.load_reticle_sketch(self._history[self._history_idx])
+
+    def redo(self):
+        hist_size = len(self._history)
+        max_idx = hist_size - 1
+        if -1 <= self._history_idx < 20 and self._history_idx < max_idx:
+            self._history_idx += 1
+            self.clear_view()
+            if self._history_idx > -1:
+                self.load_reticle_sketch(self._history[self._history_idx])
+
+    def history_append(self):
+
+        cur_state = self.get_vectors()
+        hist_size = len(self._history)
+        max_idx = hist_size - 1
+
+        if 0 <= self._history_idx < hist_size:
+            if self._history[self._history_idx] == cur_state:
+                return
+
+        if self._history_idx <= 0 and hist_size >= 0:
+            self._history.append(cur_state)
+            self._history_idx += 1
+
+        elif self._history_idx > 0 and self._history_idx <= max_idx:
+            self._history.insert(self._history_idx+1, cur_state)
+            self._history_idx += 1
+            self._history = self._history[:self._history_idx+1]
+
+        elif self._history_idx == max_idx and hist_size >= 20:
+            self._history.pop(0)
+            self._history.append(cur_state)
+
+        else:
+            return
 
     @hide_grid
     @hide_canvas
