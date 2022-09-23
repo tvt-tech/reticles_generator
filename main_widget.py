@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5.QtCore import QSizeF, QSize, Qt
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QApplication, QGraphicsView, QWidget, QPushButton, QToolButton, QLineEdit, QDoubleSpinBox, \
-    QComboBox, QHBoxLayout, QVBoxLayout
+    QComboBox, QHBoxLayout, QVBoxLayout, QSizePolicy
 
 from gv import VectoRaster, DrawMode
 
@@ -169,10 +169,14 @@ class Window(QWidget):
         self.sb_click_y.setMaximum(10)
         self.sb_click_y.setSingleStep(0.01)
 
-        self.undo_btn = QPushButton('Undo')
+        self.undo_btn = QPushButton()
+        # self.undo_btn.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
+        self.undo_btn.setIcon(QIcon(':/btns/arrow-counterclockwise.svg'))
         self.undo_btn.clicked.connect(self.viewer.undo)
 
-        self.redo_btn = QPushButton('Redo')
+        self.redo_btn = QPushButton()
+        # self.redo_btn.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
+        self.redo_btn.setIcon(QIcon(':/btns/arrow-clockwise.svg'))
         self.redo_btn.clicked.connect(self.viewer.redo)
 
         if not self.viewer._vector_mode:
@@ -199,8 +203,16 @@ class Window(QWidget):
         mainLayout = QHBoxLayout(self)
         mainLayout.setContentsMargins(0, 0, 0, 0)
 
-        toolbar = QVBoxLayout()
+        do_undo = QHBoxLayout(self)
+        do_undo.setContentsMargins(0, 0, 0, 0)
+        do_undo.setSpacing(0)
+        do_undo.addWidget(self.undo_btn)
+        do_undo.addWidget(self.redo_btn)
+
+        toolbar = QVBoxLayout(self)
+
         toolbar.setAlignment(Qt.AlignTop)
+        toolbar.addLayout(do_undo)
         toolbar.addWidget(self.btnLoad)
         toolbar.addWidget(self.btnPixInfo)
         toolbar.addWidget(self.editPixInfo)
@@ -217,9 +229,6 @@ class Window(QWidget):
         toolbar.addWidget(self.raster_btn)
         toolbar.addWidget(self.sb_click_x)
         toolbar.addWidget(self.sb_click_y)
-
-        toolbar.addWidget(self.undo_btn)
-        toolbar.addWidget(self.redo_btn)
 
         mainLayout.addLayout(toolbar)
         mainLayout.addWidget(self.viewer)

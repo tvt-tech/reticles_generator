@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="btns">
+    <file>arrow-clockwise.svg</file>
+    <file>arrow-counterclockwise.svg</file>
     <file>auto_fix_normal_FILL0_wght400_GRAD0_opsz40.svg</file>
     <file>circle.svg</file>
     <file>circle_FILL0_wght400_GRAD0_opsz40.svg</file>

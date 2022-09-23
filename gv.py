@@ -920,7 +920,7 @@ class VectoRaster(QGraphicsView):
         out_pix.save(str(fpath), 'PNG')
 
     def resizeEvent(self, event: 'QResizeEvent') -> None:
-        self.fitInView()
+        # self.fitInView()
         return super(VectoRaster, self).resizeEvent(event)
 
 
