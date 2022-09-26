@@ -1,4 +1,4 @@
-from gv import *
+from .gv import *
 
 
 class VectorViewer(VectoRaster):

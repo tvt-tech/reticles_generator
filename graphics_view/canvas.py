@@ -4,7 +4,7 @@ from PyQt5.QtCore import QSize, Qt, QRectF
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QGraphicsItem
 
-from center_painter import CenterPainter
+from .center_painter import CenterPainter
 
 
 class GraphicsCanvas(QGraphicsItem):

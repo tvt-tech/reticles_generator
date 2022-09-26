@@ -1,16 +1,15 @@
-import math
 from enum import IntFlag, auto
 from functools import wraps
 
-from PyQt5.QtCore import QLine, QPoint, pyqtSignal, QSize
+from PyQt5.QtCore import QPoint, QSize
 from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, QFrame, QGraphicsView
 
-from canvas import GraphicsCanvas
-from custom_graphics_item import *
-from drawable_scene import DrawbleGraphicScene
-from example_grid import example_grid
-from grid_step import *
+from graphics_view.canvas import GraphicsCanvas
+from graphics_view.custom_graphics_item import *
+from graphics_view.drawable_scene import DrawbleGraphicScene
+from graphics_view.example_grid import example_grid
+from graphics_view.grid_step import *
 
 from pathlib import Path
 

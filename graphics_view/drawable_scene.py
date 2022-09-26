@@ -1,8 +1,7 @@
 from PyQt5.QtCore import QPoint
-from PyQt5.QtGui import QBrush
 from PyQt5.QtWidgets import QGraphicsScene
 
-from custom_graphics_item import *
+from .custom_graphics_item import *
 
 
 class DrawbleGraphicScene(QGraphicsScene):

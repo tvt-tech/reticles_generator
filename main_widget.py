@@ -3,12 +3,12 @@ from pathlib import Path
 
 from PyQt5.QtCore import QSizeF, QSize, Qt
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWidgets import QApplication, QGraphicsView, QWidget, QPushButton, QToolButton, QLineEdit, QDoubleSpinBox, \
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolButton, QDoubleSpinBox, \
     QComboBox, QHBoxLayout, QVBoxLayout
 
-from vector_viever import VectorViewer
-from raster_view import RasterViewer
-from gv import DrawMode
+from graphics_view.vector_viever import VectorViewer
+from graphics_view.raster_view import RasterViewer
+from graphics_view.gv import DrawMode
 
 import rsrc
 assert rsrc

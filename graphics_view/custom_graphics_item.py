@@ -5,7 +5,7 @@ from PyQt5.QtGui import QPainter, QPixmap, QPen, QBrush, QColor, QFont
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget, QGraphicsLineItem, \
     QGraphicsRectItem, QGraphicsItem, QGraphicsItemGroup
 
-from center_painter import CenterPainter
+from .center_painter import CenterPainter
 
 
 class ItemType(IntEnum):
