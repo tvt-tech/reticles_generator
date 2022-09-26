@@ -1,3 +1,5 @@
+from PyQt5.QtWidgets import QLineEdit
+
 from .gv import *
 
 
@@ -41,6 +43,12 @@ class VectorViewer(VectoRaster):
                 self.del_item(grab_item)
             elif self.draw_mode == DrawMode.Pencil:
                 self._scene.addPoint(point, CustomPen.PencilVect, CustomBrush.Black)
+            elif self.draw_mode == DrawMode.Text:
+                text = self._text_dlg()
+                if text:
+                    font = QFont('BankGothic Lt BT')
+                    font.setPointSize(8)
+                    self._scene.addSimpleText(text, font, point)
 
     def _erase(self, point, modifiers):
         grab_item = self._scene.itemAt(point, self.transform())
@@ -92,6 +100,24 @@ class VectorViewer(VectoRaster):
             self._selector.setRect(rect)
             self.temp_item.setRect(rect)
 
+    def _text(self, point, modifiers):
+        pass
+        # p1, p2 = self._get_rect_tool_point(point, modifiers)
+        # rect = QRectF(p1, p2)
+        # if not self.temp_item:
+        #     self._selector = self._scene.addSelector(rect, (self._click_x, self._click_y, self._multiplier))
+        #     self.temp_item = self._scene.addRect(rect, CustomPen.NoPen)
+        # else:
+        #     self._selector.setRect(rect)
+        #     self.temp_item.setRect(rect)
+
+    def _text_dlg(self):
+        text, ok = QInputDialog.getText(self, "Enter text", "", QLineEdit.Normal, "")
+        if ok:
+            return text
+        else:
+            return
+
     @hide_grid
     def clear_view(self):
         for item in self._scene.items():
@@ -110,6 +136,8 @@ class VectorViewer(VectoRaster):
                 graphics_item_type = RectItem
             elif layer['t'] in [ItemType.Ellipse, ItemType.Circle]:
                 graphics_item_type = EllipseItem
+            elif layer['t'] == ItemType.Text:
+                graphics_item_type = SimpleTextItem
             else:
                 continue
             graphics_item = graphics_item_type.fromJson(self._px_at_mil_h, self._px_at_mil_v, **layer)
@@ -147,9 +175,9 @@ class VectorViewer(VectoRaster):
             self._history_idx += 1
 
         elif self._history_idx > 0 and self._history_idx <= max_idx:
-            self._history.insert(self._history_idx+1, cur_state)
+            self._history.insert(self._history_idx + 1, cur_state)
             self._history_idx += 1
-            self._history = self._history[:self._history_idx+1]
+            self._history = self._history[:self._history_idx + 1]
 
         elif self._history_idx == max_idx and hist_size >= 20:
             self._history.pop(0)

@@ -102,3 +102,10 @@ class GraphicsCanvas(QGraphicsItem):
         painter.setPen(pen)
         painter.drawPolygonC(p)
         self.scene().update()
+
+    def drawTextC(self, p: 'QPoint', s: str, font: 'QFont'):
+        painter = CenterPainter(self.pixmap)
+        painter.setCompositionMode(CenterPainter.CompositionMode_Source)
+        painter.setFont(font)
+        painter.drawTextC(p, s)
+        self.scene().update()

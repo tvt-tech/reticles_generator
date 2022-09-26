@@ -1,4 +1,11 @@
+import math
+
+from PyQt5.QtCore import QLine
+from PyQt5.QtGui import QFontMetrics
+
 from .gv import *
+import rsrc
+assert rsrc
 
 
 class RasterViewer(VectoRaster):
@@ -191,6 +198,53 @@ class RasterViewer(VectoRaster):
                 pen = CustomPen.Line
                 self._canvas.drawPointC(point, pen)
 
+            elif item['t'] == ItemType.Text:
+                x = item['p1'][0]
+                y = item['p1'][1]
+
+                if x != 0:
+                    r = round_point_to_step(x, self._min_mil_h_step)
+                    if r:
+                        x = r
+                    elif r is not None:
+                        continue
+
+                if y != 0:
+                    r = round_point_to_step(y, self._min_mil_v_step)
+                    if r:
+                        y = r
+                    elif r is not None:
+                        continue
+
+                p = [int(self._px_at_mil_h * x), int(self._px_at_mil_v * y)]
+
+                if p[0] < 0:
+                    p[0] -= 1
+                if p[1] < 0:
+                    p[1] -= 1
+                if p[0] > 0:
+                    p[0] += 1
+                if p[1] > 0:
+                    p[1] += 1
+
+                point = QPoint(*p)
+
+                font = QFont('BankGothic Lt BT')
+                font.setStyleStrategy(QFont.NoAntialias)
+                font.setPixelSize(11)
+
+                fm = QFontMetrics(font)
+                w = fm.width(item['text'])
+                h = fm.height()
+
+                point = point - QPoint(w / 2, - h / 3)
+                if h >= self._px_at_mil_v * 0.75:
+                    continue
+                elif fm.width('W') >= self._px_at_mil_h * 0.75:
+                    continue
+
+                self._canvas.drawTextC(point, item['text'], font)
+
             elif item['t'] in [ItemType.Circle, ItemType.Ellipse]:
 
                 x1 = item['p1'][0]
@@ -263,7 +317,7 @@ class RasterViewer(VectoRaster):
                 y2 = item['p2'][1]
 
                 if abs(x1) < self._min_mil_h_step:
-                    x1 = x1/abs(x1)
+                    x1 = x1 / abs(x1)
 
                 elif x1 != 0:
                     r = round_point_to_step(x1, self._min_mil_h_step)
@@ -274,7 +328,7 @@ class RasterViewer(VectoRaster):
                         continue
 
                 if abs(y1) < self._min_mil_v_step:
-                    y1 = y1/abs(y1)
+                    y1 = y1 / abs(y1)
 
                 elif y1 != 0:
                     r = round_point_to_step(y1, self._min_mil_v_step)
@@ -286,7 +340,7 @@ class RasterViewer(VectoRaster):
                         continue
 
                 if abs(x2) < self._min_mil_h_step:
-                    x2 = x2/abs(x2)
+                    x2 = x2 / abs(x2)
 
                 elif x2 != 0:
                     r = round_point_to_step(x2, self._min_mil_h_step)
@@ -297,7 +351,7 @@ class RasterViewer(VectoRaster):
                         continue
 
                 if abs(y2) < self._min_mil_v_step:
-                    y2 = y2/abs(y2)
+                    y2 = y2 / abs(y2)
 
                 elif y2 != 0:
                     r = round_point_to_step(y2, self._min_mil_v_step)

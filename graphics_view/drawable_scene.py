@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QPoint
-from PyQt5.QtWidgets import QGraphicsScene
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
 
 from .custom_graphics_item import *
 
@@ -53,9 +53,13 @@ class DrawbleGraphicScene(QGraphicsScene):
         rect_item = RectItem(rect, pen, brush)
         return self.addItem(rect_item)
 
-    def addEllipse(self, rect: 'QRectF', pen: 'QPen', brush: QBrush = CustomBrush.Transparent) -> QGraphicsEllipseItem:
+    def addEllipse(self, rect: 'QRectF', pen: 'QPen', brush: QBrush = CustomBrush.Transparent) -> EllipseItem:
         ellipse_item = EllipseItem(rect, pen, brush)
         return self.addItem(ellipse_item)
+
+    def addSimpleText(self, text: str, font: 'QFont', pos: QPointF) -> SimpleTextItem:
+        text_item = SimpleTextItem(text, font, pos)
+        return self.addItem(text_item)
 
     # def removeItem(self, item: 'QGraphicsItem') -> None:
     #     for child_item in item.childItems():

@@ -3,7 +3,7 @@ from functools import wraps
 
 from PyQt5.QtCore import QPoint, QSize
 from PyQt5.QtGui import QMouseEvent
-from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, QFrame, QGraphicsView
+from PyQt5.QtWidgets import QApplication, QGraphicsPixmapItem, QFrame, QGraphicsView, QInputDialog
 
 from graphics_view.canvas import GraphicsCanvas
 from graphics_view.custom_graphics_item import *
@@ -238,6 +238,13 @@ class VectoRaster(QGraphicsView):
             p2 = self.lastPoint + delta
         return p1, p2
 
+    def _get_text_tool_point(self, point, modifiers):
+        p1, p2 = self._get_rect_tool_point(point, modifiers)
+        text_field = QInputDialog()
+        text = text_field.exec_()
+        if text:
+            print(text, p1, p2)
+
     def _pencil(self, point, modifiers, pen=CustomPen.PencilVect):
         pass
 
@@ -254,6 +261,9 @@ class VectoRaster(QGraphicsView):
         pass
 
     def _ruler(self, point, modifiers):
+        pass
+
+    def _text(self, point, modifiers):
         pass
 
     def del_item(self, grab_item):
@@ -305,6 +315,8 @@ class VectoRaster(QGraphicsView):
                 self._ellipse(point, modifiers)
             elif self.draw_mode == DrawMode.Ruler:
                 self._ruler(point, modifiers)
+            elif self.draw_mode == DrawMode.Text:
+                self._text(point, modifiers)
         super(VectoRaster, self).mouseMoveEvent(event)
 
     # method for mouse left button release

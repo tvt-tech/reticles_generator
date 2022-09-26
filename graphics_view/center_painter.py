@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QPointF, QPoint, QLine, QRect, QRectF, Qt, QLineF
-from PyQt5.QtGui import QPainter, QPixmap, QPolygon
+from PyQt5.QtGui import QPainter, QPixmap, QPolygon, QFontMetrics
 
 
 class CenterPainter(QPainter):
@@ -40,6 +40,10 @@ class CenterPainter(QPainter):
         points = [self._to_origin_min1(point) for point in polygon]
         polygon = QPolygon(points)
         return super(CenterPainter, self).drawPolygon(polygon, fillRule)
+
+    def drawTextC(self, p: QPointF, s: str) -> None:
+        point = self._to_origin_min1(p)
+        return super(CenterPainter, self).drawText(point, s)
 
     def _to_origin(self, p: [QPointF, QPoint]):
         return p + self.origin

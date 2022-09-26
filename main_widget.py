@@ -2,11 +2,11 @@ import json
 from pathlib import Path
 
 from PyQt5.QtCore import QSizeF, QSize, Qt
-from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtGui import QPixmap, QIcon, QFontDatabase
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolButton, QDoubleSpinBox, \
     QComboBox, QHBoxLayout, QVBoxLayout
 
-from graphics_view.vector_viever import VectorViewer
+from graphics_view.vector_view import VectorViewer
 from graphics_view.raster_view import RasterViewer
 from graphics_view.gv import DrawMode
 
@@ -145,6 +145,10 @@ class Window(QWidget):
             self.ruler_combo.addItem(f'{i} mil', i)
         self.ruler_combo.currentIndexChanged.connect(self.ruler_step_change)
 
+        self.text_btn = DrawModeBtn()
+        self.text_btn.setText('A')
+        self.text_btn.clicked.connect(self.on_text_btn_press)
+
         self.sb_click_x = QDoubleSpinBox()
         self.sb_click_y = QDoubleSpinBox()
         self.sb_click_x.setValue(clicks.width())
@@ -191,6 +195,9 @@ class Window(QWidget):
         self.ellipse_btn.setToolTip("6")
         self.ruler_btn.setShortcut(Qt.Key_7)
         self.ruler_btn.setToolTip("7")
+        self.text_btn.setShortcut(Qt.Key_8)
+        self.text_btn.setToolTip('8')
+
         self.raster_btn.setShortcut(Qt.CTRL + Qt.Key_S)
         self.raster_btn.setToolTip("Ctrl + S")
 
@@ -221,6 +228,7 @@ class Window(QWidget):
         toolbar.addWidget(self.ellipse_btn)
         toolbar.addWidget(self.ruler_btn)
         toolbar.addWidget(self.ruler_combo)
+        toolbar.addWidget(self.text_btn)
         toolbar.addWidget(self.clear_btn)
         toolbar.addWidget(self.to_svg_btn)
         toolbar.addWidget(self.raster_btn)
@@ -271,6 +279,11 @@ class Window(QWidget):
         self.viewer.draw_mode = DrawMode.Ruler
         self.viewer.toggleDragMode()
 
+    def on_text_btn_press(self):
+        self.on_notool_btn_press()
+        self.viewer.draw_mode = DrawMode.Text
+        self.viewer.toggleDragMode()
+
     def on_raster_btn_press(self, *args, **kwargs):
         if self._vector_mode:
             for i in [1, 2, 3, 4, 6]:
@@ -306,6 +319,10 @@ if __name__ == '__main__':
     import sys
 
     app = QApplication(sys.argv)
+
+    _id = QFontDatabase.addApplicationFont("Bank Gothic Light BT.ttf")
+    fid = QFontDatabase.applicationFontFamilies(_id)
+
     filename = app.arguments()[1] if len(app.arguments()) > 1 else None
     window = Window(filename)
     window.setGeometry(500, 300, 800, 600)
