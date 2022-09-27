@@ -328,9 +328,10 @@ class RulerGroup(QGraphicsItemGroup):
 class RulerTextGroup(RulerGroup):
 
     def setRect(self, r: QRectF):
-        print(self._step)
         self._rect = r
         rect = self.rect()
+        font = QFont('BankGothic Lt BT')
+        font.setPointSize(8)
         for item in self.childItems():
             self.scene().removeItem(item)
 
@@ -338,16 +339,14 @@ class RulerTextGroup(RulerGroup):
             line_count = abs(int(rect.width() / self._step)) + 1
             for i in range(line_count):
                 x = i * self._step + rect.x()
-                text_item = SimpleTextItem(f'{round(x * 0.05, 1)}', QFont(), QPointF(x, rect.center().y()))
-                # text_item = SimpleTextItem(f'{round((x * 0.05) / self._step) * self._step}', QFont(), QPointF(x, rect.center().y()))
+                text_item = SimpleTextItem(f'{abs(int(x * 0.05))}', font, QPointF(x, rect.center().y()))
                 self.addToGroup(text_item)
 
         elif rect.width() < rect.height():
             line_count = abs(int(rect.height() / self._step)) + 1
             for i in range(line_count):
                 y = i * self._step + rect.y()
-                text_item = SimpleTextItem(f'{round(y * 0.05, 1)}', QFont(), QPointF(rect.center().x(), y))
-                # text_item = SimpleTextItem(f'{round((y * 0.05) / self._step) * self._step}', QFont(), QPointF(rect.center().x(), y))
+                text_item = SimpleTextItem(f'{abs(int(y * 0.05))}', font, QPointF(rect.center().x(), y))
                 self.addToGroup(text_item)
 
 
