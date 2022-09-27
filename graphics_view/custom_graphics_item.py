@@ -178,6 +178,7 @@ class PointItem(QGraphicsEllipseItem, HoveredGraphicsItem):
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Point,
+            'text': "",
             'step': 0.0,
             'p1': (
                 self._cp.x() * click_x / multiplier,
@@ -299,6 +300,7 @@ class RulerGroup(QGraphicsItemGroup):
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Ruler,
+            "text": "",
             'step': self.step() * click_x / multiplier,
             'p1': (
                 self.rect().x() * click_x / multiplier,
@@ -368,6 +370,7 @@ class LineItem(QGraphicsLineItem, HoveredGraphicsItem):
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Line,
+            "text": "",
             'step': 0.0,
             'p1': (
                 self.line().x1() * click_x / multiplier,
@@ -407,6 +410,7 @@ class RectItem(QGraphicsRectItem, HoveredGraphicsItem):
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Rect,
+            'text': "",
             'step': 0.0,
             'p1': (
                 self.rect().x() * click_x / multiplier,
@@ -448,6 +452,7 @@ class EllipseItem(QGraphicsEllipseItem, HoveredGraphicsItem):
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Ellipse if self.rect().width() != self.rect().height() else ItemType.Circle,
+            'text': "",
             'step': 0.0,
             'p1': (
                 self.rect().x() * click_x / multiplier,
@@ -485,6 +490,7 @@ class SimpleTextItem(QGraphicsSimpleTextItem, HoveredGraphicsItem):
     def toJson(self, click_x, click_y, multiplier) -> dict:
         return {
             't': ItemType.Text,
+            'text': self.text(),
             'step': 0.0,
             'p1': (
                 self.def_pos.x() * click_x / multiplier,
@@ -492,7 +498,6 @@ class SimpleTextItem(QGraphicsSimpleTextItem, HoveredGraphicsItem):
             ),
             'p2': (0.0, 0.0),
             'pen': 1,
-            'text': self.text()
         }
 
     @staticmethod

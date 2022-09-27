@@ -379,10 +379,7 @@ class VectoRaster(QGraphicsView):
         return template
 
     @hide_grid
-    def save_raster(self):
-        path = Path('compiled')
-        if not path.exists():
-            Path.mkdir(path)
+    def get_raster(self):
         out_pix = QPixmap(self._scene.width(), self._scene.height())
         out_pix.fill(Qt.transparent)
         painter = QPainter(out_pix)
@@ -390,8 +387,7 @@ class VectoRaster(QGraphicsView):
         self._scene.render(painter, QRectF(out_pix.rect()), QRectF(self._scene.sceneRect()),
                            Qt.KeepAspectRatio)
         painter.end()
-        fpath = Path(path, f'ret_{round(self._click_x, 2)}_{round(self._click_y, 2)}.png')
-        out_pix.save(str(fpath), 'PNG')
+        return out_pix
 
     def resizeEvent(self, event: 'QResizeEvent') -> None:
         return super(VectoRaster, self).resizeEvent(event)

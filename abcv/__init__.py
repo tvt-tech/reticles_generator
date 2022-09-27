@@ -1,7 +1,6 @@
 import json
 
-from construct import Struct, Int8ul, Rebuild, len_, this, BitsInteger, Float16l, BitStruct, Byte
-from graphics_view.custom_graphics_item import ItemFlag
+from construct import Struct, Int8ul, Rebuild, len_, this, Float16l, Byte, Container
 
 # example = [{"t": 8, "step": 1.0, "p1": [0.1, 1.0], "p2": [0.1, 10.0], "fill": 0},
 #            {"t": 8, "step": 1.0, "p1": [-0.2, 1.0], "p2": [0.1, 10.0], "fill": 0},
@@ -72,9 +71,11 @@ with open('../vector_templates/reticle_mil.abcv', 'rb') as fp:
     example1 = json.load(fp)
 with open('../vector_templates/reticle_msr.abcv', 'rb') as fp:
     example2 = json.load(fp)
+with open('../vector_templates/reticle_empty.abcv', 'rb') as fp:
+    example3 = json.load(fp)
 
 # example = [{'layers': example1}, {'layers': example2}]
-example = [example1]
+example = [example1, example2]
 
 # VLayer = Struct(
 #         t=BitsInteger(6),
@@ -85,28 +86,46 @@ example = [example1]
 #     )
 
 
-VText = Struct(
-    chcount=Rebuild(Int8ul, len_(this.chars)),
-    chars=Byte[this.chcount]
-)
+# VText = Struct(
+#     chcount=Rebuild(Int8ul, len_(this.chars)),
+#     chars=Byte[this.chcount]
+# )
 
-VLayer = Struct(
-    t=Byte,
-    fill=Byte,
-    p1=Float16l[2],
-    p2=Float16l[2],
-    step=Float16l,
-    # text=VText
-)
-
-VTemplate = Struct(
-    lcount=Rebuild(Int8ul, len_(this.layers)),
-    layers=VLayer[this.lcount]
-)
+# VLayer = Struct(
+#     t=Byte,
+#     pen=Byte,
+#     p1=Float16l[2],
+#     p2=Float16l[2],
+#     step=Float16l,
+#     text=VText
+# )
+#
+# VTemplate = Struct(
+#     lcount=Rebuild(Int8ul, len_(this.layers)),
+#     layers=VLayer[this.lcount]
+# )
+#
+# VTemplateStack = Struct(
+#     tcount=Rebuild(Int8ul, len_(this.templates)),
+#     templates=VTemplate[this.tcount]
+# )
 
 VTemplateStack = Struct(
     tcount=Rebuild(Int8ul, len_(this.templates)),
-    templates=VTemplate[this.tcount]
+    templates=Struct(
+        lcount=Rebuild(Int8ul, len_(this.layers)),
+        layers=Struct(
+            t=Byte,
+            pen=Byte,
+            p1=Float16l[2],
+            p2=Float16l[2],
+            step=Float16l,
+            text=Struct(
+                chcount=Rebuild(Int8ul, len_(this.chars)),
+                chars=Byte[this.chcount]
+            )
+        )[this.lcount]
+    )[this.tcount]
 )
 
 
@@ -115,22 +134,46 @@ class VRetStack:
 
     @staticmethod
     def build(vect_reticles: list, **contextkw):
-        templates = [{'layers': i} for i in vect_reticles]
+        templates = []
+        for reticle in vect_reticles:
+            layers = []
+            for layer in reticle:
+                layer['text'] = {'chars': layer['text'].encode('utf-8')}
+                layers.append(layer)
+            templates.append({'layers': layers})
+
         obj = dict(templates=templates)
         return VTemplateStack.build(obj)
 
     @staticmethod
     def parse(obj: [bytes, bytearray]):
-        return VTemplateStack.parse(obj)
+        vect_reticles = []
+        templates: Container = VTemplateStack.parse(obj).templates
+        # print(parsed)
+        for reticle in templates:
+            # print(reticle)
+            layers = []
+            for layer in reticle.layers:
+                layer = dict(layer)
+                layer['p1'] = list(layer['p1'])
+                layer['p2'] = list(layer['p2'])
+                layer['text'] = "".join([chr(ch) for ch in layer['text']['chars']])
+                layer.pop('_io')
+                layers.append(layer)
+            vect_reticles.append(layers)
+        return vect_reticles
 
 
 ret = VRetStack.build(example)
-print(VRetStack.parse(ret))
+
+
+# print(parsed)
 
 with open('../vector_templates/packed.bin', 'wb') as fp:
     fp.write(ret)
-
-print(len(ret) / 1000)
-print(VLayer.sizeof())
-
-print(ItemFlag.Filled.value)
+#
+# print(len(example1))
+# print(len(ret) / 1000)
+print(sum([len(i) for i in example]), len(ret))
+# #
+# # print(ItemFlag.Filled.value)

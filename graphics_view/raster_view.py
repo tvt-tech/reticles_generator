@@ -317,10 +317,10 @@ class RasterViewer(VectoRaster):
                 x2 = item['p2'][0]
                 y2 = item['p2'][1]
 
-                if abs(x1) < self._min_mil_h_step:
-                    x1 = x1 / abs(x1)
+                # if abs(x1) < self._min_mil_h_step:
+                #     x1 = x1 / abs(x1)
 
-                elif x1 != 0:
+                if x1 != 0:
                     r = round_point_to_step(x1, self._min_mil_h_step)
                     if r:
                         x1 = r
@@ -328,10 +328,10 @@ class RasterViewer(VectoRaster):
                     elif r is not None:
                         continue
 
-                if abs(y1) < self._min_mil_v_step:
-                    y1 = y1 / abs(y1)
+                # if abs(y1) < self._min_mil_v_step:
+                #     y1 = y1 / abs(y1)
 
-                elif y1 != 0:
+                if y1 != 0:
                     r = round_point_to_step(y1, self._min_mil_v_step)
                     if r:
                         y1 = r
@@ -340,10 +340,10 @@ class RasterViewer(VectoRaster):
                     elif r is not None:
                         continue
 
-                if abs(x2) < self._min_mil_h_step:
-                    x2 = x2 / abs(x2)
+                # if abs(x2) < self._min_mil_h_step:
+                #     x2 = x2 / abs(x2)
 
-                elif x2 != 0:
+                if x2 != 0:
                     r = round_point_to_step(x2, self._min_mil_h_step)
                     if r:
                         x2 = r
@@ -351,10 +351,10 @@ class RasterViewer(VectoRaster):
                     elif r is not None:
                         continue
 
-                if abs(y2) < self._min_mil_v_step:
-                    y2 = y2 / abs(y2)
+                # if abs(y2) < self._min_mil_v_step:
+                #     y2 = y2 / abs(y2)
 
-                elif y2 != 0:
+                if y2 != 0:
                     r = round_point_to_step(y2, self._min_mil_v_step)
                     if r:
                         y2 = r
@@ -364,17 +364,17 @@ class RasterViewer(VectoRaster):
 
                 pen = CustomPen.Ellipse
 
-                # x1 = x1 + 1 if x1 > 0 else x1 - 2 if x1 < 0 else x1
-                x1 += (1 if x1 > 0 else -2 if x1 < 0 else 0)
+                x1 = x1 + 1 if x1 > 0 else x1 - 2 if x1 < 0 else x1
+                # x1 += (1 if x1 > 0 else -2 if x1 < 0 else 0)
                 x2 = x2 + 1 if x2 > 0 else x2 - 2 if x2 < 0 else x2
                 y1 = y1 + 1 if y1 > 0 else y1 - 1 if y1 < 0 else y1
                 y2 = y2 + 1 if y2 > 0 else y2 - 1 if y2 < 0 else y2
 
-                if x2 < self._min_mil_h_step:
-                    self._canvas.drawPointC(QPoint(x1, y1), pen)
+                # if x2 < self._min_mil_h_step:
+                # self._canvas.drawPointC(QPoint(x1, y1), pen)
 
-                else:
-                    p = QPointF(x1, y1)
-                    s = QSizeF(x2, y2)
-                    rect = QRectF(p, s)
-                    self._canvas.drawRectC(rect, pen)
+                # else:
+                p = QPointF(x1, y1)
+                s = QSizeF(x2, y2)
+                rect = QRectF(p, s)
+                self._canvas.drawRectC(rect, pen)

@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 
 from PyQt5.QtCore import QSizeF, QSize, Qt
-from PyQt5.QtGui import QPixmap, QIcon, QFontDatabase
+from PyQt5.QtGui import QPixmap, QIcon, QFontDatabase, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolButton, QDoubleSpinBox, \
-    QComboBox, QHBoxLayout, QVBoxLayout
+    QComboBox, QHBoxLayout, QVBoxLayout, QLabel
 
 from graphics_view.vector_view import VectorViewer
 from graphics_view.raster_view import RasterViewer
@@ -212,6 +212,20 @@ class Window(QWidget):
         self.redo_btn.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Z)
         self.redo_btn.setToolTip("Ctrl + Shift + Z")
 
+
+        self.preview = QLabel('Notext')
+        self.preview.setStyleSheet("""QLabel {background-color: white;};""")
+        self.preview.setFixedSize(640, 480)
+        self.preview_combo = QComboBox()
+        for i in [1, 2, 3, 4, 6]:
+            self.preview_combo.addItem(f'x{i}', i)
+
+        self.preview_combo.currentIndexChanged.connect(self.prev_zoom_changed)
+        self.sb_click_x.valueChanged.connect(self.prev_zoom_changed)
+        self.sb_click_y.valueChanged.connect(self.prev_zoom_changed)
+
+        # self.preview_combo.setCurrentIndex(0)
+
         # Arrange layout
         mainLayout = QHBoxLayout(self)
         mainLayout.setContentsMargins(0, 0, 0, 0)
@@ -221,6 +235,10 @@ class Window(QWidget):
         do_undo.setSpacing(0)
         do_undo.addWidget(self.undo_btn)
         do_undo.addWidget(self.redo_btn)
+
+        prev_layout = QVBoxLayout(self)
+        prev_layout.addWidget(self.preview)
+        prev_layout.addWidget(self.preview_combo)
 
         toolbar = QVBoxLayout(self)
 
@@ -245,6 +263,8 @@ class Window(QWidget):
 
         mainLayout.addLayout(toolbar)
         mainLayout.addWidget(self.viewer)
+        mainLayout.addLayout(prev_layout)
+
 
         self.installEventFilter(self.viewer._scene)
 
@@ -252,6 +272,14 @@ class Window(QWidget):
     #     self.on_notool_btn_press()
     #     self.viewer.draw_mode = DrawMode.Numbers
     #     self.viewer.toggleDragMode()
+
+    def prev_zoom_changed(self, index):
+        zoom = self.preview_combo.currentData()
+        viewer = RasterViewer(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / zoom)
+        viewer.draw_sketch(self.viewer.get_vectors(False))
+        pix = viewer.get_raster()
+
+        self.preview.setPixmap(pix)
 
     def on_draw_btn_press(self):
         self.on_notool_btn_press()
@@ -298,13 +326,20 @@ class Window(QWidget):
         self.viewer.toggleDragMode()
 
     def on_raster_btn_press(self, *args, **kwargs):
+        path = Path('compiled')
+        if not path.exists():
+            Path.mkdir(path)
         if self._vector_mode:
             for i in [1, 2, 3, 4, 6]:
                 viewer = RasterViewer(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / i)
                 viewer.draw_sketch(self.viewer.get_vectors(False))
-                viewer.save_raster()
+                pix = viewer.get_raster()
+                fpath = Path(path, f'ret_{round(self.sb_click_x.value(), 2)}_{round(self.sb_click_y.value(), 2)}.png')
+                pix.save(str(fpath), 'PNG')
         else:
-            self.viewer.save_raster()
+            pix = self.viewer.get_raster()
+            fpath = Path(path, f'ret_{round(self.sb_click_x.value(), 2)}_{round(self.sb_click_y.value(), 2)}.png')
+            pix.save(str(fpath), 'PNG')
 
     def on_to_svg_btn_press(self, *args, **kwargs):
         self.save_vectors()
