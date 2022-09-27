@@ -1,6 +1,6 @@
+from PyQt5.QtCore import Qt
 from construct import Struct, Container, Const, Int32ul, Int32sl, BitStruct, BitsInteger, ByteSwapped
-from PyQt5.QtGui import QImage
-
+from PyQt5.QtGui import QImage, QColor
 
 HEADER = Struct(
     'PXL2Id' / Const(b'PXL4'),
@@ -37,6 +37,9 @@ DATA2 = ByteSwapped(BitStruct(
 ))
 
 
+COLOR_VISIBLE_THRESHOLD = 0x10
+
+
 class ImgMap(object):
     def __init__(self, img: QImage):
         self._img = img
@@ -49,6 +52,10 @@ class ImgMap(object):
 
             for x in range(1, 640):
                 pcolor = self._img.pixelColor(x, y).value()
+                # pcolor = self._img.pixel(x, y)
+                # pcolord = QColor.qGray(pcolor)
+
+
                 if pcolor == 0:
                     if not sx:
                         sx = x
