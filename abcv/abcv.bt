@@ -1,0 +1,44 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: <optimize=true|false>
+//------------------------------------------------
+
+typedef struct {
+    hfloat x;
+    hfloat y;
+}vPoint;
+
+typedef struct {
+    byte chcount;
+    char chars[chcount]<optimize=false>;
+}vText;
+
+typedef struct {
+    byte t;
+    byte pen;
+    vPoint p1;
+    vPoint p2;
+    hfloat step;
+    vText text;
+}vLayer;
+
+typedef struct {
+    byte lcount;
+    vLayer layer[lcount]<optimize=false>;
+}vTemplate;
+
+typedef struct {
+    byte tcount;
+    vTemplate template[tcount]<optimize=false>;
+}vStack;
+
+vStack stack;
+
