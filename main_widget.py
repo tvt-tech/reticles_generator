@@ -149,9 +149,9 @@ class Window(QWidget):
         self.text_btn.setText('A')
         self.text_btn.clicked.connect(self.on_text_btn_press)
 
-        self.nums_btn = DrawModeBtn()
-        self.nums_btn.setText('123')
-        self.nums_btn.clicked.connect(self.on_nums_btn_press)
+        # self.nums_btn = DrawModeBtn()
+        # self.nums_btn.setText('123')
+        # self.nums_btn.clicked.connect(self.on_nums_btn_press)
 
         self.sb_click_x = QDoubleSpinBox()
         self.sb_click_y = QDoubleSpinBox()
@@ -201,8 +201,8 @@ class Window(QWidget):
         self.ruler_btn.setToolTip("7")
         self.text_btn.setShortcut(Qt.Key_8)
         self.text_btn.setToolTip('8')
-        self.nums_btn.setShortcut(Qt.Key_9)
-        self.nums_btn.setToolTip("9")
+        # self.nums_btn.setShortcut(Qt.Key_9)
+        # self.nums_btn.setToolTip("9")
 
         self.raster_btn.setShortcut(Qt.CTRL + Qt.Key_S)
         self.raster_btn.setToolTip("Ctrl + S")
@@ -235,7 +235,7 @@ class Window(QWidget):
         toolbar.addWidget(self.ruler_btn)
         toolbar.addWidget(self.ruler_combo)
         toolbar.addWidget(self.text_btn)
-        toolbar.addWidget(self.nums_btn)
+        # toolbar.addWidget(self.nums_btn)
 
         toolbar.addWidget(self.clear_btn)
         toolbar.addWidget(self.to_svg_btn)
@@ -248,10 +248,10 @@ class Window(QWidget):
 
         self.installEventFilter(self.viewer._scene)
 
-    def on_nums_btn_press(self):
-        self.on_notool_btn_press()
-        self.viewer.draw_mode = DrawMode.Numbers
-        self.viewer.toggleDragMode()
+    # def on_nums_btn_press(self):
+    #     self.on_notool_btn_press()
+    #     self.viewer.draw_mode = DrawMode.Numbers
+    #     self.viewer.toggleDragMode()
 
     def on_draw_btn_press(self):
         self.on_notool_btn_press()

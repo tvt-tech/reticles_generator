@@ -325,29 +325,29 @@ class RulerGroup(QGraphicsItemGroup):
         return RulerGroup(rect, s, pen)
 
 
-class RulerTextGroup(RulerGroup):
-
-    def setRect(self, r: QRectF):
-        self._rect = r
-        rect = self.rect()
-        font = QFont('BankGothic Lt BT')
-        font.setPointSize(8)
-        for item in self.childItems():
-            self.scene().removeItem(item)
-
-        if rect.width() > rect.height():
-            line_count = abs(int(rect.width() / self._step)) + 1
-            for i in range(line_count):
-                x = i * self._step + rect.x()
-                text_item = SimpleTextItem(f'{abs(int(x * 0.05))}', font, QPointF(x, rect.center().y()))
-                self.addToGroup(text_item)
-
-        elif rect.width() < rect.height():
-            line_count = abs(int(rect.height() / self._step)) + 1
-            for i in range(line_count):
-                y = i * self._step + rect.y()
-                text_item = SimpleTextItem(f'{abs(int(y * 0.05))}', font, QPointF(rect.center().x(), y))
-                self.addToGroup(text_item)
+# class RulerTextGroup(RulerGroup):
+#
+#     def setRect(self, r: QRectF):
+#         self._rect = r
+#         rect = self.rect()
+#         font = QFont('BankGothic Lt BT')
+#         font.setPointSize(8)
+#         for item in self.childItems():
+#             self.scene().removeItem(item)
+#
+#         if rect.width() > rect.height():
+#             line_count = abs(int(rect.width() / self._step)) + 1
+#             for i in range(line_count):
+#                 x = i * self._step + rect.x()
+#                 text_item = SimpleTextItem(f'{abs(int(x * 0.05))}', font, QPointF(x, rect.center().y()))
+#                 self.addToGroup(text_item)
+#
+#         elif rect.width() < rect.height():
+#             line_count = abs(int(rect.height() / self._step)) + 1
+#             for i in range(line_count):
+#                 y = i * self._step + rect.y()
+#                 text_item = SimpleTextItem(f'{abs(int(y * 0.05))}', font, QPointF(rect.center().x(), y))
+#                 self.addToGroup(text_item)
 
 
 class LineItem(QGraphicsLineItem, HoveredGraphicsItem):

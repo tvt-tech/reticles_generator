@@ -41,9 +41,9 @@ class DrawbleGraphicScene(QGraphicsScene):
         ruler_group = RulerGroup(rect, step, pen, brush)
         return self.addItem(ruler_group)
 
-    def addNumbers(self, rect: QRectF, step: float, pen: 'QPen', brush: 'QBrush' = CustomBrush.Transparent) -> RulerTextGroup:
-        ruler_group = RulerTextGroup(rect, step, pen, brush)
-        return self.addItem(ruler_group)
+    # def addNumbers(self, rect: QRectF, step: float, pen: 'QPen', brush: 'QBrush' = CustomBrush.Transparent) -> RulerTextGroup:
+    #     ruler_group = RulerTextGroup(rect, step, pen, brush)
+    #     return self.addItem(ruler_group)
 
     def addSelector(self, rect: QRectF, view_scale: tuple[float, float, float] = None) -> SelectorItem:
         selector = SelectorItem(rect, view_scale)
