@@ -1,7 +1,7 @@
 from enum import IntEnum, IntFlag, auto
 
 from PyQt5.QtCore import QRectF, Qt, QLineF, QPointF, QSizeF
-from PyQt5.QtGui import QPainter, QPixmap, QPen, QBrush, QColor, QFont
+from PyQt5.QtGui import QPainter, QPixmap, QPen, QBrush, QColor, QFont, QPainterPath, QPainterPathStroker
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QStyleOptionGraphicsItem, QWidget, QGraphicsLineItem, \
     QGraphicsRectItem, QGraphicsItemGroup, QGraphicsSimpleTextItem
 
@@ -238,11 +238,10 @@ class RulerGroup(QGraphicsItemGroup):
         if self._removing:
             return self.rect()
         elif self.rect().width() > self.rect().height():
-            return QRectF(self.rect().x(), self.rect().y(), self.rect().width(), 1)
+            return QRectF(self.rect().x(), self.rect().y(), self.rect().width(), 0)
         elif self.rect().width() < self.rect().height():
-            return QRectF(self.rect().x(), self.rect().y(), 1, self.rect().height())
+            return QRectF(self.rect().x(), self.rect().y(), 0, self.rect().height())
         return QRectF()
-        # return self.rect()
 
     def setRect(self, r: QRectF):
         self._rect = r
@@ -326,6 +325,32 @@ class RulerGroup(QGraphicsItemGroup):
         return RulerGroup(rect, s, pen)
 
 
+class RulerTextGroup(RulerGroup):
+
+    def setRect(self, r: QRectF):
+        print(self._step)
+        self._rect = r
+        rect = self.rect()
+        for item in self.childItems():
+            self.scene().removeItem(item)
+
+        if rect.width() > rect.height():
+            line_count = abs(int(rect.width() / self._step)) + 1
+            for i in range(line_count):
+                x = i * self._step + rect.x()
+                text_item = SimpleTextItem(f'{round(x * 0.05, 1)}', QFont(), QPointF(x, rect.center().y()))
+                # text_item = SimpleTextItem(f'{round((x * 0.05) / self._step) * self._step}', QFont(), QPointF(x, rect.center().y()))
+                self.addToGroup(text_item)
+
+        elif rect.width() < rect.height():
+            line_count = abs(int(rect.height() / self._step)) + 1
+            for i in range(line_count):
+                y = i * self._step + rect.y()
+                text_item = SimpleTextItem(f'{round(y * 0.05, 1)}', QFont(), QPointF(rect.center().x(), y))
+                # text_item = SimpleTextItem(f'{round((y * 0.05) / self._step) * self._step}', QFont(), QPointF(rect.center().x(), y))
+                self.addToGroup(text_item)
+
+
 class LineItem(QGraphicsLineItem, HoveredGraphicsItem):
     def __init__(self, line: QLineF, pen: QPen=CustomPen.LineVect, parent=None):
         super(LineItem, self).__init__(line)
@@ -375,7 +400,10 @@ class RectItem(QGraphicsRectItem, HoveredGraphicsItem):
         self.setBrush(brush)
         self.setAcceptHoverEvents(True)
 
-
+    def shape(self) -> 'QPainterPath':
+        path = super(RectItem, self).shape()
+        stroker = QPainterPathStroker()
+        return stroker.createStroke(path)
 
     def toJson(self, click_x, click_y, multiplier):
         return {
@@ -413,6 +441,11 @@ class EllipseItem(QGraphicsEllipseItem, HoveredGraphicsItem):
         self.setBrush(brush)
         self.setAcceptHoverEvents(True)
 
+    def shape(self) -> 'QPainterPath':
+        path = super(EllipseItem, self).shape()
+        stroker = QPainterPathStroker()
+        return stroker.createStroke(path)
+
     def toJson(self, click_x, click_y, multiplier):
         return {
             't': ItemType.Ellipse if self.rect().width() != self.rect().height() else ItemType.Circle,
@@ -445,6 +478,8 @@ class SimpleTextItem(QGraphicsSimpleTextItem, HoveredGraphicsItem):
     def __init__(self, text: str, font: QFont, pos: QPointF, parent=None):
         super(SimpleTextItem, self).__init__(text, parent)
         self.setFont(font)
+        self._default_pen_color = Qt.black
+        self._default_text_color = Qt.black
         self.def_pos = pos
         self.setPos(pos - QPointF(self.boundingRect().width() / 2, self.boundingRect().height() / 2))
 
@@ -467,7 +502,6 @@ class SimpleTextItem(QGraphicsSimpleTextItem, HoveredGraphicsItem):
                  p1: tuple[float, float],
                  p2: tuple[float, float],
                  step: float = 1, *args, **kwargs):
-        print(kwargs)
         font = QFont('BankGothic Lt BT')
         font.setPointSize(8)
         pos = QPointF(px_at_mil_h * p1[0], px_at_mil_v * p1[1])

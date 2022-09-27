@@ -47,6 +47,7 @@ class DrawMode(IntFlag):
     Ellipse = auto()
     Text = auto()
     Ruler = auto()
+    Numbers = auto()
 
 
 class MyCanvasItem(QGraphicsPixmapItem):
@@ -263,6 +264,9 @@ class VectoRaster(QGraphicsView):
     def _ruler(self, point, modifiers):
         pass
 
+    def _numbers(self, point, modifiers):
+        pass
+
     def _text(self, point, modifiers):
         pass
 
@@ -317,6 +321,8 @@ class VectoRaster(QGraphicsView):
                 self._ruler(point, modifiers)
             elif self.draw_mode == DrawMode.Text:
                 self._text(point, modifiers)
+            elif self.draw_mode == DrawMode.Numbers:
+                self._numbers(point, modifiers)
         super(VectoRaster, self).mouseMoveEvent(event)
 
     # method for mouse left button release

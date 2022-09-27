@@ -111,6 +111,7 @@ class RasterViewer(VectoRaster):
 
         for item in sketch:
             pen = CustomPen.Line
+
             if item['t'] == ItemType.Line:
 
                 p1 = item['p1']

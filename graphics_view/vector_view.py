@@ -100,6 +100,17 @@ class VectorViewer(VectoRaster):
             self._selector.setRect(rect)
             self.temp_item.setRect(rect)
 
+    def _numbers(self, point, modifiers):
+        p1, p2 = self._get_rect_tool_point(point, modifiers)
+        rect = QRectF(p1, p2)
+
+        if not self.temp_item:
+            self._selector = self._scene.addSelector(rect, (self._click_x, self._click_y, self._multiplier))
+            self.temp_item = self._scene.addNumbers(rect, self.ruler_step * self._px_at_mil_h, CustomPen.LineVect)
+        else:
+            self._selector.setRect(rect)
+            self.temp_item.setRect(rect)
+
     def _text(self, point, modifiers):
         pass
         # p1, p2 = self._get_rect_tool_point(point, modifiers)
