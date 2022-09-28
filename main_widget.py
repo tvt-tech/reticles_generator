@@ -14,6 +14,16 @@ import rsrc
 assert rsrc
 
 
+class CustomDoubleSpinbox(QDoubleSpinBox):
+    def validate(self, text: str, pos: int) -> object:
+        text = text.replace(".", ",")
+        return QDoubleSpinBox.validate(self, text, pos)
+
+    def valueFromText(self, text: str) -> float:
+        text = text.replace(",", ".")
+        return float(text)
+
+
 class DrawModeBtn(QPushButton):
     def __init__(self, *args, **kwargs):
         super(DrawModeBtn, self).__init__(*args, **kwargs)
@@ -153,8 +163,8 @@ class Window(QWidget):
         # self.nums_btn.setText('123')
         # self.nums_btn.clicked.connect(self.on_nums_btn_press)
 
-        self.sb_click_x = QDoubleSpinBox()
-        self.sb_click_y = QDoubleSpinBox()
+        self.sb_click_x = CustomDoubleSpinbox()
+        self.sb_click_y = CustomDoubleSpinbox()
         self.sb_click_x.setValue(clicks.width())
         self.sb_click_y.setValue(clicks.height())
         self.sb_click_x.setMinimum(0.01)
