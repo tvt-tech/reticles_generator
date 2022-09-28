@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from PyQt5.QtCore import QSizeF, QSize, Qt
-from PyQt5.QtGui import QPixmap, QIcon, QFontDatabase, QPainter
+from PyQt5.QtGui import QPixmap, QIcon, QFontDatabase
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolButton, QDoubleSpinBox, \
     QComboBox, QHBoxLayout, QVBoxLayout, QLabel
 

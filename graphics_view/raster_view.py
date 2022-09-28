@@ -322,14 +322,14 @@ class RasterViewer(VectoRaster):
                 rx *= self._px_at_mil_h
                 ry *= self._px_at_mil_v
 
-                cx += (1 if x1 > 0 else -1 if x1 < 0 else 0)
-                cy += (1 if y1 > 0 else -1 if y1 < 0 else 0)
+                cx += (0 if x1 > 0 else -1 if x1 < 0 else 0)
+                cy += (0 if y1 > 0 else -1 if y1 < 0 else 0)
 
                 pen = CustomPen.Line
 
                 if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
                     cp = QPointF(cx, cy)
-                    self._canvas.drawRectC(QRectF(cp - QPointF(1, 1), QSizeF(2, 2)), pen)
+                    self._canvas.drawRectC(QRectF(cp, QSizeF(2, 2)), pen)
                 else:
                     rect = QRectF(QPointF(cx - rx, cy - ry), QPointF(cx + rx, cy + ry))
                     self._canvas.drawRectC(rect, pen)
