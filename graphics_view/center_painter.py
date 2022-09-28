@@ -30,11 +30,17 @@ class CenterPainter(QPainter):
         r = QRectF(p1, s)
         return super(CenterPainter, self).drawRect(r)
 
-    def drawEllipseC(self, r: QRectF) -> None:
-        p1 = self._to_origin_min1(QPoint(r.x(), r.y()))
-        s = r.size()
-        r = QRectF(p1, s)
-        return super(CenterPainter, self).drawEllipse(r)
+    def drawEllipseC(self, r: QRectF, p: QPointF=None, rx: float = None, ry: float = None) -> None:
+        if r:
+            # p1 = self._to_origin_min1(QPoint(r.x(), r.y()))
+            p1 = self._to_origin_min1(r.topLeft())
+            s = r.size()
+            r = QRectF(p1, s)
+            return super(CenterPainter, self).drawEllipse(r)
+        elif p and rx and ry:
+            p1 = self._to_origin_min1(p)
+            return super(CenterPainter, self).drawEllipse(p1, rx, ry)
+
 
     def drawPolygonC(self, polygon: QPolygon, fillRule: Qt.FillRule = Qt.OddEvenFill) -> None:
         points = [self._to_origin_min1(point) for point in polygon]

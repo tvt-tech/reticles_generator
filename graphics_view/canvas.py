@@ -89,11 +89,11 @@ class GraphicsCanvas(QGraphicsItem):
         painter.drawRectC(r)
         self.scene().update()
 
-    def drawEllipseC(self, r: 'QRect', pen: 'QPen'):
+    def drawEllipseC(self, r: 'QRect'=None, pen: 'QPen'=None, p: 'QPointF'=None, rx: float = None, ry: float = None):
         painter = CenterPainter(self.pixmap)
         painter.setCompositionMode(CenterPainter.CompositionMode_Source)
         painter.setPen(pen)
-        painter.drawEllipseC(r)
+        painter.drawEllipseC(r, p, rx, ry)
         self.scene().update()
 
     def drawPolygonC(self, p: 'QPolygon', pen: 'QPen'):

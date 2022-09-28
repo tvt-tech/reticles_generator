@@ -3,8 +3,9 @@ import math
 from PyQt5.QtCore import QLine
 from PyQt5.QtGui import QFontMetrics
 
-from .gv import *
 import rsrc
+from .gv import *
+
 assert rsrc
 
 
@@ -248,133 +249,87 @@ class RasterViewer(VectoRaster):
 
             elif item['t'] in [ItemType.Circle, ItemType.Ellipse]:
 
-                x1 = item['p1'][0]
-                y1 = item['p1'][1]
-                x2 = item['p2'][0]
-                y2 = item['p2'][1]
+                x1, y1 = item['p1']
+                x2, y2 = item['p2']
 
-                if x1 != 0:
-                    r = round_point_to_step(x1, self._min_mil_h_step)
-                    if r:
-                        x1 = r
-                    elif r is not None:
-                        continue
+                milrect = QRectF(QPointF(x1, y1), QSizeF(x2, y2))
 
-                if y1 != 0:
-                    r = round_point_to_step(y1, self._min_mil_v_step)
-                    if r:
-                        y1 = r
-                    elif r is not None:
-                        continue
+                cx = milrect.center().x()
+                rcpx = round_point_to_step(cx, self._min_mil_h_step) if cx != 0 else None
+                if rcpx:
+                    cx = rcpx
 
-                if x2 != 0:
-                    r = round_point_to_step(x2, self._min_mil_h_step)
-                    if r:
-                        x2 = r
-                    elif r is not None:
-                        continue
+                cy = milrect.center().y()
+                rcpy = round_point_to_step(cy, self._min_mil_v_step) if cy != 0 else None
+                if rcpy:
+                    cy = rcpy
 
-                if y2 != 0:
-                    r = round_point_to_step(y2, self._min_mil_v_step)
-                    if r:
-                        y2 = r
-                    elif r is not None:
-                        continue
+                rx = milrect.width() / 2
+                rradx = round_point_to_step(rx, self._min_mil_h_step) if rx != 0 else None
+                if rradx:
+                    rx = rradx
 
-                x1 = x1 * self._px_at_mil_h - 1
-                y1 = y1 * self._px_at_mil_v - 1
-                x2 = x2 * self._px_at_mil_h + 2
-                y2 = y2 * self._px_at_mil_v + 2
+                ry = milrect.height() / 2
+                rrady = round_point_to_step(ry, self._min_mil_v_step) if ry != 0 else None
+                if rrady:
+                    ry = rrady
 
-                # x1 += (1 if x1 > 0 else -2 if x1 < 0 else 0)
-                # x2 = x2 + 1 if x2 > 0 else x2 - 2 if x2 < 0 else x2
-                # y1 = y1 + 1 if y1 > 0 else y1 - 1 if y1 < 0 else y1
-                # y2 = y2 + 1 if y2 > 0 else y2 - 1 if y2 < 0 else y2
+                cx *= self._px_at_mil_h
+                cy *= self._px_at_mil_v
+                rx *= self._px_at_mil_h
+                ry *= self._px_at_mil_v
+                rx += 1
+                ry += 1
 
-                # if x1 < 0:
-                #     x1 -= 1
-                # if y1 < 0:
-                #     y1 -= 1
-                # if x2 < 0:
-                #     x2 -= 1
-                # if y2 < 0:
-                #     y2 -= 1
+                cx += (0.5 if x1 > 0 else -1 if x1 < 0 else 0)
+                cy += (0.5 if y1 > 0 else -1 if y1 < 0 else 0)
 
-                # if x2 / x1 == 0.1:
-                if x2 < self._min_mil_h_step:
-                    self._canvas.drawPointC(QPoint(x1, y1), pen)
+                cp = QPointF(cx, cy)
 
+                if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
+                    self._canvas.drawEllipseC(p=cp, rx=1, ry=1, pen=pen)
                 else:
-                    p = QPointF(x1, y1)
-                    s = QSizeF(x2, y2)
-                    rect = QRectF(p, s)
-                    self._canvas.drawEllipseC(rect, pen)
+                    self._canvas.drawEllipseC(p=cp, rx=rx, ry=ry, pen=pen)
 
             elif item['t'] == ItemType.Rect:
+                x1, y1 = item['p1']
+                x2, y2 = item['p2']
 
-                x1 = item['p1'][0]
-                y1 = item['p1'][1]
-                x2 = item['p2'][0]
-                y2 = item['p2'][1]
+                milrect = QRectF(QPointF(x1, y1), QSizeF(x2, y2))
 
-                # if abs(x1) < self._min_mil_h_step:
-                #     x1 = x1 / abs(x1)
+                cx = milrect.center().x()
+                rcpx = round_point_to_step(cx, self._min_mil_h_step) if cx != 0 else None
+                if rcpx:
+                    cx = rcpx
 
-                if x1 != 0:
-                    r = round_point_to_step(x1, self._min_mil_h_step)
-                    if r:
-                        x1 = r
-                        x1 = x1 * self._px_at_mil_h
-                    elif r is not None:
-                        continue
+                cy = milrect.center().y()
+                rcpy = round_point_to_step(cy, self._min_mil_v_step) if cy != 0 else None
+                if rcpy:
+                    cy = rcpy
 
-                # if abs(y1) < self._min_mil_v_step:
-                #     y1 = y1 / abs(y1)
+                rx = milrect.width() / 2
+                rradx = round_point_to_step(rx, self._min_mil_h_step) if rx != 0 else None
+                if rradx:
+                    rx = rradx
 
-                if y1 != 0:
-                    r = round_point_to_step(y1, self._min_mil_v_step)
-                    if r:
-                        y1 = r
-                        y1 = y1 * self._px_at_mil_v
+                ry = milrect.height() / 2
+                rrady = round_point_to_step(ry, self._min_mil_v_step) if ry != 0 else None
+                if rrady:
+                    ry = rrady
 
-                    elif r is not None:
-                        continue
+                cx *= self._px_at_mil_h
+                cy *= self._px_at_mil_v
+                rx *= self._px_at_mil_h
+                ry *= self._px_at_mil_v
 
-                # if abs(x2) < self._min_mil_h_step:
-                #     x2 = x2 / abs(x2)
+                cx += (1 if x1 > 0 else -1 if x1 < 0 else 0)
+                cy += (1 if y1 > 0 else -1 if y1 < 0 else 0)
 
-                if x2 != 0:
-                    r = round_point_to_step(x2, self._min_mil_h_step)
-                    if r:
-                        x2 = r
-                        x2 = x2 * self._px_at_mil_h
-                    elif r is not None:
-                        continue
+                pen = CustomPen.Line
 
-                # if abs(y2) < self._min_mil_v_step:
-                #     y2 = y2 / abs(y2)
-
-                if y2 != 0:
-                    r = round_point_to_step(y2, self._min_mil_v_step)
-                    if r:
-                        y2 = r
-                        y2 = y2 * self._px_at_mil_v
-                    elif r is not None:
-                        continue
-
-                pen = CustomPen.Ellipse
-
-                x1 = x1 + 1 if x1 > 0 else x1 - 2 if x1 < 0 else x1
-                # x1 += (1 if x1 > 0 else -2 if x1 < 0 else 0)
-                x2 = x2 + 1 if x2 > 0 else x2 - 2 if x2 < 0 else x2
-                y1 = y1 + 1 if y1 > 0 else y1 - 1 if y1 < 0 else y1
-                y2 = y2 + 1 if y2 > 0 else y2 - 1 if y2 < 0 else y2
-
-                # if x2 < self._min_mil_h_step:
-                # self._canvas.drawPointC(QPoint(x1, y1), pen)
-
-                # else:
-                p = QPointF(x1, y1)
-                s = QSizeF(x2, y2)
-                rect = QRectF(p, s)
-                self._canvas.drawRectC(rect, pen)
+                if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
+                    cp = QPointF(cx, cy)
+                    self._canvas.drawRectC(QRectF(cp - QPointF(1, 1), QSizeF(2, 2)), pen)
+                else:
+                    rect = QRectF(QPointF(cx - rx, cy - ry), QPointF(cx + rx, cy + ry))
+                    self._canvas.drawRectC(rect, pen)
