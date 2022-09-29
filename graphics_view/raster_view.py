@@ -1,5 +1,4 @@
 from PyQt5.QtCore import QLine
-from PyQt5.QtGui import QFontMetrics
 
 import rsrc
 from .canvas import Rasterizer
@@ -138,11 +137,14 @@ class RasterViewer(VectoRaster):
 
                 ellipse = layer.as_ellipse()
                 if ellipse:
-                    cp, rx, ry = ellipse
+                    cx, cy, rx, ry = ellipse
                     if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
-                        self._canvas.drawEllipseC(p=cp, rx=1, ry=1, pen=pen)
+                        cp = QPointF(cx, cy) - QPointF(1, 1)
+                        rect = QRectF(cp, QSizeF(2, 2))
+                        self._canvas.drawEllipseC(rect, pen=pen)
                     else:
-                        self._canvas.drawEllipseC(p=cp, rx=rx, ry=ry, pen=pen)
+                        rect = QRectF(QPointF(cx - rx, cy - ry), QSizeF(2 * rx, 2 * ry))
+                        self._canvas.drawEllipseC(rect, pen=pen)
 
             elif layer.t == ItemType.Rect:
 
@@ -150,15 +152,8 @@ class RasterViewer(VectoRaster):
                 if rect:
                     cx, cy, rx, ry = rect
 
-                    offset1 = 1 if self._click_x % 2 > 0 else 0.5
-
-                    # cx += (0 if x1 >= 0 else -offset1 if x1 < 0 else 1)
-                    # cy += (0 if y1 >= 0 else -1 if y1 < 0 else 1)
-                    cx += (0 if cx >= 0 else -offset1 if cx < 0 else 1)
-                    cy += (0 if cy >= 0 else -offset1 if cy < 0 else 1)
-
                     if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
-                        cp = QPointF(cx, cy)
+                        cp = QPointF(cx, cy) - QPointF(1, 1)
                         self._canvas.drawRectC(QRectF(cp, QSizeF(2, 2)), pen)
                     else:
                         rect = QRectF(QPointF(cx - rx, cy - ry), QPointF(cx + rx, cy + ry))

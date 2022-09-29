@@ -1,6 +1,6 @@
 import typing
 
-from PyQt5.QtCore import QSize, Qt, QRectF, QPoint, QLine, QPointF, QSizeF
+from PyQt5.QtCore import QSize, Qt, QRectF, QPoint, QLine, QPointF, QSizeF, QLineF
 from PyQt5.QtGui import QPixmap, QFontMetrics, QFont
 from PyQt5.QtWidgets import QGraphicsItem
 
@@ -142,8 +142,8 @@ class Rasterizer:
         return None
 
     def as_line(self):
-        p1 = self.p1
-        p2 = self.p2
+        p1 = list(self.p1)
+        p2 = list(self.p2)
 
         if p1[0] == p2[0] != 0:
             r = self.round_point_to_step(p1[0], self._min_mil_h_step)
@@ -153,7 +153,7 @@ class Rasterizer:
             elif r is not None:
                 return
 
-        elif p1[1] == p2[1] != 0:
+        if p1[1] == p2[1] != 0:
             r = self.round_point_to_step(p1[1], self._min_mil_v_step)
             if r:
                 p1 = [p1[0], r]
@@ -161,22 +161,34 @@ class Rasterizer:
             elif r is not None:
                 return
 
+        # rx1 = self.round_point_to_step(p1[0], self._min_mil_h_step) if p1[0] != 0 else None
+        # if rx1:
+        #     p1[0] = rx1
+        #
+        # rx2 = self.round_point_to_step(p2[0], self._min_mil_h_step) if p2[0] != 0 else None
+        # if rx2:
+        #     p2[0] = rx2
+        #
+        # ry1 = self.round_point_to_step(p1[1], self._min_mil_v_step) if p1[1] != 0 else None
+        # if ry1:
+        #     p1[1] = ry1
+        #
+        # ry2 = self.round_point_to_step(p2[1], self._min_mil_v_step) if p2[1] != 0 else None
+        # if ry2:
+        #     p2[1] = ry2
+
         p1 = [self._px_at_mil_h * p1[0], self._px_at_mil_v * p1[1]]
         p2 = [self._px_at_mil_h * p2[0], self._px_at_mil_v * p2[1]]
 
-        if p1[0] < 0:
-            p1[0] -= 1
-        if p1[1] < 0:
-            p1[1] -= 1
-        if p2[0] < 0:
-            p2[0] -= 1
-        if p2[1] < 0:
-            p2[1] -= 1
+        p1[0] += (1 if p1[0] > 0 else 0 if p1[0] < 0 else 0)
+        p1[1] += (1 if p1[1] > 0 else 0 if p1[1] < 0 else 0)
+        p2[0] += (1 if p2[0] > 0 else 0 if p2[0] < 0 else 0)
+        p2[1] += (1 if p2[1] > 0 else 0 if p2[1] < 0 else 0)
 
-        p1 = QPoint(math.ceil(p1[0]), math.ceil(p1[1]))
-        p2 = QPoint(math.ceil(p2[0]), math.ceil(p2[1]))
+        p1 = QPointF(*p1)
+        p2 = QPointF(*p2)
 
-        return QLine(p1, p2)
+        return QLineF(p1, p2)
 
     def as_point(self):
         x, y = self.p1
@@ -196,16 +208,8 @@ class Rasterizer:
                 return
 
         p = [int(self._px_at_mil_h * x), int(self._px_at_mil_v * y)]
-
-        if p[0] < 0:
-            p[0] -= 1
-        if p[1] < 0:
-            p[1] -= 1
-        if p[0] > 0:
-            p[0] += 1
-        if p[1] > 0:
-            p[1] += 1
-
+        p[0] += (1 if p[0] > 0 else -1 if p[0] < 0 else 0)
+        p[1] += (1 if p[1] > 0 else -1 if p[1] < 0 else 0)
         return QPoint(*p)
 
     def as_text(self):
@@ -226,19 +230,8 @@ class Rasterizer:
                 return
 
         p = [int(self._px_at_mil_h * x), int(self._px_at_mil_v * y)]
-
-        p[0] += (1 if p[0] > 0 else -1 if p[0] > 0 else 0)
-        p[1] += (1 if p[1] > 0 else -1 if p[1] > 0 else 0)
-
-        # if p[0] < 0:
-        #     p[0] -= 1
-        # if p[1] < 0:
-        #     p[1] -= 1
-        # if p[0] > 0:
-        #     p[0] += 1
-        # if p[1] > 0:
-        #     p[1] += 1
-
+        p[0] += (1 if p[0] > 0 else -1 if p[0] < 0 else 0)
+        p[1] += (1 if p[1] > 0 else -1 if p[1] < 0 else 0)
         point = QPoint(*p)
 
         self.font = QFont('BankGothic Lt BT')
@@ -286,14 +279,13 @@ class Rasterizer:
         cy *= self._px_at_mil_v
         rx *= self._px_at_mil_h
         ry *= self._px_at_mil_v
-        # rx += 1
-        # ry += 1
 
-        cx += (0.5 if x1 > 0 else -1 if x1 < 0 else 0)
-        cy += (0.5 if y1 > 0 else -1 if y1 < 0 else 0)
+        cx += 0.5
+        cy += 0.5
+        rx = abs(rx) + 0.5
+        ry = abs(ry) + 0.5
 
-        cp = QPointF(cx, cy)
-        return cp, rx, ry
+        return cx, cy, rx, ry
 
     def as_rect(self):
         x1, y1 = self.p1
@@ -325,6 +317,11 @@ class Rasterizer:
         cy *= self._px_at_mil_v
         rx *= self._px_at_mil_h
         ry *= self._px_at_mil_v
+        # rx -= 0.5
+        # ry -= 0.5
+
+        cx += (1 if cx > 0 else -1 if cx < 0 else 0)
+        cy += (1 if cy > 0 else -1 if cy < 0 else 0)
 
         return cx, cy, rx, ry
 
