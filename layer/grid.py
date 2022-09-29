@@ -19,8 +19,8 @@ class GridLayer(PixmapLayer):
         font.setPixelSize(11)
         painter.setFont(font)
 
-        lx1 = x1 * zoom
-        ly1 = y1 * zoom
+        lx1 = x1 * zoom if zoom > 0 else x1
+        ly1 = y1 * zoom if zoom > 0 else y1
         lxs = int(self.pm_width / 2 / lx1)
         lys = int(self.pm_height / 2 / ly1)
 

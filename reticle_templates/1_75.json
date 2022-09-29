@@ -1,0 +1,102 @@
+{
+  "name": "1_75",
+  "multiplier": 10,
+  "template": [
+    {
+      "type": "cross",
+      "margin": 1,
+      "size": 4,
+      "mask": 15,
+      "bind": true,
+      "zoomed": true,
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "pen": 1
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "x_offset": 5,
+      "y_offset": 7.5,
+      "p1": [
+        0,
+        0
+      ],
+      "p2": [
+        3,
+        0
+      ],
+      "pen": 1,
+      "zoomed": true
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "x_offset": 1,
+      "y_offset": 8.3,
+      "p1": [
+        0,
+        0
+      ],
+      "p2": [
+        3,
+        0
+      ],
+      "pen": 1,
+      "zoomed": true
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "x_offset": -4,
+      "y_offset": 8.75,
+      "p1": [
+        0,
+        0
+      ],
+      "p2": [
+        3,
+        0
+      ],
+      "pen": 1,
+      "zoomed": true
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "x_offset": -8,
+      "y_offset": 9,
+      "p1": [
+        0,
+        0
+      ],
+      "p2": [
+        3,
+        0
+      ],
+      "pen": 1,
+      "zoomed": true
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "x_offset": 0,
+      "y_offset": 10,
+      "p1": [
+        -8,
+        0
+      ],
+      "p2": [
+        8,
+        0
+      ],
+      "pen": 1,
+      "zoomed": true
+    }
+  ]
+}
