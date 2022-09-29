@@ -1,9 +1,8 @@
-import math
-
 from PyQt5.QtCore import QLine
 from PyQt5.QtGui import QFontMetrics
 
 import rsrc
+from .canvas import Rasterizer
 from .gv import *
 
 assert rsrc
@@ -113,223 +112,54 @@ class RasterViewer(VectoRaster):
         for item in sketch:
             pen = CustomPen.Line
 
-            if item['t'] == ItemType.Line:
+            layer = Rasterizer(self._min_mil_h_step,
+                               self._min_mil_v_step,
+                               self._px_at_mil_h,
+                               self._px_at_mil_v,
+                               **item)
 
-                p1 = item['p1']
-                p2 = item['p2']
+            if layer.t == ItemType.Line:
 
-                if p1[0] == p2[0] != 0:
-                    r = round_point_to_step(p1[0], self._min_mil_h_step)
-                    if r:
-                        p1 = [r, p1[1]]
-                        p2 = [r, p2[1]]
-                    elif r is not None:
-                        continue
-
-                elif p1[1] == p2[1] != 0:
-                    r = round_point_to_step(p1[1], self._min_mil_v_step)
-                    if r:
-                        p1 = [p1[0], r]
-                        p2 = [p2[0], r]
-                    elif r is not None:
-                        continue
-
-                p1 = [self._px_at_mil_h * p1[0], self._px_at_mil_v * p1[1]]
-                p2 = [self._px_at_mil_h * p2[0], self._px_at_mil_v * p2[1]]
-
-                if p1[0] < 0:
-                    p1[0] -= 1
-                if p1[1] < 0:
-                    p1[1] -= 1
-                if p2[0] < 0:
-                    p2[0] -= 1
-                if p2[1] < 0:
-                    p2[1] -= 1
-
-                # if 0 < abs(p1[0]) < self._min_px_h_step:
-                #     p1[0] = p1[0] / abs(p1[0]) * 1
-                #
-                # if 0 < abs(p2[0]) < self._min_px_h_step:
-                #     p2[0] = p2[0] / abs(p2[0]) * 1
-                #
-                # if 0 < abs(p1[1]) < self._min_px_v_step:
-                #     p1[1] = p1[1] / abs(p1[1]) * 1
-                #
-                # if 0 < abs(p2[1]) < self._min_px_v_step:
-                #     p2[1] = p2[1] / abs(p2[1]) * 1
-
-                p1 = QPoint(math.ceil(p1[0]), math.ceil(p1[1]))
-                p2 = QPoint(math.ceil(p2[0]), math.ceil(p2[1]))
-
-                if item['t'] == ItemType.Line:
-                    line = QLine(p1, p2)
-                    # pen.setWidth(item['pen'])
+                line = layer.as_line()
+                if line:
                     self._canvas.drawLineC(line, pen)
 
-            elif item['t'] == ItemType.Point:
-                x = item['p1'][0]
-                y = item['p1'][1]
+            elif layer.t == ItemType.Point:
+                point = layer.as_point()
+                if point:
+                    self._canvas.drawPointC(point, pen)
 
-                if x != 0:
-                    r = round_point_to_step(x, self._min_mil_h_step)
-                    if r:
-                        x = r
-                    elif r is not None:
-                        continue
+            elif layer.t == ItemType.Text:
+                point = layer.as_text()
+                if point:
+                    self._canvas.drawTextC(point, layer.text, layer.font)
 
-                if y != 0:
-                    r = round_point_to_step(y, self._min_mil_v_step)
-                    if r:
-                        y = r
-                    elif r is not None:
-                        continue
+            elif layer.t in [ItemType.Circle, ItemType.Ellipse]:
 
-                p = [int(self._px_at_mil_h * x), int(self._px_at_mil_v * y)]
+                ellipse = layer.as_ellipse()
+                if ellipse:
+                    cp, rx, ry = ellipse
+                    if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
+                        self._canvas.drawEllipseC(p=cp, rx=1, ry=1, pen=pen)
+                    else:
+                        self._canvas.drawEllipseC(p=cp, rx=rx, ry=ry, pen=pen)
 
-                if p[0] < 0:
-                    p[0] -= 1
-                if p[1] < 0:
-                    p[1] -= 1
-                if p[0] > 0:
-                    p[0] += 1
-                if p[1] > 0:
-                    p[1] += 1
+            elif layer.t == ItemType.Rect:
 
-                point = QPoint(*p)
+                rect = layer.as_rect()
+                if rect:
+                    cx, cy, rx, ry = rect
 
-                pen = CustomPen.Line
-                self._canvas.drawPointC(point, pen)
+                    offset1 = 1 if self._click_x % 2 > 0 else 0.5
 
-            elif item['t'] == ItemType.Text:
-                x = item['p1'][0]
-                y = item['p1'][1]
+                    # cx += (0 if x1 >= 0 else -offset1 if x1 < 0 else 1)
+                    # cy += (0 if y1 >= 0 else -1 if y1 < 0 else 1)
+                    cx += (0 if cx >= 0 else -offset1 if cx < 0 else 1)
+                    cy += (0 if cy >= 0 else -offset1 if cy < 0 else 1)
 
-                if x != 0:
-                    r = round_point_to_step(x, self._min_mil_h_step)
-                    if r:
-                        x = r
-                    elif r is not None:
-                        continue
-
-                if y != 0:
-                    r = round_point_to_step(y, self._min_mil_v_step)
-                    if r:
-                        y = r
-                    elif r is not None:
-                        continue
-
-                p = [int(self._px_at_mil_h * x), int(self._px_at_mil_v * y)]
-
-                if p[0] < 0:
-                    p[0] -= 1
-                if p[1] < 0:
-                    p[1] -= 1
-                if p[0] > 0:
-                    p[0] += 1
-                if p[1] > 0:
-                    p[1] += 1
-
-                point = QPoint(*p)
-
-                font = QFont('BankGothic Lt BT')
-                font.setStyleStrategy(QFont.NoAntialias)
-                font.setPixelSize(11)
-
-                fm = QFontMetrics(font)
-                w = fm.width(item['text'])
-                h = fm.height()
-
-                point = point - QPoint(w / 2, - h / 3)
-                if h >= self._px_at_mil_v * 0.75:
-                    continue
-                elif fm.width('W') >= self._px_at_mil_h * 0.75:
-                    continue
-
-                self._canvas.drawTextC(point, item['text'], font)
-
-            elif item['t'] in [ItemType.Circle, ItemType.Ellipse]:
-
-                x1, y1 = item['p1']
-                x2, y2 = item['p2']
-
-                milrect = QRectF(QPointF(x1, y1), QSizeF(x2, y2))
-
-                cx = milrect.center().x()
-                rcpx = round_point_to_step(cx, self._min_mil_h_step) if cx != 0 else None
-                if rcpx:
-                    cx = rcpx
-
-                cy = milrect.center().y()
-                rcpy = round_point_to_step(cy, self._min_mil_v_step) if cy != 0 else None
-                if rcpy:
-                    cy = rcpy
-
-                rx = milrect.width() / 2
-                rradx = round_point_to_step(rx, self._min_mil_h_step) if rx != 0 else None
-                if rradx:
-                    rx = rradx
-
-                ry = milrect.height() / 2
-                rrady = round_point_to_step(ry, self._min_mil_v_step) if ry != 0 else None
-                if rrady:
-                    ry = rrady
-
-                cx *= self._px_at_mil_h
-                cy *= self._px_at_mil_v
-                rx *= self._px_at_mil_h
-                ry *= self._px_at_mil_v
-                rx += 1
-                ry += 1
-
-                cx += (0.5 if x1 > 0 else -1 if x1 < 0 else 0)
-                cy += (0.5 if y1 > 0 else -1 if y1 < 0 else 0)
-
-                cp = QPointF(cx, cy)
-
-                if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
-                    self._canvas.drawEllipseC(p=cp, rx=1, ry=1, pen=pen)
-                else:
-                    self._canvas.drawEllipseC(p=cp, rx=rx, ry=ry, pen=pen)
-
-            elif item['t'] == ItemType.Rect:
-                x1, y1 = item['p1']
-                x2, y2 = item['p2']
-
-                milrect = QRectF(QPointF(x1, y1), QSizeF(x2, y2))
-
-                cx = milrect.center().x()
-                rcpx = round_point_to_step(cx, self._min_mil_h_step) if cx != 0 else None
-                if rcpx:
-                    cx = rcpx
-
-                cy = milrect.center().y()
-                rcpy = round_point_to_step(cy, self._min_mil_v_step) if cy != 0 else None
-                if rcpy:
-                    cy = rcpy
-
-                rx = milrect.width() / 2
-                rradx = round_point_to_step(rx, self._min_mil_h_step) if rx != 0 else None
-                if rradx:
-                    rx = rradx
-
-                ry = milrect.height() / 2
-                rrady = round_point_to_step(ry, self._min_mil_v_step) if ry != 0 else None
-                if rrady:
-                    ry = rrady
-
-                cx *= self._px_at_mil_h
-                cy *= self._px_at_mil_v
-                rx *= self._px_at_mil_h
-                ry *= self._px_at_mil_v
-
-                cx += (0 if x1 > 0 else -1 if x1 < 0 else 0)
-                cy += (0 if y1 > 0 else -1 if y1 < 0 else 0)
-
-                pen = CustomPen.Line
-
-                if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
-                    cp = QPointF(cx, cy)
-                    self._canvas.drawRectC(QRectF(cp, QSizeF(2, 2)), pen)
-                else:
-                    rect = QRectF(QPointF(cx - rx, cy - ry), QPointF(cx + rx, cy + ry))
-                    self._canvas.drawRectC(rect, pen)
+                    if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
+                        cp = QPointF(cx, cy)
+                        self._canvas.drawRectC(QRectF(cp, QSizeF(2, 2)), pen)
+                    else:
+                        rect = QRectF(QPointF(cx - rx, cy - ry), QPointF(cx + rx, cy + ry))
+                        self._canvas.drawRectC(rect, pen)
