@@ -120,23 +120,23 @@ class RasterViewer(VectoRaster):
             if layer.t == ItemType.Line:
 
                 line = layer.as_line()
-                if line:
+                if line is not None:
                     self._canvas.drawLineC(line, pen)
 
             elif layer.t == ItemType.Point:
                 point = layer.as_point()
-                if point:
+                if point is not None:
                     self._canvas.drawPointC(point, pen)
 
             elif layer.t == ItemType.Text:
                 point = layer.as_text()
-                if point:
+                if point is not None:
                     self._canvas.drawTextC(point, layer.text, layer.font)
 
             elif layer.t in [ItemType.Circle, ItemType.Ellipse]:
 
                 ellipse = layer.as_ellipse()
-                if ellipse:
+                if ellipse is not None:
                     cx, cy, rx, ry = ellipse
                     if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
                         cp = QPointF(cx, cy) - QPointF(1, 1)
@@ -149,7 +149,7 @@ class RasterViewer(VectoRaster):
             elif layer.t == ItemType.Rect:
 
                 rect = layer.as_rect()
-                if rect:
+                if rect is not None:
                     cx, cy, rx, ry = rect
 
                     if abs(rx) < self._min_px_h_step and abs(ry) < self._min_px_v_step:
