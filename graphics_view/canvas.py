@@ -141,7 +141,7 @@ class Rasterizer:
             return round(v / step) * step
         return None
 
-    def as_line(self):
+    def as_rline(self):
         p1 = list(self.p1)
         p2 = list(self.p2)
 
@@ -161,22 +161,22 @@ class Rasterizer:
             elif r is not None:
                 return
 
-        # rx1 = self.round_point_to_step(p1[0], self._min_mil_h_step) if p1[0] != 0 else None
-        # if rx1:
-        #     p1[0] = rx1
-        #
-        # rx2 = self.round_point_to_step(p2[0], self._min_mil_h_step) if p2[0] != 0 else None
-        # if rx2:
-        #     p2[0] = rx2
-        #
-        # ry1 = self.round_point_to_step(p1[1], self._min_mil_v_step) if p1[1] != 0 else None
-        # if ry1:
-        #     p1[1] = ry1
-        #
-        # ry2 = self.round_point_to_step(p2[1], self._min_mil_v_step) if p2[1] != 0 else None
-        # if ry2:
-        #     p2[1] = ry2
+        p1 = [self._px_at_mil_h * p1[0], self._px_at_mil_v * p1[1]]
+        p2 = [self._px_at_mil_h * p2[0], self._px_at_mil_v * p2[1]]
 
+        p1[0] += (1 if p1[0] > 0 else 0 if p1[0] < 0 else 0)
+        p1[1] += (1 if p1[1] > 0 else 0 if p1[1] < 0 else 0)
+        p2[0] += (1 if p2[0] > 0 else 0 if p2[0] < 0 else 0)
+        p2[1] += (1 if p2[1] > 0 else 0 if p2[1] < 0 else 0)
+
+        p1 = QPointF(*p1)
+        p2 = QPointF(*p2)
+
+        return QLineF(p1, p2)
+
+    def as_line(self):
+        p1 = list(self.p1)
+        p2 = list(self.p2)
         p1 = [self._px_at_mil_h * p1[0], self._px_at_mil_v * p1[1]]
         p2 = [self._px_at_mil_h * p2[0], self._px_at_mil_v * p2[1]]
 

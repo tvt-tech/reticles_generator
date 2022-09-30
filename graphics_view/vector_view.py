@@ -141,6 +141,8 @@ class VectorViewer(VectoRaster):
                 graphics_item_type = RulerGroup
             elif layer['t'] == ItemType.Point:
                 graphics_item_type = PointItem
+            elif layer['t'] == ItemType.RLine:
+                graphics_item_type = RLineItem
             elif layer['t'] == ItemType.Line:
                 graphics_item_type = LineItem
             elif layer['t'] == ItemType.Rect:

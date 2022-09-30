@@ -29,6 +29,7 @@ class ItemType(IntEnum):
     Polygon = 6
     Text = 7
     Ruler = 8
+    RLine = 9
 
 
 class CustomPen:
@@ -256,7 +257,7 @@ class RulerGroup(QGraphicsItemGroup):
                 x = i * self._step + rect.x()
                 if rect.height() > 0:
                     line = QLineF(x, rect.center().y() - rect.height() / 2, x, rect.center().y() + rect.height() / 2)
-                    line_item = LineItem(line)
+                    line_item = RLineItem(line)
                     self.addToGroup(line_item)
                 else:
                     point = QPointF(x, rect.center().y())
@@ -269,7 +270,7 @@ class RulerGroup(QGraphicsItemGroup):
                 y = i * self._step + rect.y()
                 if rect.width() > 0:
                     line = QLineF(rect.center().x() - rect.width() / 2, y, rect.center().x() + rect.width() / 2, y)
-                    line_item = LineItem(line)
+                    line_item = RLineItem(line)
                     self.addToGroup(line_item)
                 else:
                     point = QPointF(rect.center().x(), y)
@@ -392,6 +393,34 @@ class LineItem(QGraphicsLineItem, HoveredGraphicsItem):
         line = QLineF(px_at_mil_h * p1[0], px_at_mil_v * p1[1], px_at_mil_h * p2[0], px_at_mil_v * p2[1])
         pen = CustomPen.LineVect
         return LineItem(line, pen)
+
+
+class RLineItem(LineItem):
+    def toJson(self, click_x, click_y, multiplier):
+        return {
+            't': ItemType.RLine,
+            "text": "",
+            'step': 0.0,
+            'p1': (
+                self.line().x1() * click_x / multiplier,
+                self.line().y1() * click_y / multiplier
+            ),
+            'p2': (
+                self.line().x2() * click_x / multiplier,
+                self.line().y2() * click_y / multiplier
+            ),
+            'pen': 1,
+        }
+
+    @staticmethod
+    def fromJson(px_at_mil_h: float,
+                 px_at_mil_v: float,
+                 p1: tuple[float, float],
+                 p2: tuple[float, float],
+                 step: float = 1, *args, **kwarg):
+        line = QLineF(px_at_mil_h * p1[0], px_at_mil_v * p1[1], px_at_mil_h * p2[0], px_at_mil_v * p2[1])
+        pen = CustomPen.LineVect
+        return RLineItem(line, pen)
 
 
 class RectItem(QGraphicsRectItem, HoveredGraphicsItem):

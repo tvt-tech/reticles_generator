@@ -117,7 +117,13 @@ class RasterViewer(VectoRaster):
                                self._px_at_mil_v,
                                **item)
 
-            if layer.t == ItemType.Line:
+            if layer.t == ItemType.RLine:
+
+                line = layer.as_rline()
+                if line is not None:
+                    self._canvas.drawLineC(line, pen)
+
+            elif layer.t == ItemType.Line:
 
                 line = layer.as_line()
                 if line is not None:
