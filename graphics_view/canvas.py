@@ -209,20 +209,6 @@ class Rasterizer:
     def as_text(self):
         x, y = self.p1
 
-        if x != 0:
-            r = self.round_point_to_step(x, self._min_mil_h_step)
-            if r:
-                x = r
-            elif r is not None:
-                return
-
-        if y != 0:
-            r = self.round_point_to_step(y, self._min_mil_v_step)
-            if r:
-                y = r
-            elif r is not None:
-                return
-
         p = [int(self._px_at_mil_h * x), int(self._px_at_mil_v * y)]
         p[0] += (1 if p[0] > 0 else -1 if p[0] < 0 else 0)
         p[1] += (1 if p[1] > 0 else -1 if p[1] < 0 else 0)
