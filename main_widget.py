@@ -62,7 +62,7 @@ class Window(QWidget):
             self.filename = Path(self.filename)
             if self.filename.exists():
                 if self.filename.suffix == '.abcv':
-                    clicks = QSizeF(0.5, 0.5)
+                    clicks = QSizeF(0.50, 0.50)
                     self._vector_mode = True
                     self.viewer = VectorViewer(self, QSize(640, 480), clicks=clicks)
                     with open(self.filename, 'r') as fp:
@@ -71,7 +71,7 @@ class Window(QWidget):
                 elif self.filename.suffix == '.png':
 
                     fn = str(self.filename).replace('.png', '').split('_')
-                    x, y = float(fn[2]), float(fn[3])
+                    x, y = float(fn[1]), float(fn[2])
 
                     clicks = QSizeF(x, y)
                     self.viewer = RasterViewer(self, QSize(640, 480), clicks=clicks)

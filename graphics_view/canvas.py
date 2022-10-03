@@ -8,6 +8,7 @@ from .center_painter import CenterPainter
 from .custom_graphics_item import ItemType
 
 import math
+from .grid_step import rlist
 
 
 class GraphicsCanvas(QGraphicsItem):
@@ -132,12 +133,23 @@ class Rasterizer:
             return False
         mod = abs(v % step)
         if mod > 0:
-            if step == 0.2 and mod / 0.2 > mod / 0.25:
-                step = 0.25
-            if step == 0.25 and mod / 0.25 > mod / 0.3:
-                step = 0.3
-            if step == 0.3 and mod / 0.3 > mod / 0.5:
+
+            # if step == 0.1 and mod / 0.1 > mod / 0.2:
+            #     step = 0.2
+
+            # if step == 0.2 and mod / 0.2 > mod / 0.25:
+            #     step = 0.25
+
+            # if step == 0.25 and mod / 0.25 > mod / 0.3:
+            #     step = 0.3
+            # if step == 0.3 and mod / 0.3 > mod / 0.5:
+            #     step = 0.5
+
+            if step == 0.25 and mod / 0.25 > mod / 0.5:
                 step = 0.5
+            elif step == 0.2 and mod / 0.2 < mod / 0.25:
+                step = 0.25
+
             return round(v / step) * step
         return None
 
