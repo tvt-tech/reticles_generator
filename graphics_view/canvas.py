@@ -147,7 +147,7 @@ class Rasterizer:
 
             if step == 0.25 and mod / 0.25 > mod / 0.5:
                 step = 0.5
-            elif step == 0.2 and mod / 0.2 < mod / 0.25:
+            elif step == 0.2 and mod / 0.2 > mod / 0.25:
                 step = 0.25
 
             return round(v / step) * step

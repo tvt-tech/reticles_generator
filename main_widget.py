@@ -184,13 +184,6 @@ class Window(QWidget):
         self.redo_btn.setIcon(QIcon(':/btns/arrow-clockwise.svg'))
         self.redo_btn.clicked.connect(self.viewer.redo)
 
-        if not self._vector_mode:
-            self.to_svg_btn.setHidden(True)
-            self.ruler_btn.setHidden(True)
-            self.ruler_combo.setHidden(True)
-            self.sb_click_x.setDisabled(True)
-            self.sb_click_y.setDisabled(True)
-
         # self.drawing = False
         # make last point to the point of cursor
 
@@ -234,6 +227,8 @@ class Window(QWidget):
         self.sb_click_x.valueChanged.connect(self.prev_zoom_changed)
         self.sb_click_y.valueChanged.connect(self.prev_zoom_changed)
 
+
+
         # self.preview_combo.setCurrentIndex(0)
 
         # Arrange layout
@@ -274,6 +269,15 @@ class Window(QWidget):
         mainLayout.addLayout(toolbar)
         mainLayout.addWidget(self.viewer)
         mainLayout.addLayout(prev_layout)
+
+        if not self._vector_mode:
+            self.to_svg_btn.setHidden(True)
+            self.ruler_btn.setHidden(True)
+            self.ruler_combo.setHidden(True)
+            self.sb_click_x.setDisabled(True)
+            self.sb_click_y.setDisabled(True)
+            self.preview.setHidden(True)
+            self.preview_combo.setHidden(True)
 
 
         self.installEventFilter(self.viewer._scene)
