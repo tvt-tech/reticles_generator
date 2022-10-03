@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolButton, QDo
 from graphics_view.vector_view import VectorViewer
 from graphics_view.raster_view import RasterViewer
 from graphics_view.gv import DrawMode
+from reticle2 import *
 
 import rsrc
 assert rsrc
@@ -130,6 +131,12 @@ class Window(QWidget):
         self.raster_btn.setIcon(QIcon(':/btns/filetype-bmp.svg'))
         self.raster_btn.setFixedSize(70, 40)
         self.raster_btn.clicked.connect(self.on_raster_btn_press)
+
+        self.reticle2_btn = QToolButton(self)
+        self.reticle2_btn.setText('To ret2')
+        # self.reticle2_btn.setIcon(QIcon(':/btns/filetype-bmp.svg'))
+        self.reticle2_btn.setFixedSize(70, 40)
+        self.reticle2_btn.clicked.connect(self.on_reticle2_btn_press)
 
         self.rect_btn = DrawModeBtn()
         self.rect_btn.setText('5')
@@ -263,6 +270,9 @@ class Window(QWidget):
         toolbar.addWidget(self.clear_btn)
         toolbar.addWidget(self.to_svg_btn)
         toolbar.addWidget(self.raster_btn)
+
+        toolbar.addWidget(self.reticle2_btn)
+
         toolbar.addWidget(self.sb_click_x)
         toolbar.addWidget(self.sb_click_y)
 
@@ -344,8 +354,8 @@ class Window(QWidget):
         if not path.exists():
             Path.mkdir(path)
         if self._vector_mode:
-            for i in [1, 2, 3, 4, 6]:
-                viewer = RasterViewer(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / i)
+            for z in [1, 2, 3, 4, 6]:
+                viewer = RasterViewer(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / z)
                 viewer.draw_sketch(self.viewer.get_vectors(False))
                 pix = viewer.get_raster()
                 fpath = Path(path, f'ret_{round(self.sb_click_x.value(), 2)}_{round(self.sb_click_y.value(), 2)}.png')
@@ -354,6 +364,45 @@ class Window(QWidget):
             pix = self.viewer.get_raster()
             fpath = Path(path, f'ret_{round(self.sb_click_x.value(), 2)}_{round(self.sb_click_y.value(), 2)}.png')
             pix.save(str(fpath), 'PNG')
+
+    def on_reticle2_btn_press(self):
+
+        base = []
+        lrf = []
+
+
+
+        if self._vector_mode:
+
+            templates = Path(Path(__file__).parent, 'vector_templates').iterdir()
+            templates = [i for i in templates if i.suffix == '.abcv']
+
+            for t in templates:
+
+                with open(str(t), 'rb') as fp:
+                    template = json.load(fp)
+                    print(str(t))
+
+                zooms = []
+                for z in [1, 2, 3, 4]:
+                    viewer = VectorViewer(self, clicks=QSizeF(0.5, 0.5) / z)
+                    viewer.draw_sketch(template)
+                    vects = viewer.get_vectors(False)
+                    rviewer = RasterViewer(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / z)
+                    rviewer.draw_sketch(vects)
+                    pix = rviewer.get_raster(Qt.white)
+                    img = pix.toImage()
+                    zooms.append(ImgMap(img))
+
+                base.append(Reticle4z(*zooms))
+
+            d = PXL4.dump(SMALL_RETS, [], base, lrf)
+            file_data = PXL4.build(d)
+
+            click_x = str(self.sb_click_y.value()).replace('.', '_')
+            click_y = str(self.sb_click_y.value()).replace('.', '_')
+            with open(f'{click_x}x{click_y}_4x.reticle2', 'wb') as fp:
+                fp.write(file_data)
 
     def on_to_svg_btn_press(self, *args, **kwargs):
         self.save_vectors()

@@ -110,7 +110,6 @@ class RasterViewer(VectoRaster):
 
         for item in sketch:
             pen = CustomPen.Line
-
             layer = Rasterizer(self._min_mil_h_step,
                                self._min_mil_v_step,
                                self._px_at_mil_h,

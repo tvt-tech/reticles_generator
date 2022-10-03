@@ -379,11 +379,11 @@ class VectoRaster(QGraphicsView):
         return template
 
     @hide_grid
-    def get_raster(self):
+    def get_raster(self, fill_color=Qt.transparent):
         out_pix = QPixmap(self._scene.width(), self._scene.height())
-        out_pix.fill(Qt.transparent)
+        out_pix.fill(fill_color)
         painter = QPainter(out_pix)
-        painter.setCompositionMode(painter.CompositionMode_Source)
+        # painter.setCompositionMode(painter.CompositionMode_Source)
         self._scene.render(painter, QRectF(out_pix.rect()), QRectF(self._scene.sceneRect()),
                            Qt.KeepAspectRatio)
         painter.end()
