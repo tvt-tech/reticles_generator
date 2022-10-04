@@ -272,7 +272,7 @@ class VectoRaster(QGraphicsView):
         pass
 
     def del_item(self, grab_item):
-        if not isinstance(grab_item, PenCircle):
+        if not isinstance(grab_item, PenCircle) and grab_item is not None:
             if isinstance(grab_item, GridItem):
                 pass
             elif isinstance(grab_item, RulerGroup):
