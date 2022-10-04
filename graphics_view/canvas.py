@@ -116,7 +116,7 @@ class GraphicsCanvas(QGraphicsItem):
 
 
 class Rasterizer:
-    def __init__(self,min_mil_h_step, min_mil_v_step, px_at_mil_h, px_at_mil_v, t, p1, p2, text, **kwargs):
+    def __init__(self, min_mil_h_step, min_mil_v_step, px_at_mil_h, px_at_mil_v, t, p1, p2, text, **kwargs):
         self.t = t
         self.p1 = p1
         self.p2 = p2
@@ -126,6 +126,7 @@ class Rasterizer:
         self._px_at_mil_h = px_at_mil_h
         self._px_at_mil_v = px_at_mil_v
         self.font = None
+        self.attrs = kwargs
 
     @staticmethod
     def round_point_to_step(v, step):
@@ -218,7 +219,7 @@ class Rasterizer:
         p[1] += (1 if p[1] > 0 else -1 if p[1] < 0 else 0)
         return QPointF(*p)
 
-    def as_text(self):
+    def as_text(self, font_size=8):
         x, y = self.p1
 
         p = [int(self._px_at_mil_h * x), int(self._px_at_mil_v * y)]
@@ -228,7 +229,7 @@ class Rasterizer:
 
         self.font = QFont('BankGothic Lt BT')
         self.font.setStyleStrategy(QFont.NoAntialias)
-        self.font.setPixelSize(11)
+        self.font.setPointSize(font_size)
 
         fm = QFontMetrics(self.font)
         w = fm.width(self.text)

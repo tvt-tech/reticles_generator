@@ -77,6 +77,7 @@ class VectoRaster(QGraphicsView):
         self.lastPoint = None
         self._selector = None
         self.ruler_step = 1
+        self.font_size = 8
 
         self._history = []
         self._history_idx = -1

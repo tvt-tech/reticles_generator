@@ -94,19 +94,6 @@ class RasterViewer(VectoRaster):
         self._canvas.clear_pixmap()
 
     def draw_sketch(self, sketch=example_grid):
-        def round_point_to_step(v, step):
-            if abs(v) < step:
-                return False
-            mod = abs(v % step)
-            if mod > 0:
-                if step == 0.2 and mod / 0.2 > mod / 0.25:
-                    step = 0.25
-                if step == 0.25 and mod / 0.25 > mod / 0.3:
-                    step = 0.3
-                if step == 0.3 and mod / 0.3 > mod / 0.5:
-                    step = 0.5
-                return round(v / step) * step
-            return None
 
         for item in sketch:
             pen = CustomPen.Line
@@ -134,7 +121,7 @@ class RasterViewer(VectoRaster):
                     self._canvas.drawPointC(point, pen)
 
             elif layer.t == ItemType.Text:
-                point = layer.as_text()
+                point = layer.as_text(layer.attrs['pen'])
                 if point is not None:
                     self._canvas.drawTextC(point, layer.text, layer.font)
 

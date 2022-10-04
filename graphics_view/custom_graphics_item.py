@@ -526,7 +526,7 @@ class SimpleTextItem(QGraphicsSimpleTextItem, HoveredGraphicsItem):
                 self.def_pos.y() * click_y / multiplier
             ),
             'p2': (0.0, 0.0),
-            'pen': 1,
+            'pen': self.font().pointSize(),
         }
 
     @staticmethod
@@ -536,7 +536,7 @@ class SimpleTextItem(QGraphicsSimpleTextItem, HoveredGraphicsItem):
                  p2: tuple[float, float],
                  step: float = 1, *args, **kwargs):
         font = QFont('BankGothic Lt BT')
-        font.setPointSize(8)
+        font.setPointSize(kwargs['pen'])
         pos = QPointF(px_at_mil_h * p1[0], px_at_mil_v * p1[1])
         text = kwargs['text'] if 'text' in kwargs else 'X'
         return SimpleTextItem(text, font, pos)

@@ -158,13 +158,21 @@ class Window(QWidget):
 
         self.ruler_combo = QComboBox()
         self.ruler_combo.setFixedSize(70, 25)
-        for i in [0.05, 0.1, 0.2, 0.25, 0.3, 0.5, 1, 2, 5, 10]:
-            self.ruler_combo.addItem(f'{i} mil', i)
+        for s in [0.05, 0.1, 0.2, 0.25, 0.3, 0.5, 1, 2, 5, 10]:
+            self.ruler_combo.addItem(f'{s} mil', s)
         self.ruler_combo.currentIndexChanged.connect(self.ruler_step_change)
+        self.ruler_combo.setCurrentIndex(self.ruler_combo.findData(1))
 
         self.text_btn = DrawModeBtn()
         self.text_btn.setText('A')
         self.text_btn.clicked.connect(self.on_text_btn_press)
+
+        self.font_size_combo = QComboBox()
+        self.font_size_combo.setFixedSize(70, 25)
+        for s in [7, 8, 9, 10]:
+            self.font_size_combo.addItem(f'{s} pt', s)
+        self.font_size_combo.currentIndexChanged.connect(self.font_size_change)
+        self.font_size_combo.setCurrentIndex(self.font_size_combo.findData(8))
 
         # self.nums_btn = DrawModeBtn()
         # self.nums_btn.setText('123')
@@ -265,6 +273,7 @@ class Window(QWidget):
         toolbar.addWidget(self.ruler_btn)
         toolbar.addWidget(self.ruler_combo)
         toolbar.addWidget(self.text_btn)
+        toolbar.addWidget(self.font_size_combo)
         # toolbar.addWidget(self.nums_btn)
 
         toolbar.addWidget(self.clear_btn)
@@ -296,6 +305,9 @@ class Window(QWidget):
     #     self.on_notool_btn_press()
     #     self.viewer.draw_mode = DrawMode.Numbers
     #     self.viewer.toggleDragMode()
+
+    def font_size_change(self, index):
+        self.viewer.font_size = self.font_size_combo.currentData()
 
     def prev_zoom_changed(self, index):
         zoom = self.preview_combo.currentData()

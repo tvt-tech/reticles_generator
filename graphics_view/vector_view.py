@@ -47,7 +47,7 @@ class VectorViewer(VectoRaster):
                 text = self._text_dlg()
                 if text:
                     font = QFont('BankGothic Lt BT')
-                    font.setPointSize(8)
+                    font.setPointSize(self.font_size)
                     self._scene.addSimpleText(text, font, point)
 
     def _erase(self, point, modifiers):
