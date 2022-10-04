@@ -510,11 +510,22 @@ class EllipseItem(QGraphicsEllipseItem, HoveredGraphicsItem):
 class SimpleTextItem(QGraphicsSimpleTextItem, HoveredGraphicsItem):
     def __init__(self, text: str, font: QFont, pos: QPointF, parent=None):
         super(SimpleTextItem, self).__init__(text, parent)
+        self.setAcceptHoverEvents(True)
         self.setFont(font)
         self._default_pen_color = Qt.black
         self._default_text_color = Qt.black
         self.def_pos = pos
         self.setPos(pos - QPointF(self.boundingRect().width() / 2, self.boundingRect().height() / 2))
+
+    def hoverEnterEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+        brush = self.brush()
+        brush.setColor(Qt.blue)
+        self.setBrush(brush)
+
+    def hoverLeaveEvent(self, event: 'QGraphicsSceneHoverEvent') -> None:
+        brush = self.brush()
+        brush.setColor(self._default_pen_color)
+        self.setBrush(brush)
 
     def toJson(self, click_x, click_y, multiplier) -> dict:
         return {
@@ -561,7 +572,7 @@ class SelectorItem(QGraphicsRectItem):
 
 class GridItem(QGraphicsItemGroup):
     def __init__(self, px_at_mil_h, px_at_mil_v,
-                 step_h=10.0, step_v=10.0, grid=False, mark=False, pen: QPen = QPen(), font_size=10, rect: QRectF=QRectF(), parent=None):
+                 step_h=10.0, step_v=10.0, grid=False, mark=False, pen: QPen = QPen(), font_size=8, rect: QRectF=QRectF(), parent=None):
         super(GridItem, self).__init__(parent)
         self._rect = rect
         self._px_at_mil_h = px_at_mil_h
@@ -590,10 +601,12 @@ class GridItem(QGraphicsItemGroup):
         max_x = int(scene_rect.width() / 2)
         max_y = int(scene_rect.height() / 2)
 
-        font = QFont()
-        font.setPixelSize(self._font_size)
+        font = QFont('BankGothic Lt BT')
+        font.setPointSize(self._font_size)
 
-        lines = []
+        half_dark_magenta = QColor(128, 0, 128, 128)
+        font_brush = QBrush(half_dark_magenta)
+        self._pen.setColor(half_dark_magenta)
 
         for i, x in enumerate(range(0, max_x, grid_scale_h)):
             xF = i * grid_scale_h_f
@@ -602,9 +615,14 @@ class GridItem(QGraphicsItemGroup):
                 self.addToGroup(line_item)
                 line_item = LineItem(QLineF(-xF, max_y, -xF, -max_y), pen=self._pen)
                 self.addToGroup(line_item)
-            # if self._mark:
-            #     painter.drawText(QPointF(xF, 0), str(round(i * self._step_h, 1)))
-            #     painter.drawText(QPointF(-xF, 0), str(round(i * self._step_h, 1)))
+            if self._mark and i > 0:
+                text_item = SimpleTextItem(str(round(i * self._step_h, 1)), font, QPointF(xF, 10))
+                text_item.setBrush(font_brush)
+                self.addToGroup(text_item)
+
+                text_item = SimpleTextItem(str(round(i * self._step_h, 1)), font, QPointF(-xF, 10))
+                text_item.setBrush(font_brush)
+                self.addToGroup(text_item)
 
         for i, x in enumerate(range(0, max_x, grid_scale_v)):
             yF = i * grid_scale_v_f
@@ -613,9 +631,14 @@ class GridItem(QGraphicsItemGroup):
                 self.addToGroup(line_item)
                 line_item = LineItem(QLineF(max_x, -yF, -max_x, -yF), pen=self._pen)
                 self.addToGroup(line_item)
-            # if self._mark:
-            #     painter.drawText(QPointF(0, yF), str(round(i * self._step_v, 1)))
-            #     painter.drawText(QPointF(0, -yF), str(round(i * self._step_v, 1)))
+            if self._mark and i > 0:
+                text_item = SimpleTextItem(str(round(i * self._step_h, 1)), font, QPointF(10, yF))
+                text_item.setBrush(font_brush)
+                self.addToGroup(text_item)
+
+                text_item = SimpleTextItem(str(round(i * self._step_h, 1)), font, QPointF(10, -yF))
+                text_item.setBrush(font_brush)
+                self.addToGroup(text_item)
 
 
 class PenCircle(QGraphicsEllipseItem):
@@ -623,3 +646,8 @@ class PenCircle(QGraphicsEllipseItem):
         super(PenCircle, self).__init__(parent)
         self.setRect(0, 0, 1, 1)
         self.setPen(QPen(Qt.darkBlue, 0.1, Qt.SolidLine))
+
+    def shape(self) -> 'QPainterPath':
+        path = super(PenCircle, self).shape()
+        stroker = QPainterPathStroker()
+        return stroker.createStroke(path)

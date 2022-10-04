@@ -29,7 +29,7 @@ class DrawModeBtn(QPushButton):
     def __init__(self, *args, **kwargs):
         super(DrawModeBtn, self).__init__(*args, **kwargs)
         self.setFixedSize(70, 40)
-        self.setText('Draw')
+        # self.setText('Draw')
         self.is_enabled = False
         self.clicked.connect(self.change_mode)
         self.setStyleSheet("""
@@ -164,7 +164,7 @@ class Window(QWidget):
         self.ruler_combo.setCurrentIndex(self.ruler_combo.findData(1))
 
         self.text_btn = DrawModeBtn()
-        self.text_btn.setText('A')
+        self.text_btn.setIcon(QIcon(':/btns/type.svg'))
         self.text_btn.clicked.connect(self.on_text_btn_press)
 
         self.font_size_combo = QComboBox()
