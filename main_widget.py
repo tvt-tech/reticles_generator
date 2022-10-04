@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
 
-from PyQt5.QtCore import QSizeF, QSize, Qt
-from PyQt5.QtGui import QPixmap, QIcon, QFontDatabase
+from PyQt5.QtCore import QSizeF, QSize, Qt, pyqtSignal
+from PyQt5.QtGui import QPixmap, QIcon, QFontDatabase, QWheelEvent
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolButton, QDoubleSpinBox, \
-    QComboBox, QHBoxLayout, QVBoxLayout, QLabel
+    QComboBox, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QSizePolicy, QGridLayout
 
 from graphics_view.vector_view import VectorViewer
 from graphics_view.raster_view import RasterViewer
@@ -13,6 +13,30 @@ from reticle2 import *
 
 import rsrc
 assert rsrc
+
+
+class PreviewLabel(QLabel):
+    doubleClicked = pyqtSignal()
+    zoomed = pyqtSignal(object)
+
+    def __init__(self, parent=None):
+        super(PreviewLabel, self).__init__(parent)
+        self._is_full = False
+        self.zoom = 1
+
+    def mouseDoubleClickEvent(self, event: 'QMouseEvent') -> None:
+        if self._is_full:
+            self.setFixedSize(320, 240)
+            self._is_full = False
+        else:
+            self.setFixedSize(640, 480)
+            self._is_full = True
+        self.doubleClicked.emit()
+        super(PreviewLabel, self).mouseDoubleClickEvent(event)
+
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        self.zoomed.emit(event)
+        super(PreviewLabel, self).wheelEvent(event)
 
 
 class CustomDoubleSpinbox(QDoubleSpinBox):
@@ -172,7 +196,9 @@ class Window(QWidget):
         for s in [7, 8, 9, 10]:
             self.font_size_combo.addItem(f'{s} pt', s)
         self.font_size_combo.currentIndexChanged.connect(self.font_size_change)
+
         self.font_size_combo.setCurrentIndex(self.font_size_combo.findData(8))
+
 
         # self.nums_btn = DrawModeBtn()
         # self.nums_btn.setText('123')
@@ -188,6 +214,10 @@ class Window(QWidget):
         self.sb_click_y.setMinimum(0.01)
         self.sb_click_y.setMaximum(10)
         self.sb_click_y.setSingleStep(0.01)
+
+        self.save_ratio = QCheckBox()
+        if self.sb_click_x.value() == self.sb_click_y.value():
+            self.save_ratio.setChecked(True)
 
         self.undo_btn = QPushButton()
         # self.undo_btn.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
@@ -231,23 +261,23 @@ class Window(QWidget):
         self.redo_btn.setToolTip("Ctrl + Shift + Z")
 
 
-        self.preview = QLabel('Notext')
+        self.preview = PreviewLabel('Notext')
         self.preview.setStyleSheet("""QLabel {background-color: white;};""")
-        self.preview.setFixedSize(640, 480)
-        self.preview_combo = QComboBox()
-        for i in [1, 2, 3, 4, 6]:
-            self.preview_combo.addItem(f'x{i}', i)
+        self.preview.setFixedSize(320, 240)
+        # self.preview_combo = QComboBox()
+        # for i in [1, 2, 3, 4, 6]:
+        #     self.preview_combo.addItem(f'x{i}', i)
 
-        self.preview_combo.currentIndexChanged.connect(self.prev_zoom_changed)
+        # self.preview_combo.currentIndexChanged.connect(self.prev_zoom_changed)
         self.sb_click_x.valueChanged.connect(self.prev_zoom_changed)
         self.sb_click_y.valueChanged.connect(self.prev_zoom_changed)
-
-
+        self.preview.doubleClicked.connect(self.prev_zoom_changed)
+        self.preview.zoomed.connect(self.prev_zoom_changed)
 
         # self.preview_combo.setCurrentIndex(0)
 
         # Arrange layout
-        mainLayout = QHBoxLayout(self)
+        mainLayout = QGridLayout(self)
         mainLayout.setContentsMargins(0, 0, 0, 0)
 
         do_undo = QHBoxLayout(self)
@@ -258,9 +288,10 @@ class Window(QWidget):
 
         prev_layout = QVBoxLayout(self)
         prev_layout.addWidget(self.preview)
-        prev_layout.addWidget(self.preview_combo)
+        # prev_layout.addWidget(self.preview_combo)
 
         toolbar = QVBoxLayout(self)
+        toolbar.setAlignment(Qt.AlignTop)
 
         toolbar.setAlignment(Qt.AlignTop)
         toolbar.addLayout(do_undo)
@@ -284,10 +315,11 @@ class Window(QWidget):
 
         toolbar.addWidget(self.sb_click_x)
         toolbar.addWidget(self.sb_click_y)
+        toolbar.addWidget(self.save_ratio)
 
-        mainLayout.addLayout(toolbar)
-        mainLayout.addWidget(self.viewer)
-        mainLayout.addLayout(prev_layout)
+        mainLayout.addLayout(toolbar, 0, 0, 1, 1)
+        mainLayout.addWidget(self.viewer, 0, 1, 1, 1)
+        mainLayout.addLayout(prev_layout, 0, 2, 1, 1)
 
         if not self._vector_mode:
             self.to_svg_btn.setHidden(True)
@@ -301,6 +333,8 @@ class Window(QWidget):
 
         self.installEventFilter(self.viewer._scene)
 
+        self.prev_zoom_changed()
+
     # def on_nums_btn_press(self):
     #     self.on_notool_btn_press()
     #     self.viewer.draw_mode = DrawMode.Numbers
@@ -309,13 +343,24 @@ class Window(QWidget):
     def font_size_change(self, index):
         self.viewer.font_size = self.font_size_combo.currentData()
 
-    def prev_zoom_changed(self, index):
-        zoom = self.preview_combo.currentData()
-        viewer = RasterViewer(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / zoom)
+    def prev_zoom_changed(self, event=None):
+        if isinstance(event, QWheelEvent):
+            if event.angleDelta().y() > 0:
+                self.preview.zoom += (2 if self.preview.zoom == 4 else 1 if self.preview.zoom < 6 else 0)
+            elif event.angleDelta().y() < 0:
+                self.preview.zoom -= (2 if self.preview.zoom == 6 else 1 if self.preview.zoom > 1 else 0)
+        if self.save_ratio.isChecked():
+            if self.sender() == self.sb_click_x:
+                self.sb_click_y.setValue(self.sb_click_x.value())
+            elif self.sender() == self.sb_click_y:
+                self.sb_click_x.setValue(self.sb_click_y.value())
+        viewer = RasterViewer(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / self.preview.zoom)
         viewer.draw_sketch(self.viewer.get_vectors(False))
-        pix = viewer.get_raster()
+        pix = viewer.get_raster().scaled(self.preview.rect().size(), transformMode=Qt.SmoothTransformation)
+
 
         self.preview.setPixmap(pix)
+        viewer.deleteLater()
 
     def on_draw_btn_press(self):
         self.on_notool_btn_press()
