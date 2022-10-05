@@ -52,7 +52,7 @@ class CustomDoubleSpinbox(QDoubleSpinBox):
 class DrawModeBtn(QPushButton):
     def __init__(self, *args, **kwargs):
         super(DrawModeBtn, self).__init__(*args, **kwargs)
-        self.setFixedSize(70, 40)
+        self.setFixedSize(50, 30)
         # self.setText('Draw')
         self.is_enabled = False
         self.clicked.connect(self.change_mode)
@@ -140,26 +140,26 @@ class Window(QWidget):
         self.line_btn.clicked.connect(self.on_line_btn_press)
 
         self.clear_btn = QToolButton(self)
-        self.clear_btn.setFixedSize(70, 40)
+        self.clear_btn.setFixedSize(50, 30)
         self.clear_btn.setText('Clear')
         self.clear_btn.clicked.connect(self.on_clear_btn_press)
 
         self.to_svg_btn = QToolButton(self)
         # self.to_svg_btn.setText('To SVG')
         self.to_svg_btn.setIcon(QIcon(':/btns/filetype-json.svg'))
-        self.to_svg_btn.setFixedSize(70, 40)
+        self.to_svg_btn.setFixedSize(50, 30)
         self.to_svg_btn.clicked.connect(self.on_to_svg_btn_press)
 
         self.raster_btn = QToolButton(self)
         # self.raster_btn.setText('To BMP')
         self.raster_btn.setIcon(QIcon(':/btns/filetype-bmp.svg'))
-        self.raster_btn.setFixedSize(70, 40)
+        self.raster_btn.setFixedSize(50, 30)
         self.raster_btn.clicked.connect(self.on_raster_btn_press)
 
         self.reticle2_btn = QToolButton(self)
         self.reticle2_btn.setText('To ret2')
         # self.reticle2_btn.setIcon(QIcon(':/btns/filetype-bmp.svg'))
-        self.reticle2_btn.setFixedSize(70, 40)
+        self.reticle2_btn.setFixedSize(50, 30)
         self.reticle2_btn.clicked.connect(self.on_reticle2_btn_press)
 
         self.rect_btn = DrawModeBtn()
@@ -181,7 +181,7 @@ class Window(QWidget):
         self.ruler_btn.clicked.connect(self.on_ruler_btn_press)
 
         self.ruler_combo = QComboBox()
-        self.ruler_combo.setFixedSize(70, 25)
+        self.ruler_combo.setFixedSize(50, 30)
         for s in [0.05, 0.1, 0.2, 0.25, 0.3, 0.5, 1, 2, 5, 10]:
             self.ruler_combo.addItem(f'{s} mil', s)
         self.ruler_combo.currentIndexChanged.connect(self.ruler_step_change)
@@ -192,13 +192,12 @@ class Window(QWidget):
         self.text_btn.clicked.connect(self.on_text_btn_press)
 
         self.font_size_combo = QComboBox()
-        self.font_size_combo.setFixedSize(70, 25)
+        self.font_size_combo.setFixedSize(50, 30)
         for s in [7, 8, 9, 10]:
             self.font_size_combo.addItem(f'{s} pt', s)
         self.font_size_combo.currentIndexChanged.connect(self.font_size_change)
 
         self.font_size_combo.setCurrentIndex(self.font_size_combo.findData(8))
-
 
         # self.nums_btn = DrawModeBtn()
         # self.nums_btn.setText('123')
@@ -206,6 +205,8 @@ class Window(QWidget):
 
         self.sb_click_x = CustomDoubleSpinbox()
         self.sb_click_y = CustomDoubleSpinbox()
+        self.sb_click_x.setFixedSize(50, 15)
+        self.sb_click_y.setFixedSize(50, 15)
         self.sb_click_x.setValue(clicks.width())
         self.sb_click_y.setValue(clicks.height())
         self.sb_click_x.setMinimum(0.01)
@@ -215,9 +216,10 @@ class Window(QWidget):
         self.sb_click_y.setMaximum(10)
         self.sb_click_y.setSingleStep(0.01)
 
-        self.save_ratio = QCheckBox()
+        self.keep_ratio = QCheckBox('Keep ratio')
+        self.keep_ratio.setFixedSize(50, 30)
         if self.sb_click_x.value() == self.sb_click_y.value():
-            self.save_ratio.setChecked(True)
+            self.keep_ratio.setChecked(True)
 
         self.undo_btn = QPushButton()
         # self.undo_btn.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
@@ -259,7 +261,8 @@ class Window(QWidget):
         self.undo_btn.setToolTip("Ctrl + Z")
         self.redo_btn.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Z)
         self.redo_btn.setToolTip("Ctrl + Shift + Z")
-
+        self.undo_btn.setFixedSize(30, 30)
+        self.redo_btn.setFixedSize(30, 30)
 
         self.preview = PreviewLabel('Notext')
         self.preview.setStyleSheet("""QLabel {background-color: white;};""")
@@ -277,49 +280,56 @@ class Window(QWidget):
         # self.preview_combo.setCurrentIndex(0)
 
         # Arrange layout
-        mainLayout = QGridLayout(self)
-        mainLayout.setContentsMargins(0, 0, 0, 0)
+        self.mainLayout = QGridLayout(self)
+        self.setLayout(self.mainLayout)
 
-        do_undo = QHBoxLayout(self)
-        do_undo.setContentsMargins(0, 0, 0, 0)
-        do_undo.setSpacing(0)
-        do_undo.addWidget(self.undo_btn)
-        do_undo.addWidget(self.redo_btn)
+        # self.mainLayout.setContentsMargins(0, 0, 0, 0)
+        self.mainLayout.setAlignment(Qt.AlignTop)
 
-        prev_layout = QVBoxLayout(self)
-        prev_layout.addWidget(self.preview)
-        # prev_layout.addWidget(self.preview_combo)
+        self.do_undo = QHBoxLayout(self)
+        self.do_undo.setContentsMargins(0, 0, 0, 0)
+        self.do_undo.setSpacing(0)
+        self.do_undo.addWidget(self.undo_btn)
+        self.do_undo.addWidget(self.redo_btn)
 
-        toolbar = QVBoxLayout(self)
-        toolbar.setAlignment(Qt.AlignTop)
+        self.toolbar = QWidget()
 
-        toolbar.setAlignment(Qt.AlignTop)
-        toolbar.addLayout(do_undo)
-        toolbar.addWidget(self.no_tool_btn)
-        toolbar.addWidget(self.pencil_btn)
-        toolbar.addWidget(self.eraser_btn)
-        toolbar.addWidget(self.line_btn)
-        toolbar.addWidget(self.rect_btn)
-        toolbar.addWidget(self.ellipse_btn)
-        toolbar.addWidget(self.ruler_btn)
-        toolbar.addWidget(self.ruler_combo)
-        toolbar.addWidget(self.text_btn)
-        toolbar.addWidget(self.font_size_combo)
-        # toolbar.addWidget(self.nums_btn)
+        self.toolbarLayout = QVBoxLayout(self)
+        self.toolbarLayout.setContentsMargins(0, 0, 0, 0)
+        self.toolbarLayout.setSpacing(0)
+        self.toolbar.setLayout(self.toolbarLayout)
 
-        toolbar.addWidget(self.clear_btn)
-        toolbar.addWidget(self.to_svg_btn)
-        toolbar.addWidget(self.raster_btn)
+        self.toolbarLayout.addWidget(self.no_tool_btn)
+        self.toolbarLayout.addWidget(self.pencil_btn)
+        self.toolbarLayout.addWidget(self.eraser_btn)
+        self.toolbarLayout.addWidget(self.line_btn)
+        self.toolbarLayout.addWidget(self.rect_btn)
+        self.toolbarLayout.addWidget(self.ellipse_btn)
+        self.toolbarLayout.addWidget(self.ruler_btn)
+        self.toolbarLayout.addWidget(self.text_btn)
+        self.toolbarLayout.addWidget(self.clear_btn)
+        self.toolbarLayout.addWidget(self.to_svg_btn)
+        self.toolbarLayout.addWidget(self.raster_btn)
+        self.toolbarLayout.addWidget(self.reticle2_btn)
+        self.toolbarLayout.setAlignment(Qt.AlignTop)
 
-        toolbar.addWidget(self.reticle2_btn)
+        self.toolbar2 = QWidget()
+        self.toolbar2Layout = QGridLayout(self)
+        self.toolbar2Layout.setContentsMargins(0, 0, 0, 0)
+        # self.toolbar2Layout.setSpacing(0)
+        self.toolbar2.setLayout(self.toolbar2Layout)
+        self.toolbar2Layout.setAlignment(Qt.AlignLeft)
+        self.toolbar2Layout.addLayout(self.do_undo, 0, 0, 2, 1)
+        self.toolbar2Layout.addWidget(self.sb_click_x, 0, 1)
+        self.toolbar2Layout.addWidget(self.sb_click_y, 1, 1)
+        self.toolbar2Layout.addWidget(self.keep_ratio, 0, 2, 2, 1)
+        self.toolbar2Layout.addWidget(self.ruler_combo, 0, 3, 2, 1)
+        self.toolbar2Layout.addWidget(self.font_size_combo, 0, 4, 2, 1)
 
-        toolbar.addWidget(self.sb_click_x)
-        toolbar.addWidget(self.sb_click_y)
-        toolbar.addWidget(self.save_ratio)
-
-        mainLayout.addLayout(toolbar, 0, 0, 1, 1)
-        mainLayout.addWidget(self.viewer, 0, 1, 1, 1)
-        mainLayout.addLayout(prev_layout, 0, 2, 1, 1)
+        self.mainLayout.addWidget(self.toolbar2, 0, 1)
+        self.mainLayout.addWidget(self.toolbar, 1, 0)
+        self.mainLayout.addWidget(self.viewer, 1, 1)
+        self.mainLayout.addWidget(self.preview, 1, 2)
 
         if not self._vector_mode:
             self.to_svg_btn.setHidden(True)
@@ -328,7 +338,7 @@ class Window(QWidget):
             self.sb_click_x.setDisabled(True)
             self.sb_click_y.setDisabled(True)
             self.preview.setHidden(True)
-            self.preview_combo.setHidden(True)
+            # self.preview_combo.setHidden(True)
 
 
         self.installEventFilter(self.viewer._scene)
@@ -349,7 +359,7 @@ class Window(QWidget):
                 self.preview.zoom += (2 if self.preview.zoom == 4 else 1 if self.preview.zoom < 6 else 0)
             elif event.angleDelta().y() < 0:
                 self.preview.zoom -= (2 if self.preview.zoom == 6 else 1 if self.preview.zoom > 1 else 0)
-        if self.save_ratio.isChecked():
+        if self.keep_ratio.isChecked():
             if self.sender() == self.sb_click_x:
                 self.sb_click_y.setValue(self.sb_click_x.value())
             elif self.sender() == self.sb_click_y:
