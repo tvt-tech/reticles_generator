@@ -2,6 +2,24 @@ from PyQt5.QtCore import Qt
 from construct import Struct, Container, Const, Int32ul, Int32sl, BitStruct, BitsInteger, ByteSwapped
 from PyQt5.QtGui import QImage, QColor
 
+from time import time
+
+from functools import wraps
+import time
+
+
+def timeit(func):
+    @wraps(func)
+    def timeit_wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        total_time = end_time - start_time
+        print(f'Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
+        return result
+    return timeit_wrapper
+
+
 HEADER = Struct(
     'PXL2Id' / Const(b'PXL4'),
     'NumberOfReticle' / Int32sl,
@@ -42,7 +60,7 @@ COLOR_VISIBLE_THRESHOLD = 0x10
 
 class ImgMap(object):
     def __init__(self, img: QImage):
-        self._img = img
+        self._img: QImage = img.convertToFormat(QImage.Format_Mono)
         self.data = None
         self._parse()
 
@@ -52,9 +70,6 @@ class ImgMap(object):
 
             for x in range(1, 640):
                 pcolor = self._img.pixelColor(x, y).value()
-                # pcolor = self._img.pixel(x, y)
-                # pcolord = QColor.qGray(pcolor)
-
 
                 if pcolor == 0:
                     if not sx:
@@ -63,10 +78,12 @@ class ImgMap(object):
                         counter += 1
                     else:
                         data.append((counter, y, sx))
+                        # data.append(DATA2.build(dict(_x=sx, _y=y, q=counter)))
                         sx, counter = None, 0
                 else:
                     if counter > 0:
                         data.append((counter, y, sx))
+                        # data.append(DATA2.build(dict(_x=sx, _y=y, q=counter)))
                     sx, counter = None, 0
         self.data = data
 

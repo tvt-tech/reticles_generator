@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5.QtCore import QSizeF, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QIcon, QFontDatabase, QWheelEvent
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolButton, QDoubleSpinBox, \
-    QComboBox, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QSizePolicy, QGridLayout
+    QComboBox, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QSizePolicy, QGridLayout, QMainWindow
 
 from graphics_view.vector_view import VectorViewer
 from graphics_view.raster_view import RasterViewer
@@ -23,14 +23,19 @@ class PreviewLabel(QLabel):
         super(PreviewLabel, self).__init__(parent)
         self._is_full = False
         self.zoom = 1
+        self.def_size = QSize(160, 120)
+        self.setFixedSize(self.def_size)
+        self.setToolTip('Double-click to expand')
 
     def mouseDoubleClickEvent(self, event: 'QMouseEvent') -> None:
         if self._is_full:
-            self.setFixedSize(320, 240)
+            self.setFixedSize(self.def_size)
             self._is_full = False
+            self.setToolTip('Double-click to expand')
         else:
             self.setFixedSize(640, 480)
             self._is_full = True
+            self.setToolTip('Double-click to decrease')
         self.doubleClicked.emit()
         super(PreviewLabel, self).mouseDoubleClickEvent(event)
 
@@ -264,9 +269,9 @@ class Window(QWidget):
         self.undo_btn.setFixedSize(30, 30)
         self.redo_btn.setFixedSize(30, 30)
 
-        self.preview = PreviewLabel('Notext')
+        self.preview_label = QLabel('Preview')
+        self.preview = PreviewLabel()
         self.preview.setStyleSheet("""QLabel {background-color: white;};""")
-        self.preview.setFixedSize(320, 240)
         # self.preview_combo = QComboBox()
         # for i in [1, 2, 3, 4, 6]:
         #     self.preview_combo.addItem(f'x{i}', i)
@@ -284,13 +289,15 @@ class Window(QWidget):
         self.setLayout(self.mainLayout)
 
         # self.mainLayout.setContentsMargins(0, 0, 0, 0)
-        self.mainLayout.setAlignment(Qt.AlignTop)
 
-        self.do_undo = QHBoxLayout(self)
-        self.do_undo.setContentsMargins(0, 0, 0, 0)
-        self.do_undo.setSpacing(0)
-        self.do_undo.addWidget(self.undo_btn)
-        self.do_undo.addWidget(self.redo_btn)
+
+        self.do_undo = QWidget()
+        self.do_undoLayout = QHBoxLayout(self)
+        self.do_undo.setLayout(self.do_undoLayout)
+        self.do_undoLayout.setContentsMargins(0, 0, 0, 0)
+        self.do_undoLayout.setSpacing(0)
+        self.do_undoLayout.addWidget(self.undo_btn)
+        self.do_undoLayout.addWidget(self.redo_btn)
 
         self.toolbar = QWidget()
 
@@ -319,7 +326,7 @@ class Window(QWidget):
         # self.toolbar2Layout.setSpacing(0)
         self.toolbar2.setLayout(self.toolbar2Layout)
         self.toolbar2Layout.setAlignment(Qt.AlignLeft)
-        self.toolbar2Layout.addLayout(self.do_undo, 0, 0, 2, 1)
+        self.toolbar2Layout.addWidget(self.do_undo, 0, 0, 2, 1)
         self.toolbar2Layout.addWidget(self.sb_click_x, 0, 1)
         self.toolbar2Layout.addWidget(self.sb_click_y, 1, 1)
         self.toolbar2Layout.addWidget(self.keep_ratio, 0, 2, 2, 1)
@@ -329,7 +336,11 @@ class Window(QWidget):
         self.mainLayout.addWidget(self.toolbar2, 0, 1)
         self.mainLayout.addWidget(self.toolbar, 1, 0)
         self.mainLayout.addWidget(self.viewer, 1, 1)
-        self.mainLayout.addWidget(self.preview, 1, 2)
+        self.mainLayout.addWidget(self.preview, 1, 1)
+        self.mainLayout.addWidget(self.preview_label, 1, 1)
+
+        self.mainLayout.setAlignment(self.preview_label, Qt.AlignTop | Qt.AlignRight)
+        self.mainLayout.setAlignment(self.preview, Qt.AlignTop | Qt.AlignRight)
 
         if not self._vector_mode:
             self.to_svg_btn.setHidden(True)
@@ -370,6 +381,7 @@ class Window(QWidget):
 
 
         self.preview.setPixmap(pix)
+        self.preview_label.setText(f'Preview {self.preview.zoom}x')
         viewer.deleteLater()
 
     def on_draw_btn_press(self):
@@ -432,12 +444,11 @@ class Window(QWidget):
             fpath = Path(path, f'ret_{round(self.sb_click_x.value(), 2)}_{round(self.sb_click_y.value(), 2)}.png')
             pix.save(str(fpath), 'PNG')
 
-    def on_reticle2_btn_press(self):
+    @timeit
+    def on_reticle2_btn_press(self, *args, **kwargs):
 
         base = []
         lrf = []
-
-
 
         if self._vector_mode:
 
