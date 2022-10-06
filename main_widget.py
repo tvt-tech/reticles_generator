@@ -90,6 +90,9 @@ class Window(QWidget):
                     color: #dadada;
                     border: 0px;
                 }
+                QComboBox QAbstractItemView {
+                    color: black;
+                }
                 QPushButton, QToolButton {
                     background-color: #303440;
                     color: #dadada;
@@ -217,7 +220,7 @@ class Window(QWidget):
 
         self.ruler_combo = QComboBox()
         self.ruler_combo.setFixedSize(50, 30)
-        for s in [0.05, 0.1, 0.2, 0.25, 0.3, 0.5, 1, 2, 5, 10]:
+        for s in [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10]:
             self.ruler_combo.addItem(f'{s} mil', s)
         self.ruler_combo.currentIndexChanged.connect(self.ruler_step_change)
         self.ruler_combo.setCurrentIndex(self.ruler_combo.findData(1))
@@ -315,6 +318,7 @@ class Window(QWidget):
         self.progress = QProgressBar()
         self.progress.setAlignment(Qt.AlignCenter)
         self.progress.setFixedSize(300, 15)
+        self.progress.setVisible(False)
 
         # self.preview_combo.setCurrentIndex(0)
 
@@ -494,6 +498,7 @@ class Window(QWidget):
             templates = Path(Path(__file__).parent, 'vector_templates').iterdir()
             templates = [i for i in templates if i.suffix == '.json']
 
+            self.progress.setVisible(True)
             self.progress.setMaximum(len(templates) * 4)
 
             for t in templates:
@@ -526,7 +531,7 @@ class Window(QWidget):
             self.progress.setValue(self.progress.value() + 1)
             with open(f'{click_x}x{click_y}_4x.reticle2', 'wb') as fp:
                 fp.write(file_data)
-            self.progress.setValue(0)
+            self.progress.setVisible(False)
 
     def on_to_svg_btn_press(self, *args, **kwargs):
         self.save_vectors()
