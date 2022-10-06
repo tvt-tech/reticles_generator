@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5.QtCore import QSizeF, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QIcon, QFontDatabase, QWheelEvent
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolButton, QDoubleSpinBox, \
-    QComboBox, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QSizePolicy, QGridLayout, QMainWindow
+    QComboBox, QHBoxLayout, QVBoxLayout, QLabel, QCheckBox, QSizePolicy, QGridLayout, QMainWindow, QProgressBar
 
 from graphics_view.vector_view import VectorViewer
 from graphics_view.raster_view import RasterViewer
@@ -78,7 +78,13 @@ class Window(QWidget):
         self.setObjectName('RetEdit')
 
         self.setStyleSheet("""
-        #RetEdit {background-color: #303440; color: #dadada;}
+                QWidget {
+                    color: #dadada;
+                }
+                #RetEdit {
+                    background-color: #303440; 
+                    color: #dadada;
+                }
                 QDoubleSpinBox, QComboBox {
                     background-color: #3c4454;
                     color: #dadada;
@@ -94,6 +100,13 @@ class Window(QWidget):
                     color: #dadada;
                 }
                 QPushButton:hover, QToolButton:hover {
+                    background-color: #3c4454;
+                    color: #dadada;
+                }
+                QProgressBar {
+                    color: black;
+                }
+                QProgressBar::chunk {
                     background-color: #3c4454;
                     color: #dadada;
                 }
@@ -299,6 +312,10 @@ class Window(QWidget):
         self.preview.doubleClicked.connect(self.prev_zoom_changed)
         self.preview.zoomed.connect(self.prev_zoom_changed)
 
+        self.progress = QProgressBar()
+        self.progress.setAlignment(Qt.AlignCenter)
+        self.progress.setFixedSize(300, 15)
+
         # self.preview_combo.setCurrentIndex(0)
 
         # Arrange layout
@@ -358,9 +375,11 @@ class Window(QWidget):
         self.mainLayout.addWidget(self.viewer, 1, 1)
         self.mainLayout.addWidget(self.preview, 1, 1)
         self.mainLayout.addWidget(self.preview_label, 1, 1)
+        self.mainLayout.addWidget(self.progress, 1, 1)
 
         self.mainLayout.setAlignment(self.preview_label, Qt.AlignTop | Qt.AlignRight)
         self.mainLayout.setAlignment(self.preview, Qt.AlignTop | Qt.AlignRight)
+        self.mainLayout.setAlignment(self.progress, Qt.AlignBottom | Qt.AlignRight)
 
         if not self._vector_mode:
             self.to_svg_btn.setHidden(True)
@@ -475,6 +494,8 @@ class Window(QWidget):
             templates = Path(Path(__file__).parent, 'vector_templates').iterdir()
             templates = [i for i in templates if i.suffix == '.json']
 
+            self.progress.setMaximum(len(templates) * 4)
+
             for t in templates:
 
                 with open(str(t), 'rb') as fp:
@@ -483,6 +504,7 @@ class Window(QWidget):
 
                 zooms = []
                 for z in [1, 2, 3, 4]:
+
                     viewer = VectorViewer(self, clicks=QSizeF(0.5, 0.5) / z)
                     viewer.draw_sketch(template)
                     vects = viewer.get_vectors(False)
@@ -492,6 +514,8 @@ class Window(QWidget):
                     img = pix.toImage()
                     zooms.append(ImgMap(img))
 
+                    self.progress.setValue(self.progress.value() + 1)
+
                 base.append(Reticle4z(*zooms))
 
             d = PXL4.dump(SMALL_RETS, [], base, lrf)
@@ -499,8 +523,10 @@ class Window(QWidget):
 
             click_x = str(self.sb_click_y.value()).replace('.', '_')
             click_y = str(self.sb_click_y.value()).replace('.', '_')
+            self.progress.setValue(self.progress.value() + 1)
             with open(f'{click_x}x{click_y}_4x.reticle2', 'wb') as fp:
                 fp.write(file_data)
+            self.progress.setValue(0)
 
     def on_to_svg_btn_press(self, *args, **kwargs):
         self.save_vectors()
