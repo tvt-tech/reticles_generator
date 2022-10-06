@@ -122,12 +122,12 @@ class VectoRaster(QGraphicsView):
         self._scene = DrawbleGraphicScene(self)
         self._scene.setSceneRect(rect)
 
+        self.draw_grid()
+        self.draw_background()
+
         self._canvas = GraphicsCanvas(self._scene.sceneRect().size())
         self._canvas.setPos(-0.5, -0.5)
         self._scene.addItem(self._canvas)
-
-        self.draw_grid()
-        self.draw_background()
 
         self._pen_size_ellipse = PenCircle()
         self._scene.addItem(self._pen_size_ellipse)
@@ -147,6 +147,7 @@ class VectoRaster(QGraphicsView):
     def set_reticle_scale(self):
         self._px_at_mil_h = self._multiplier / self._click_x
         self._px_at_mil_v = self._multiplier / self._click_y
+        print(self._px_at_mil_v, self._px_at_mil_h)
 
     def draw_mil_grid(self, step_h=10.0, step_v=10.0, grid=False, mark=False, pen: QPen = QPen(), font_size=10):
         grid_layer = GridItem(self._px_at_mil_h, self._px_at_mil_v, step_h, step_v, grid, mark, pen, font_size,

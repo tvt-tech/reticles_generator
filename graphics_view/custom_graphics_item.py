@@ -122,7 +122,6 @@ class SmoothRectItem(QGraphicsRectItem):
         pixmap = QPixmap(self.scene().width(), self.scene().height())
         pixmap.fill(Qt.transparent)
         pix_painter = CenterPainter(pixmap)
-        print(self.rect())
         pix_painter.drawRectC(self.rect())
         return pixmap
 
@@ -609,10 +608,10 @@ class GridItem(QGraphicsItemGroup):
         font = QFont('BankGothic Lt BT')
         font.setPointSize(self._font_size)
 
-        half_dark_magenta = QColor(78, 83, 87, 128)
+        half_color = QColor(78, 83, 87, 192)
         # half_dark_magenta = QColor(128, 0, 128, 128)
-        font_brush = QBrush(half_dark_magenta)
-        self._pen.setColor(half_dark_magenta)
+        font_brush = QBrush(half_color)
+        self._pen.setColor(half_color)
 
         for i, x in enumerate(range(0, max_x, grid_scale_h)):
             xF = i * grid_scale_h_f
@@ -622,11 +621,14 @@ class GridItem(QGraphicsItemGroup):
                 line_item = LineItem(QLineF(-xF, max_y, -xF, -max_y), pen=self._pen)
                 self.addToGroup(line_item)
             if self._mark and i > 0:
-                text_item = SimpleTextItem(str(round(i * self._step_h, 1)), font, QPointF(xF, 10))
+                value = xF / self._px_at_mil_h
+                value = int(value) if round(value, 1) % 1 == 0 else value
+
+                text_item = SimpleTextItem(str(value), font, QPointF(xF, 10))
                 text_item.setBrush(font_brush)
                 self.addToGroup(text_item)
 
-                text_item = SimpleTextItem(str(round(i * self._step_h, 1)), font, QPointF(-xF, 10))
+                text_item = SimpleTextItem(str(value), font, QPointF(-xF, 10))
                 text_item.setBrush(font_brush)
                 self.addToGroup(text_item)
 
@@ -638,11 +640,14 @@ class GridItem(QGraphicsItemGroup):
                 line_item = LineItem(QLineF(max_x, -yF, -max_x, -yF), pen=self._pen)
                 self.addToGroup(line_item)
             if self._mark and i > 0:
-                text_item = SimpleTextItem(str(round(i * self._step_h, 1)), font, QPointF(10, yF))
+                value = yF / self._px_at_mil_v
+                value = int(value) if round(value, 1) % 1 == 0 else value
+
+                text_item = SimpleTextItem(str(value), font, QPointF(10, yF))
                 text_item.setBrush(font_brush)
                 self.addToGroup(text_item)
 
-                text_item = SimpleTextItem(str(round(i * self._step_h, 1)), font, QPointF(10, -yF))
+                text_item = SimpleTextItem(str(value), font, QPointF(10, -yF))
                 text_item.setBrush(font_brush)
                 self.addToGroup(text_item)
 

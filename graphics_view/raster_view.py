@@ -15,8 +15,9 @@ class RasterViewer(VectoRaster):
         super(RasterViewer, self).__init__(parent, size, clicks)
 
     def draw_grid(self):
-        self.draw_mil_grid(0.1, 0.1, True, False, CustomPen.GridH4)
-        self.draw_mil_grid(1, 1, True, True, CustomPen.GridH3, font_size=5)
+        self.draw_mil_grid(self._min_mil_h_step, self._min_mil_v_step, True, False, CustomPen.GridH4)
+        self.draw_mil_grid(self._min_mil_h_step * 10, self._min_mil_v_step * 10, True, True, CustomPen.GridH3,
+                           font_size=5)
         self.draw_mil_grid(5, 5, False, False, CustomPen.GridH3, font_size=8)
         self.draw_mil_grid(10, 10, True, False, CustomPen.GridH2)
         self.draw_mil_grid(100, 100, True, False, CustomPen.GridH1)
