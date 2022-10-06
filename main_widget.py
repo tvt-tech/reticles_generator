@@ -473,7 +473,6 @@ class Window(QWidget):
 
                 with open(str(t), 'rb') as fp:
                     template = json.load(fp)
-                    print(str(t))
 
                 zooms = []
                 for z in [1, 2, 3, 4]:

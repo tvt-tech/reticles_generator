@@ -15,5 +15,3 @@ ArcherVectorReticle = Struct(
     y1=Float16l,
     step=Float16l
 )
-
-print(Float16l.sizeof())

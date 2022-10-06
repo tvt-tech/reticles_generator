@@ -95,7 +95,6 @@ class SmoothLineItem(QGraphicsLineItem):
 
     def redraw_pix(self):
         pixmap = QPixmap(self.scene().width(), self.scene().height())
-        print(pixmap.rect())
         pixmap.fill(Qt.transparent)
         pix_painter = CenterPainter(pixmap)
         pix_painter.drawRect(pixmap.rect())
