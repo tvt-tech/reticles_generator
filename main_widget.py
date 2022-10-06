@@ -58,7 +58,8 @@ class CustomDoubleSpinbox(QDoubleSpinBox):
 class DrawModeBtn(QPushButton):
     def __init__(self, *args, **kwargs):
         super(DrawModeBtn, self).__init__(*args, **kwargs)
-        self.setFixedSize(50, 30)
+        self.setFixedSize(40, 40)
+        self.setIconSize(QSize(20, 20))
         # self.setText('Draw')
         self.is_enabled = False
         self.clicked.connect(self.change_mode)
@@ -78,41 +79,41 @@ class Window(QWidget):
         self.setObjectName('RetEdit')
 
         self.setStyleSheet("""
-                QWidget {
-                    color: #dadada;
-                }
-                #RetEdit {
-                    background-color: #303440; 
-                    color: #dadada;
-                }
-                QDoubleSpinBox, QComboBox {
-                    background-color: #3c4454;
-                    color: #dadada;
-                    border: 0px;
-                }
-                QComboBox QAbstractItemView {
-                    color: black;
-                }
-                QPushButton, QToolButton {
-                    background-color: #303440;
-                    color: #dadada;
-                    border: 0px;
-                }
-                QPushButton:pressed, QToolButton:pressed {
-                    background-color: #3c4454;
-                    color: #dadada;
-                }
-                QPushButton:hover, QToolButton:hover {
-                    background-color: #3c4454;
-                    color: #dadada;
-                }
-                QProgressBar {
-                    color: black;
-                }
-                QProgressBar::chunk {
-                    background-color: #3c4454;
-                    color: #dadada;
-                }
+            QWidget {
+                color: #dadada;
+            }
+            #RetEdit {
+                background-color: #303440; 
+                color: #dadada;
+            }
+            QDoubleSpinBox, QComboBox {
+                background-color: #3c4454;
+                color: #dadada;
+                border: 0px;
+            }
+            QComboBox QAbstractItemView {
+                color: black;
+            }
+            QPushButton, QToolButton {
+                background-color: #303440;
+                color: #dadada;
+                border: 0px;
+            }
+            QPushButton:pressed, QToolButton:pressed {
+                background-color: #3c4454;
+                color: #dadada;
+            }
+            QPushButton:hover, QToolButton:hover {
+                background-color: #3c4454;
+                color: #dadada;
+            }
+            QProgressBar {
+                color: black;
+            }
+            QProgressBar::chunk {
+                background-color: #3c4454;
+                color: #dadada;
+            }
         """)
 
         # self.filename = filename if filename is not None else 'reticle.abcv'
@@ -152,94 +153,94 @@ class Window(QWidget):
         self.viewer._history_append()
 
         self.no_tool_btn = DrawModeBtn(self)
-        # self.no_tool_btn.setText('NoTool')
+        self.no_tool_btn.setToolTip('NoTool')
         self.no_tool_btn.setText('1')
-        # self.no_tool_btn.s
         self.no_tool_btn.setIcon(QIcon(':/btns/hand-index.svg'))
         self.no_tool_btn.setDown(True)
         self.no_tool_btn.clicked.connect(self.on_notool_btn_press)
 
         self.pencil_btn = DrawModeBtn(self)
-        # self.pencil_btn.setText('Pencil')
+        self.pencil_btn.setToolTip('Pencil')
         self.pencil_btn.setText('2')
+        self.pencil_btn.setIcon(QIcon(':/btns/pencil.svg'))
         self.pencil_btn.setIcon(QIcon(':/btns/pencil.svg'))
         self.pencil_btn.clicked.connect(self.on_draw_btn_press)
 
         self.eraser_btn = DrawModeBtn(self)
-        # self.eraser_btn.setText('Eraser')
+        self.eraser_btn.setToolTip('Eraser')
         self.eraser_btn.setText('3')
         self.eraser_btn.setIcon(QIcon(':/btns/eraser.svg'))
         self.eraser_btn.clicked.connect(self.on_eraser_btn_press)
 
         self.line_btn = DrawModeBtn(self)
-        # self.line_btn.setText('Line')
         self.line_btn.setText('4')
+        self.line_btn.setToolTip('Line')
         self.line_btn.setIcon(QIcon(':/btns/slash-lg.svg'))
         self.line_btn.clicked.connect(self.on_line_btn_press)
 
         self.clear_btn = QToolButton(self)
-        self.clear_btn.setFixedSize(50, 30)
+        self.clear_btn.setFixedSize(40, 40)
         self.clear_btn.setText('Clear')
         self.clear_btn.clicked.connect(self.on_clear_btn_press)
 
         self.to_svg_btn = QToolButton(self)
-        # self.to_svg_btn.setText('To SVG')
+        self.to_svg_btn.setToolTip('To JSON')
         self.to_svg_btn.setIcon(QIcon(':/btns/filetype-json.svg'))
-        self.to_svg_btn.setFixedSize(50, 30)
+        self.to_svg_btn.setIconSize(QSize(20, 20))
+        self.to_svg_btn.setFixedSize(40, 40)
         self.to_svg_btn.clicked.connect(self.on_to_svg_btn_press)
 
         self.raster_btn = QToolButton(self)
-        # self.raster_btn.setText('To BMP')
+        self.raster_btn.setToolTip('To BMP')
         self.raster_btn.setIcon(QIcon(':/btns/filetype-bmp.svg'))
-        self.raster_btn.setFixedSize(50, 30)
+        self.raster_btn.setIconSize(QSize(20, 20))
+        self.raster_btn.setFixedSize(40, 40)
         self.raster_btn.clicked.connect(self.on_raster_btn_press)
 
         self.reticle2_btn = QToolButton(self)
         self.reticle2_btn.setText('To ret2')
         # self.reticle2_btn.setIcon(QIcon(':/btns/filetype-bmp.svg'))
-        self.reticle2_btn.setFixedSize(50, 30)
+        self.reticle2_btn.setFixedSize(40, 40)
         self.reticle2_btn.clicked.connect(self.on_reticle2_btn_press)
 
         self.rect_btn = DrawModeBtn()
         self.rect_btn.setText('5')
-        # self.rect_btn.setText('Rect')
+        self.rect_btn.setToolTip('Rect')
         self.rect_btn.setIcon(QIcon(':/btns/square.svg'))
         self.rect_btn.clicked.connect(self.on_rect_btn_press)
 
         self.ellipse_btn = DrawModeBtn()
         self.ellipse_btn.setText('6')
-        # self.ellipse_btn.setText('Ellipse')
+        self.ellipse_btn.setToolTip('Ellipse')
         self.ellipse_btn.setIcon(QIcon(':/btns/circle.svg'))
         self.ellipse_btn.clicked.connect(self.on_ellipse_btn_press)
 
         self.ruler_btn = DrawModeBtn()
-        # self.ruler_btn.setText('Ruler')
+        self.ruler_btn.setToolTip('Ruler')
         self.ruler_btn.setText('7')
         self.ruler_btn.setIcon(QIcon(':/btns/rulers.svg'))
         self.ruler_btn.clicked.connect(self.on_ruler_btn_press)
 
         self.ruler_combo = QComboBox()
-        self.ruler_combo.setFixedSize(50, 30)
-        for s in [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10]:
+        self.ruler_combo.setToolTip('Ruler step')
+        self.ruler_combo.setFixedSize(50, 20)
+        for s in [10, 5, 2, 1, 0.5, 0.25, 0.2, 0.1, 0.05]:
             self.ruler_combo.addItem(f'{s} mil', s)
         self.ruler_combo.currentIndexChanged.connect(self.ruler_step_change)
         self.ruler_combo.setCurrentIndex(self.ruler_combo.findData(1))
 
         self.text_btn = DrawModeBtn()
+        self.text_btn.setToolTip('Text')
         self.text_btn.setIcon(QIcon(':/btns/type.svg'))
         self.text_btn.clicked.connect(self.on_text_btn_press)
 
         self.font_size_combo = QComboBox()
-        self.font_size_combo.setFixedSize(50, 30)
-        for s in [7, 8, 9, 10]:
+        self.font_size_combo.setToolTip('Font size')
+        self.font_size_combo.setFixedSize(50, 20)
+        for s in [10, 9, 8, 7]:
             self.font_size_combo.addItem(f'{s} pt', s)
         self.font_size_combo.currentIndexChanged.connect(self.font_size_change)
-
         self.font_size_combo.setCurrentIndex(self.font_size_combo.findData(8))
-
-        # self.nums_btn = DrawModeBtn()
-        # self.nums_btn.setText('123')
-        # self.nums_btn.clicked.connect(self.on_nums_btn_press)
 
         self.sb_click_x = CustomDoubleSpinbox()
         self.sb_click_y = CustomDoubleSpinbox()
@@ -260,37 +261,22 @@ class Window(QWidget):
             self.keep_ratio.setChecked(True)
 
         self.undo_btn = QToolButton()
-        # self.undo_btn.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
         self.undo_btn.setIcon(QIcon(':/btns/arrow-counterclockwise.svg'))
         self.undo_btn.clicked.connect(self.viewer.undo)
 
         self.redo_btn = QToolButton()
-        # self.redo_btn.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
         self.redo_btn.setIcon(QIcon(':/btns/arrow-clockwise.svg'))
         self.redo_btn.clicked.connect(self.viewer.redo)
 
-        # self.drawing = False
-        # make last point to the point of cursor
-
         # hotkey binds
         self.no_tool_btn.setShortcut(Qt.Key_1)
-        self.no_tool_btn.setToolTip("1")
         self.pencil_btn.setShortcut(Qt.Key_2)
-        self.pencil_btn.setToolTip("2")
         self.eraser_btn.setShortcut(Qt.Key_3)
-        self.eraser_btn.setToolTip("3")
         self.line_btn.setShortcut(Qt.Key_4)
-        self.line_btn.setToolTip("4")
         self.rect_btn.setShortcut(Qt.Key_5)
-        self.rect_btn.setToolTip("5")
         self.ellipse_btn.setShortcut(Qt.Key_6)
-        self.ellipse_btn.setToolTip("6")
         self.ruler_btn.setShortcut(Qt.Key_7)
-        self.ruler_btn.setToolTip("7")
         self.text_btn.setShortcut(Qt.Key_8)
-        self.text_btn.setToolTip('8')
-        # self.nums_btn.setShortcut(Qt.Key_9)
-        # self.nums_btn.setToolTip("9")
 
         self.raster_btn.setShortcut(Qt.CTRL + Qt.Key_S)
         self.raster_btn.setToolTip("Ctrl + S")
@@ -305,11 +291,7 @@ class Window(QWidget):
         self.preview_label = QLabel('Preview')
         self.preview = PreviewLabel()
         self.preview.setStyleSheet("""QLabel {background-color: white;};""")
-        # self.preview_combo = QComboBox()
-        # for i in [1, 2, 3, 4, 6]:
-        #     self.preview_combo.addItem(f'x{i}', i)
 
-        # self.preview_combo.currentIndexChanged.connect(self.prev_zoom_changed)
         self.sb_click_x.valueChanged.connect(self.prev_zoom_changed)
         self.sb_click_y.valueChanged.connect(self.prev_zoom_changed)
         self.preview.doubleClicked.connect(self.prev_zoom_changed)
@@ -320,14 +302,9 @@ class Window(QWidget):
         self.progress.setFixedSize(300, 15)
         self.progress.setVisible(False)
 
-        # self.preview_combo.setCurrentIndex(0)
-
         # Arrange layout
         self.mainLayout = QGridLayout(self)
         self.setLayout(self.mainLayout)
-
-        # self.mainLayout.setContentsMargins(0, 0, 0, 0)
-
 
         self.do_undo = QWidget()
         self.do_undoLayout = QHBoxLayout(self)
@@ -361,18 +338,17 @@ class Window(QWidget):
 
         self.toolbar2 = QWidget()
         self.toolbar2Layout = QGridLayout(self)
-        self.toolbar2Layout.setContentsMargins(0, 0, 0, 0)
-        # self.toolbar2Layout.setSpacing(0)
         self.toolbar2.setLayout(self.toolbar2Layout)
         self.toolbar2Layout.setAlignment(Qt.AlignLeft)
-        # self.toolbar2Layout.addWidget(self.do_undo, 0, 0, 2, 1)
         self.toolbar2Layout.addWidget(QLabel('Click H:'), 0, 1)
         self.toolbar2Layout.addWidget(QLabel('Click V:'), 1, 1)
         self.toolbar2Layout.addWidget(self.sb_click_x, 0, 2)
         self.toolbar2Layout.addWidget(self.sb_click_y, 1, 2)
         self.toolbar2Layout.addWidget(self.keep_ratio, 0, 3, 2, 1)
-        self.toolbar2Layout.addWidget(self.ruler_combo, 0, 4, 2, 1)
-        self.toolbar2Layout.addWidget(self.font_size_combo, 0, 5, 2, 1)
+        self.toolbar2Layout.addWidget(QLabel('Ruler step:'), 0, 4)
+        self.toolbar2Layout.addWidget(QLabel('Font size:'), 1, 4)
+        self.toolbar2Layout.addWidget(self.ruler_combo, 0, 5, 1, 1)
+        self.toolbar2Layout.addWidget(self.font_size_combo, 1, 5, 1, 1)
 
         self.mainLayout.addWidget(self.toolbar, 0, 0, 2, 1)
         self.mainLayout.addWidget(self.toolbar2, 0, 1)
@@ -392,17 +368,9 @@ class Window(QWidget):
             self.sb_click_x.setDisabled(True)
             self.sb_click_y.setDisabled(True)
             self.preview.setHidden(True)
-            # self.preview_combo.setHidden(True)
-
 
         self.installEventFilter(self.viewer._scene)
-
         self.prev_zoom_changed()
-
-    # def on_nums_btn_press(self):
-    #     self.on_notool_btn_press()
-    #     self.viewer.draw_mode = DrawMode.Numbers
-    #     self.viewer.toggleDragMode()
 
     def font_size_change(self, index):
         self.viewer.font_size = self.font_size_combo.currentData()
