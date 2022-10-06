@@ -11,13 +11,14 @@ class RasterViewer(VectoRaster):
 
     def __init__(self, parent=None,
                  size: QSize = QSize(640, 480),
-                 clicks: QSizeF = QSizeF(2.01, 2.01)):
+                 clicks: QSize = QSizeF(2.01, 2.01)):
         super(RasterViewer, self).__init__(parent, size, clicks)
 
     def draw_grid(self):
-        self.draw_mil_grid(10, 10, True, True, CustomPen.GridH2)
-        self.draw_mil_grid(1, 1, True, False, CustomPen.GridH3, font_size=5)
-        self.draw_mil_grid(self._min_mil_h_step, self._min_mil_v_step, True, False, CustomPen.GridH3)
+        self.draw_mil_grid(0.1, 0.1, True, False, CustomPen.GridH4)
+        self.draw_mil_grid(1, 1, True, True, CustomPen.GridH3, font_size=5)
+        self.draw_mil_grid(5, 5, False, False, CustomPen.GridH3, font_size=8)
+        self.draw_mil_grid(10, 10, True, False, CustomPen.GridH2)
         self.draw_mil_grid(100, 100, True, False, CustomPen.GridH1)
 
     def draw_background(self):

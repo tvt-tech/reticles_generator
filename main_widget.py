@@ -116,7 +116,6 @@ class Window(QWidget):
             }
         """)
 
-        # self.filename = filename if filename is not None else 'reticle.abcv'
         self.filename = filename
 
         self._vector_mode = False
@@ -139,7 +138,8 @@ class Window(QWidget):
 
                     clicks = QSizeF(x, y)
                     self.viewer = RasterViewer(self, QSize(640, 480), clicks=clicks)
-                    self.viewer.setPix(QPixmap(str(self.filename)))
+                    pix = QPixmap(str(self.filename))
+                    self.viewer.setPix(pix)
                 else:
                     sys.exit()
             else:
@@ -448,7 +448,7 @@ class Window(QWidget):
                 viewer = RasterViewer(self, clicks=QSizeF(self.sb_click_x.value(), self.sb_click_y.value()) / z)
                 viewer.draw_sketch(self.viewer.get_vectors(False))
                 pix = viewer.get_raster()
-                fpath = Path(path, f'ret_{round(self.sb_click_x.value(), 2)}_{round(self.sb_click_y.value(), 2)}.png')
+                fpath = Path(path, f'ret_{round(self.sb_click_x.value() / z, 2)}_{round(self.sb_click_y.value() / z, 2)}.png')
                 pix.save(str(fpath), 'PNG')
         else:
             pix = self.viewer.get_raster()
