@@ -33,11 +33,16 @@ class ItemType(IntEnum):
 
 
 class CustomPen:
-    GridH1 = QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH2 = QPen(Qt.darkMagenta, 0.15, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH3 = QPen(Qt.darkMagenta, 0.05, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH4 = QPen(Qt.darkMagenta, 0.02, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
-    GridH5 = QPen(Qt.darkMagenta, 0.01, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    # GridH1 = QPen(Qt.darkMagenta, 0.2, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    # GridH2 = QPen(Qt.darkMagenta, 0.15, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    # GridH3 = QPen(Qt.darkMagenta, 0.05, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    # GridH4 = QPen(Qt.darkMagenta, 0.02, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    # GridH5 = QPen(Qt.darkMagenta, 0.01, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH1 = QPen(QColor(78, 83, 87), 0.2, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH2 = QPen(QColor(78, 83, 87), 0.15, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH3 = QPen(QColor(78, 83, 87), 0.05, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH4 = QPen(QColor(78, 83, 87), 0.02, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
+    GridH5 = QPen(QColor(78, 83, 87), 0.01, Qt.SolidLine, Qt.FlatCap, Qt.BevelJoin)
     Pencil = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
     PencilVect = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.BevelJoin)
     PointVect = QPen(Qt.transparent, 0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
@@ -604,7 +609,8 @@ class GridItem(QGraphicsItemGroup):
         font = QFont('BankGothic Lt BT')
         font.setPointSize(self._font_size)
 
-        half_dark_magenta = QColor(128, 0, 128, 128)
+        half_dark_magenta = QColor(78, 83, 87, 128)
+        # half_dark_magenta = QColor(128, 0, 128, 128)
         font_brush = QBrush(half_dark_magenta)
         self._pen.setColor(half_dark_magenta)
 

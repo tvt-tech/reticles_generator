@@ -18,7 +18,8 @@ class VectorViewer(VectoRaster):
         self.draw_mil_grid(100, 100, True, False, CustomPen.GridH1)
 
     def draw_background(self):
-        self.setBackgroundBrush(Qt.lightGray)
+        # self.setBackgroundBrush(Qt.lightGray)
+        self.setBackgroundBrush(QColor(145, 149, 166))
 
     def wheelEvent(self, event):
         if event.angleDelta().y() > 0:

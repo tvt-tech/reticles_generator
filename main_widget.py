@@ -45,6 +45,7 @@ class PreviewLabel(QLabel):
 
 
 class CustomDoubleSpinbox(QDoubleSpinBox):
+
     def validate(self, text: str, pos: int) -> object:
         text = text.replace(".", ",")
         return QDoubleSpinBox.validate(self, text, pos)
@@ -61,10 +62,6 @@ class DrawModeBtn(QPushButton):
         # self.setText('Draw')
         self.is_enabled = False
         self.clicked.connect(self.change_mode)
-        self.setStyleSheet("""
-        QPushButton:pressed {
-        background-color: rgb(72, 72, 72);
-        }""")
 
     def change_mode(self):
         self.is_enabled = not self.is_enabled
@@ -80,7 +77,27 @@ class Window(QWidget):
         super(Window, self).__init__()
         self.setObjectName('RetEdit')
 
-        self.setStyleSheet("#RetEdit {background-color: rgb(72, 72, 72);}")
+        self.setStyleSheet("""
+        #RetEdit {background-color: #303440; color: #dadada;}
+                QDoubleSpinBox, QComboBox {
+                    background-color: #3c4454;
+                    color: #dadada;
+                    border: 0px;
+                }
+                QPushButton, QToolButton {
+                    background-color: #303440;
+                    color: #dadada;
+                    border: 0px;
+                }
+                QPushButton:pressed, QToolButton:pressed {
+                    background-color: #3c4454;
+                    color: #dadada;
+                }
+                QPushButton:hover, QToolButton:hover {
+                    background-color: #3c4454;
+                    color: #dadada;
+                }
+        """)
 
         # self.filename = filename if filename is not None else 'reticle.abcv'
         self.filename = filename
@@ -91,7 +108,7 @@ class Window(QWidget):
 
             self.filename = Path(self.filename)
             if self.filename.exists():
-                if self.filename.suffix == '.abcv':
+                if self.filename.suffix == '.json':
                     clicks = QSizeF(0.50, 0.50)
                     self._vector_mode = True
                     self.viewer = VectorViewer(self, QSize(640, 480), clicks=clicks)
@@ -210,8 +227,8 @@ class Window(QWidget):
 
         self.sb_click_x = CustomDoubleSpinbox()
         self.sb_click_y = CustomDoubleSpinbox()
-        self.sb_click_x.setFixedSize(50, 15)
-        self.sb_click_y.setFixedSize(50, 15)
+        self.sb_click_x.setFixedSize(50, 20)
+        self.sb_click_y.setFixedSize(50, 20)
         self.sb_click_x.setValue(clicks.width())
         self.sb_click_y.setValue(clicks.height())
         self.sb_click_x.setMinimum(0.01)
@@ -222,16 +239,16 @@ class Window(QWidget):
         self.sb_click_y.setSingleStep(0.01)
 
         self.keep_ratio = QCheckBox('Keep ratio')
-        self.keep_ratio.setFixedSize(50, 30)
+        self.keep_ratio.setFixedSize(80, 30)
         if self.sb_click_x.value() == self.sb_click_y.value():
             self.keep_ratio.setChecked(True)
 
-        self.undo_btn = QPushButton()
+        self.undo_btn = QToolButton()
         # self.undo_btn.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
         self.undo_btn.setIcon(QIcon(':/btns/arrow-counterclockwise.svg'))
         self.undo_btn.clicked.connect(self.viewer.undo)
 
-        self.redo_btn = QPushButton()
+        self.redo_btn = QToolButton()
         # self.redo_btn.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
         self.redo_btn.setIcon(QIcon(':/btns/arrow-clockwise.svg'))
         self.redo_btn.clicked.connect(self.viewer.redo)
@@ -266,8 +283,8 @@ class Window(QWidget):
         self.undo_btn.setToolTip("Ctrl + Z")
         self.redo_btn.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Z)
         self.redo_btn.setToolTip("Ctrl + Shift + Z")
-        self.undo_btn.setFixedSize(30, 30)
-        self.redo_btn.setFixedSize(30, 30)
+        self.undo_btn.setFixedSize(25, 25)
+        self.redo_btn.setFixedSize(25, 25)
 
         self.preview_label = QLabel('Preview')
         self.preview = PreviewLabel()
@@ -306,6 +323,7 @@ class Window(QWidget):
         self.toolbarLayout.setSpacing(0)
         self.toolbar.setLayout(self.toolbarLayout)
 
+        self.toolbarLayout.addWidget(self.do_undo)
         self.toolbarLayout.addWidget(self.no_tool_btn)
         self.toolbarLayout.addWidget(self.pencil_btn)
         self.toolbarLayout.addWidget(self.eraser_btn)
@@ -326,15 +344,17 @@ class Window(QWidget):
         # self.toolbar2Layout.setSpacing(0)
         self.toolbar2.setLayout(self.toolbar2Layout)
         self.toolbar2Layout.setAlignment(Qt.AlignLeft)
-        self.toolbar2Layout.addWidget(self.do_undo, 0, 0, 2, 1)
-        self.toolbar2Layout.addWidget(self.sb_click_x, 0, 1)
-        self.toolbar2Layout.addWidget(self.sb_click_y, 1, 1)
-        self.toolbar2Layout.addWidget(self.keep_ratio, 0, 2, 2, 1)
-        self.toolbar2Layout.addWidget(self.ruler_combo, 0, 3, 2, 1)
-        self.toolbar2Layout.addWidget(self.font_size_combo, 0, 4, 2, 1)
+        # self.toolbar2Layout.addWidget(self.do_undo, 0, 0, 2, 1)
+        self.toolbar2Layout.addWidget(QLabel('Click H:'), 0, 1)
+        self.toolbar2Layout.addWidget(QLabel('Click V:'), 1, 1)
+        self.toolbar2Layout.addWidget(self.sb_click_x, 0, 2)
+        self.toolbar2Layout.addWidget(self.sb_click_y, 1, 2)
+        self.toolbar2Layout.addWidget(self.keep_ratio, 0, 3, 2, 1)
+        self.toolbar2Layout.addWidget(self.ruler_combo, 0, 4, 2, 1)
+        self.toolbar2Layout.addWidget(self.font_size_combo, 0, 5, 2, 1)
 
+        self.mainLayout.addWidget(self.toolbar, 0, 0, 2, 1)
         self.mainLayout.addWidget(self.toolbar2, 0, 1)
-        self.mainLayout.addWidget(self.toolbar, 1, 0)
         self.mainLayout.addWidget(self.viewer, 1, 1)
         self.mainLayout.addWidget(self.preview, 1, 1)
         self.mainLayout.addWidget(self.preview_label, 1, 1)
@@ -453,7 +473,7 @@ class Window(QWidget):
         if self._vector_mode:
 
             templates = Path(Path(__file__).parent, 'vector_templates').iterdir()
-            templates = [i for i in templates if i.suffix == '.abcv']
+            templates = [i for i in templates if i.suffix == '.json']
 
             for t in templates:
 
