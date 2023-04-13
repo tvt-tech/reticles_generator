@@ -3,7 +3,7 @@ import os
 import sys
 
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import Qt, QLine
+from PyQt5.QtCore import Qt, QLine, QRect, QRectF, QPoint
 from PyQt5.QtGui import QPainter, QPen, QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
@@ -39,7 +39,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
         # self.click = Click(1.42, 1.42)
         # self.click = Click(2.13, 2.13)
-        self._click = Click(3.01, 3.01)
+        # self._click = Click(3.01, 3.01)
+        self._click = Click(1.7, 1.7)
         # self.click = Click(1.27, 1.27)
 
         self.spin_x.setValue(self.click.x)
@@ -69,13 +70,25 @@ class Window(QMainWindow, Ui_MainWindow):
         self.table.clicked.connect(self.table_clicked)
         self.btn.clicked.connect(self.btn_zoom)
 
-        # self.btn2 = QtWidgets.QPushButton('save')
-        # self.gridLayout.addWidget(self.btn2)
-        # self.btn2.clicked.connect(self.savebmp)
+        self.btn2 = QtWidgets.QPushButton('save')
+        self.gridLayout.addWidget(self.btn2)
+        self.btn2.clicked.connect(self.savebmp)
 
         self.preview.clicked.connect(self.show_preview)
 
         self.installEventFilter(self)
+
+    def savebmp(self):
+
+
+        self.fpx = QPixmap(640, 480)
+        self.fpx.fill(Qt.white)
+        painter = QPainter(self.fpx)
+        painter.drawPixmap(QPoint(0, 0), self.label.pixmap())
+
+        self.fpx.save(f'{self.zoom}_{self.reticle["name"]}.bmp', "BMP")
+
+
 
     def show_preview(self):
 
@@ -263,7 +276,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def draw_layers(self):
         canvas = QPixmap(self.pm_width, self.pm_height)
-        canvas.fill(Qt.transparent)
+        # canvas.fill(Qt.transparent)
+        canvas.fill(Qt.white)
         highlighter_color = QtGui.QColor('#3F57D2')
         highlited_index = self.table.currentIndex().row()
 
@@ -272,7 +286,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         self.label.setPixmap(canvas)
 
-        self.label.pixmap().save(f'{self.zoom}_{self.reticle["name"]}.bmp', "BMP")
+        # self.label.pixmap().save(f'{self.zoom}_{self.reticle["name"]}.bmp', "BMP")
         self.enable_grid()
         self.draw_watermark()
         self.info_label.setText(
