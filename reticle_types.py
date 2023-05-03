@@ -243,6 +243,8 @@ class Ruler(object):
 
         self.kwargs = kwargs
 
+        print(self.step)
+
         if isinstance(pen, int):
             self.painter.setPen(QPen(self.color, pen, Qt.SolidLine))
         else:
@@ -319,7 +321,8 @@ class HRuler(Ruler):
     def draw(self):
         i = self.a
         items = []
-        if int(self.x1 * self.step * self.zoom) > 3:
+        # if int(self.x1 * self.step * self.zoom) > 3:
+        if int(self.x1 * self.step * self.zoom) > 2:
             y = 0
             while i <= self.b:
                 x = i * self.x1 * self.zoom

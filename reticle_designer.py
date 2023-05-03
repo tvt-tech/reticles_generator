@@ -276,8 +276,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def draw_layers(self):
         canvas = QPixmap(self.pm_width, self.pm_height)
-        # canvas.fill(Qt.transparent)
-        canvas.fill(Qt.white)
+        canvas.fill(Qt.transparent)
+        # canvas.fill(Qt.white)
         highlighter_color = QtGui.QColor('#3F57D2')
         highlited_index = self.table.currentIndex().row()
 
