@@ -49,9 +49,9 @@ HEADER2 = Struct(
 )
 
 DATA2 = ByteSwapped(BitStruct(
-    '_x' / BitsInteger(12),
-    '_y' / BitsInteger(10),
-    'q' / BitsInteger(10),
+    '_x' / BitsInteger(12, signed=False),
+    '_y' / BitsInteger(10, signed=False),
+    'q' / BitsInteger(10, signed=False),
 ))
 
 
@@ -66,7 +66,10 @@ class ImgMap(object):
 
     def _parse(self):
         data, sx, counter = [], None, 0
-        for y in range(1, 480):
+        print(self._img.size())
+        width, height = self._img.size().width(), self._img.size().height()
+
+        for y in range(1, height):
 
             for x in range(1, 640):
                 pcolor = self._img.pixelColor(x, y).value()
@@ -136,9 +139,15 @@ class PXL4(object):
         header['OffsetHoldOffReticles'] = current_offset
         ho_ret_quant = 0
         for r in ho_ret:
-            for z in r.data:
+            for zi, z in enumerate(r.data):
+
                 if z:
+
                     current_quant = len(z.data)
+
+                    current_quant += 30 * 3  # for opcodes
+
+
                     ho_ret_quant += current_quant
                     h2.append({'offset': current_offset, 'quant': current_quant})
                     prev_offset = current_offset
@@ -185,8 +194,34 @@ class PXL4(object):
                     data2.append(z.data)
 
         for r in ho_ret:
-            for z in r.data:
+            for zi, z in enumerate(r.data):
                 if z:
+                    print(z.data)
+
+                    zist = 0
+
+                    if zi == 0:
+                        # zist = -57
+                        step = 3.5
+
+                    elif zi == 1:
+                        # zist = -113
+                        step = 7
+
+                    elif zi == 2:
+                        # zist = -170
+                        step = 10.5
+
+                    elif zi == 3:
+                        # zist = -225
+                        step = 14
+
+                    for iop in range(30):
+                        z.data.append((0, 700, iop*5))
+                        z.data.append((0, 700, 0))
+                        z.data.append((0, 700, zist))
+                        zist = int(zist+step)
+
                     data2.append(z.data)
 
         for r in bs_ret:
@@ -301,37 +336,47 @@ LRF_RETS = [
 
 if __name__ == '__main__':
 
-    ret1 = [ImgMap(QImage(f'_1_7x1_7_z1.bmp'))]
+    # ret1 = [ImgMap(QImage(f'_1_7x1_7_z1.bmp'))]
+    #
+    # ret2 = []
+    # ret3 = []
+    # ret4 = []
+    # ret5 = []
+    # ret6 = []
+    #
+    # for i in range(1, 5):
+    #     ret2.append(ImgMap(QImage(f'3 MIL-R_1_7x1_7_z{i}.bmp')))
+    #
+    # for i in range(1, 5):
+    #     ret3.append(ImgMap(QImage(f'MIL-XT_1_7x1_7_z{i}.bmp')))
+    #
+    # for i in range(1, 5):
+    #     ret4.append(ImgMap(QImage(f'MRAD_1_7x1_7_z{i}.bmp')))
+    #
+    # for i in range(1, 5):
+    #     ret5.append(ImgMap(QImage(f'MSR2_1_7x1_7_z{i}.bmp')))
+    #
+    # for i in range(1, 5):
+    #     ret6.append(ImgMap(QImage(f'____1_7x1_7_z{i}.bmp')))
+    #
+    # BASE_RETS = [
+    #     Reticle4z(*ret1),
+    #     Reticle4z(*ret2),
+    #     Reticle4z(*ret3),
+    #     Reticle4z(*ret4),
+    #     Reticle4z(*ret5),
+    #     Reticle4z(*ret6),
+    # ]
 
-    ret2 = []
-    ret3 = []
-    ret4 = []
-    ret5 = []
-    ret6 = []
-
+    hold_rets = []
     for i in range(1, 5):
-        ret2.append(ImgMap(QImage(f'3 MIL-R_1_7x1_7_z{i}.bmp')))
+        hold_rets.append(ImgMap(QImage(f'compiled/1_42off_z{i}.bmp')))
 
-    for i in range(1, 5):
-        ret3.append(ImgMap(QImage(f'MIL-XT_1_7x1_7_z{i}.bmp')))
-
-    for i in range(1, 5):
-        ret4.append(ImgMap(QImage(f'MRAD_1_7x1_7_z{i}.bmp')))
-
-    for i in range(1, 5):
-        ret5.append(ImgMap(QImage(f'MSR2_1_7x1_7_z{i}.bmp')))
-
-    for i in range(1, 5):
-        ret6.append(ImgMap(QImage(f'____1_7x1_7_z{i}.bmp')))
-
-    BASE_RETS = [
-        Reticle4z(*ret1),
-        Reticle4z(*ret2),
-        Reticle4z(*ret3),
-        Reticle4z(*ret4),
-        Reticle4z(*ret5),
-        Reticle4z(*ret6),
+    HOLD_OFF_RETICLES = [
+        Reticle4z(*hold_rets)
     ]
 
-    new_dump = PXL4.dump(SMALL_RETS, [], BASE_RETS, LRF_RETS)
+    new_dump = PXL4.dump(SMALL_RETS, HOLD_OFF_RETICLES, HOLD_OFF_RETICLES, LRF_RETS)
     file_data = PXL4.build(new_dump)
+    with open('compiled/offnew_1.42.reticle2', 'wb') as fp:
+        fp.write(file_data)

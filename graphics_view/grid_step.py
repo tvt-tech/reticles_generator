@@ -1,7 +1,7 @@
 milatcm = 10
 # mingridstep_h = 4
 # mingridstep_v = 3
-mingridstep_h = 3
+mingridstep_h = 4
 mingridstep_v = 2
 rlist = [0.1, 0.2, 0.25, 0.5, 1]
 
