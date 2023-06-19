@@ -35,12 +35,12 @@ class Window(QMainWindow, Ui_MainWindow):
         self.x0 = self.pm_width / 2 + 1
         self.y0 = self.pm_height / 2 + 1
         self._zoom = 1
-        self._click = Click(1.7, 1.7)
+        # self._click = Click(1.7, 1.7)
 
         # self.click = Click(1.42, 1.42)
         # self.click = Click(2.13, 2.13)
         # self._click = Click(3.01, 3.01)
-        self._click = Click(1.7, 1.7)
+        self._click = Click(2.27, 2.27)
         # self.click = Click(1.27, 1.27)
 
         self.spin_x.setValue(self.click.x)

@@ -213,8 +213,8 @@ class RulerEdit(QtWidgets.QDialog):
             self.size.setValue(self.ruler['cross']['size'])
             self.mask.setValue(self.ruler['cross']['mask'])
 
-        if self.p_view:
-            self.p_view.draw(self.mask.value(), self.pen.value())
+        # if self.p_view:
+        #     self.p_view.draw(self.mask.value(), self.pen.value())
 
 
     def get_data(self):

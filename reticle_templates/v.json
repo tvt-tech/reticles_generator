@@ -1,0 +1,28 @@
+{
+  "name": "v",
+  "multiplier": 10,
+  "template": [
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "x_offset": 0,
+      "y_offset": 0,
+      "p1": [0, 0],
+      "p2": [-1, 1],
+      "pen": 1,
+      "zoomed": false
+    },
+    {
+      "type": "line",
+      "min_zoom": 1,
+      "max_zoom": 6,
+      "x_offset": 0,
+      "y_offset": 0,
+      "p1": [0, 0],
+      "p2": [1, 1],
+      "pen": 1,
+      "zoomed": false
+    }
+  ]
+}
