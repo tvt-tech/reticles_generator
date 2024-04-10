@@ -131,9 +131,10 @@ class Window(QWidget):
                     with open(self.filename, 'r') as fp:
                         self.template = json.load(fp)
                     self.viewer.draw_sketch(self.template)
-                elif self.filename.suffix == '.png':
+                elif self.filename.suffix in ['.png']:
 
                     fn = str(self.filename).replace('.png', '').split('_')
+                    print(fn)
                     x, y = float(fn[1]), float(fn[2])
 
                     clicks = QSizeF(x, y)
