@@ -76,80 +76,146 @@
                 <use href="#ruler_y_half_0.3_left" x="40" transform="translate(640, 0) scale(-1, 1)"/>
             </g>
         </g>
+
+        <circle id="d03" r="0.3" cx="0" cy="0"/>
+        <circle id="d05" r="0.5" cx="0" cy="0"/>
+        <circle id="d1" r="1" cx="0" cy="0"/>
+
+        <g id="A-cross-dots">
+            <use href="#d03" y="0"/>
+            <use href="#d03" y="20"/>
+            <use href="#d03" y="40"/>
+            <use href="#d03" y="60"/>
+            <use href="#d03" y="80"/>
+            <use href="#d03" y="100"/>
+            <use href="#d03" y="120"/>
+            <use href="#d03" y="140"/>
+        </g>
+
+        <g id="A-0.5_dots" fill="black">
+            <g id="0.5_dots" transform="translate(0, 5)">
+                <use href="#d03" x="1.429"/>
+                <use href="#d03" x="2.8575"/>
+                <use href="#d03" x="4.286"/>
+                <use href="#d03" x="5.7145"/>
+                <use href="#d03" x="7.143"/>
+                <use href="#d03" x="8.5715"/>
+                <use href="#d03" x="10"/>
+            </g>
+        </g>
+        <g id="A-1_dots" fill="black" transform="translate(0, 11)">
+            <use href="#d05" x="2"/>
+            <use href="#d05" x="4"/>
+            <use href="#d05" x="6"/>
+            <use href="#d1" x="8"/>
+            <use href="#d05" x="10"/>
+            <use href="#d05" x="12"/>
+            <use href="#d05" x="14"/>
+        </g>
+
+        <g id="A-2_dots" fill="black" transform="translate(0, 21)">
+            <use href="#d05" x="3"/>
+            <use href="#d05" x="6"/>
+            <use href="#d05" x="9"/>
+            <use href="#d1" x="12"/>
+            <use href="#d05" x="15"/>
+            <use href="#d05" x="18"/>
+            <use href="#d05" x="21"/>
+        </g>
+
+        <g id="A-3_dots" fill="black" transform="translate(0, 31)">
+            <use href="#d05" x="3.85"/>
+            <use href="#d05" x="7.9"/>
+            <use href="#d05" x="11.55"/>
+            <use href="#d1" x="15.4"/>
+            <use href="#d05" x="19.25"/>
+            <use href="#d05" x="23.1"/>
+            <use href="#d05" x="26.95"/>
+        </g>
+
+        <g id="A-4_dots" fill="black" transform="translate(0, 41)">
+            <use href="#d05" x="4.75"/>
+            <use href="#d05" x="9.5"/>
+            <use href="#d05" x="14.25"/>
+            <use href="#d1" x="19"/>
+            <use href="#d05" x="23.75"/>
+            <use href="#d05" x="28.5"/>
+            <use href="#d05" x="33.25"/>
+        </g>
+        <g id="A-5_dots" fill="black" transform="translate(0, 51)">
+            <use href="#d05" x="5.57"/>
+            <use href="#d05" x="11.143"/>
+            <use href="#d05" x="16.714"/>
+            <use href="#d1" x="22.285"/>
+            <use href="#d05" x="27.855"/>
+            <use href="#d05" x="33.4285"/>
+            <use href="#d05" x="39"/>
+        </g>
+        <g id="A-6_dots" fill="black" transform="translate(0, 61)">
+            <use href="#d05" x="6.35"/>
+            <use href="#d05" x="12.7"/>
+            <use href="#d05" x="19.05"/>
+            <use href="#d1" x="25.4"/>
+            <use href="#d05" x="31.75"/>
+            <use href="#d05" x="38.1"/>
+            <use href="#d05" x="44.45"/>
+        </g>
+        <g id="A-7_dots" fill="black" transform="translate(0, 71)">
+            <use href="#d05" x="7.05"/>
+            <use href="#d05" x="14.1"/>
+            <use href="#d05" x="21.2"/>
+            <use href="#d1" x="28.4"/>
+            <use href="#d05" x="35.45"/>
+            <use href="#d05" x="42.5"/>
+            <use href="#d05" x="49.55"/>
+        </g>
+        <g id="A-8_dots" fill="black" transform="translate(0, 81)">
+            <use href="#d05" x="7.775"/>
+            <use href="#d05" x="15.55"/>
+            <use href="#d05" x="23.325"/>
+            <use href="#d1" x="31.1"/>
+            <use href="#d05" x="38.875"/>
+            <use href="#d05" x="46.65"/>
+            <use href="#d05" x="54.425"/>
+        </g>
+        <g id="A-9_dots" fill="black" transform="translate(0, 91)">
+            <use href="#d05" x="8.5"/>
+            <use href="#d05" x="17"/>
+            <use href="#d05" x="25.5"/>
+            <use href="#d1" x="34"/>
+            <use href="#d05" x="42.5"/>
+            <use href="#d05" x="51"/>
+            <use href="#d05" x="59.5"/>
+        </g>
     </defs>
 
-    <g id="reticle">s
-        <g id="cross-dots" fill="black">
-            <use href="#dot320" x="0" y="0"/>
-            <use href="#dot320" x="0" y="40"/>
-            <use href="#dot320" x="0" y="80"/>
-            <use href="#dot320" x="0" y="120"/>
-            <use href="#dot320" x="0" y="160"/>
-            <use href="#dot320" x="0" y="200"/>
-            <use href="#dot320" x="0" y="240"/>
-            <use href="#dot320" x="0" y="280"/>
-        </g>
-        <g id="-0.5_dots" fill="black">
-            <g id="left_-0.5_dots">
-                <use href="#dot320" x="-2.858" y="10"/>
-                <use href="#dot320" x="-5.715" y="10"/>
-                <use href="#dot320" x="-8.572" y="10"/>
-                <use href="#dot320" x="-11.429" y="10"/>
-                <use href="#dot320" x="-14.286" y="10"/>
-                <use href="#dot320" x="-17.143" y="10"/>
-                <use href="#dot320" x="-20" y="10"/>
-            </g>
-            <use href="#left_-0.5_dots" transform="translate(640, 0) scale(-1, 1)"/>
-        </g>
-        <g id="-1_dots" fill="black">
-            <g id="left_-1_dots">
-                <use href="#dot1px" x="-4" y="22"/>
-                <use href="#dot1px" x="-8" y="22"/>
-                <use href="#dot1px" x="-12" y="22"/>
-                <use href="#dot2px" x="-16" y="22"/>
-                <use href="#dot1px" x="-20" y="22"/>
-                <use href="#dot1px" x="-24" y="22"/>
-                <use href="#dot1px" x="-28" y="22"/>
-            </g>
-            <use href="#left_-1_dots" transform="translate(640, 0) scale(-1, 1)"/>
-        </g>
-        <g id="-2_dots" fill="black">
-            <g id="left_-2_dots">
-                <use href="#dot1px" x="-6" y="42"/>
-                <use href="#dot1px" x="-12" y="42"/>
-                <use href="#dot1px" x="-18" y="42"/>
-                <use href="#dot2px" x="-24" y="42"/>
-                <use href="#dot1px" x="-30" y="42"/>
-                <use href="#dot1px" x="-36" y="42"/>
-                <use href="#dot1px" x="-42" y="42"/>
-            </g>
-            <use href="#left_-2_dots" transform="translate(640, 0) scale(-1, 1)"/>
-        </g>
-        <g id="-3_dots" fill="black">
-            <g id="left_-3_dots">
-                <use href="#dot1px" x="-7.7" y="62"/>
-                <use href="#dot1px" x="-15.4" y="62"/>
-                <use href="#dot1px" x="-23.1" y="62"/>
-                <use href="#dot2px" x="-30.8" y="62"/>
-                <use href="#dot1px" x="-38.5" y="62"/>
-                <use href="#dot1px" x="-46.2" y="62"/>
-                <use href="#dot1px" x="-53.9" y="62"/>
-            </g>
-            <use href="#left_-3_dots" transform="translate(640, 0) scale(-1, 1)"/>
-        </g>
-                <g id="-4_dots" fill="black">
-            <g id="left_-4_dots">
-                <use href="#dot1px" x="-9.5" y="82"/>
-                <use href="#dot1px" x="-19" y="82"/>
-                <use href="#dot1px" x="-28.5" y="82"/>
-                <use href="#dot2px" x="-38" y="82"/>
-                <use href="#dot1px" x="-47.5" y="82"/>
-                <use href="#dot1px" x="-57" y="82"/>
-                <use href="#dot1px" x="-66.5" y="82"/>
+    <g id="reticle" transform="translate(320, 320) scale(2)">
+        <use href="#A-cross-dots"/>
 
+        <defs>
+            <g id="dots_">
+                <g id="right_dots">
+                    <use href="#A-0.5_dots"/>
+                    <use href="#A-1_dots"/>
+                    <use href="#A-2_dots"/>
+                    <use href="#A-3_dots"/>
+                    <use href="#A-4_dots"/>
+                    <use href="#A-5_dots"/>
+                    <use href="#A-6_dots"/>
+                    <use href="#A-7_dots"/>
+                    <use href="#A-8_dots"/>
+                    <use href="#A-9_dots"/>
+                </g>
+                <use href="#right_dots" transform="scale(-1, 1)"/>
             </g>
-            <use href="#left_-4_dots" transform="translate(640, 0) scale(-1, 1)"/>
-        </g>
+
+        </defs>
+
+        <use href="#dots_"/>
+    </g>
+
+    <g id="reticle_">
+
         <g id="cross" stroke="black" stroke-width="1.2">
             <line x1="20" y1="320" x2="317.5" y2="320"/>
             <line x1="322.5" y1="320" x2="620" y2="320"/>
