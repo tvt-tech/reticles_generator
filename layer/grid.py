@@ -1,3 +1,5 @@
+from PyQt5.QtCore import QLineF
+
 from .layer import PixmapLayer
 from PyQt5 import QtCore, QtGui
 from reticle_types import HRuler, VRuler, Cross
@@ -60,5 +62,5 @@ class GridLayer(PixmapLayer):
         painter.setPen(pen)
 
         for i in range(-lys, lys+1):
-            painter.drawLine(x0, y0+zoom*i*y1, self.pm_width, y0+zoom*i*y1)
-            painter.drawLine(x0, y0+zoom*i*y1, 0, y0+zoom*i*y1)
+            painter.drawLine(QLineF(x0, y0+zoom*i*y1, self.pm_width, y0+zoom*i*y1))
+            painter.drawLine(QLineF(x0, y0+zoom*i*y1, 0, y0+zoom*i*y1))

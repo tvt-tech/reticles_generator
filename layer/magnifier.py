@@ -7,7 +7,7 @@ class MagnifierEvent(object):
         self.y = y
 
     def pos(self):
-        return QtCore.QPoint(self.x, self.y)
+        return QtCore.QPointF(self.x, self.y)
 
 
 class Ui_Magnifier(object):
@@ -63,7 +63,7 @@ class Magnifier(QtWidgets.QWidget, Ui_Magnifier):
         if y > self.pm_height - self.h:
             y = self.pm_height - self.h
 
-        rect = QtCore.QRect(x - self.w/2, y - self.h/2, self.w, self.h)
+        rect = QtCore.QRect(int(x - self.w/2), int(y - self.h/2), int(self.w), int(self.h))
         pixmap = label.pixmap().copy(rect)
         pixmap = pixmap.scaled(self.w * 2, self.h * 2)
         self.magnifier.setPixmap(pixmap)
@@ -72,7 +72,7 @@ class Magnifier(QtWidgets.QWidget, Ui_Magnifier):
         painter.setPen(QtGui.QPen(QtCore.Qt.black, 1))
         painter.drawRect(0, 0, self.w * 2 - 1, self.h * 2 - 1)
 
-        rect = QtCore.QRect(x - self.w/2, y - self.h/2, self.w, self.h)
+        rect = QtCore.QRect(int(x - self.w/2), int(y - self.h/2), int(self.w), int(self.h))
         pixmap = grid.pixmap().copy(rect)
         pixmap = pixmap.scaled(self.w * 2, self.h * 2)
         self.magnifier_grid.setPixmap(pixmap)

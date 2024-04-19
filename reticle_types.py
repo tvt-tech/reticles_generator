@@ -1,5 +1,5 @@
 import math
-from PyQt5.QtCore import Qt, QRect, QPoint, QLine
+from PyQt5.QtCore import Qt, QRect, QPoint, QLineF, QPointF, QRectF
 from PyQt5.QtGui import QPen, QPainter
 
 CROSS_1PX = {'bind': False, 'margin': 0, 'mask': 0b1111, 'pen': 1, 'size': 1, 'zoomed': False}
@@ -114,18 +114,18 @@ class Cross(object):
         lines = []
         self.painter.setPen(peny)
         if left:
-            lines.append(QLine(self.x0 - margin_x, self.y0, self.x0 - size_x, self.y0))
+            lines.append(QLineF(self.x0 - margin_x, self.y0, self.x0 - size_x, self.y0))
         if right:
-            lines.append(QLine(self.x0 + margin_x, self.y0, self.x0 + size_x, self.y0))
+            lines.append(QLineF(self.x0 + margin_x, self.y0, self.x0 + size_x, self.y0))
         if lines:
             self.painter.drawLines(*lines)
 
         lines = []
         self.painter.setPen(penx)
         if bottom:
-            lines.append(QLine(self.x0, self.y0 + margin_y, self.x0, self.y0 + size_y))
+            lines.append(QLineF(self.x0, self.y0 + margin_y, self.x0, self.y0 + size_y))
         if top:
-            lines.append(QLine(self.x0, self.y0 - margin_y, self.x0, self.y0 - size_y))
+            lines.append(QLineF(self.x0, self.y0 - margin_y, self.x0, self.y0 - size_y))
         if lines:
             self.painter.drawLines(*lines)
 
@@ -142,7 +142,7 @@ class Dot(object):
         self.draw()
 
     def draw(self):
-        point = QPoint(self.x0, self.y0)
+        point = QPointF(self.x0, self.y0)
         if isinstance(self.pen, int):
             self.painter.setPen(QPen(self.color, self.pen, Qt.SolidLine))
             self.painter.drawPoint(point)
@@ -174,8 +174,8 @@ class Text(object):
 
     def draw(self):
         strlen = 15 * len(self.text)
-        p1 = QPoint(self.x0 - strlen, self.y0 - strlen)
-        p2 = QPoint(self.x0 + strlen, self.y0 + strlen)
+        p1 = QPoint(int(self.x0 - strlen), int(self.y0 - strlen))
+        p2 = QPoint(int(self.x0 + strlen), int(self.y0 + strlen))
         self.painter.drawText(QRect(p1, p2), Qt.AlignCenter, self.text)
 
 
@@ -200,16 +200,16 @@ class Line(object):
         px2, py2 = p2
 
         if zoomed:
-            self.p1 = (self.x0 + px1 * x1 * zoom, self.y0 + py1 * y1 * zoom)
-            self.p2 = (self.x0 + px2 * x1 * zoom, self.y0 + py2 * y1 * zoom)
+            self.p1 = QPointF(self.x0 + px1 * x1 * zoom, self.y0 + py1 * y1 * zoom)
+            self.p2 = QPointF(self.x0 + px2 * x1 * zoom, self.y0 + py2 * y1 * zoom)
         else:
-            self.p1 = (self.x0 + px1 * x1, self.y0 + py1 * y1)
-            self.p2 = (self.x0 + px2 * x1, self.y0 + py2 * y1)
+            self.p1 = QPointF(self.x0 + px1 * x1, self.y0 + py1 * y1)
+            self.p2 = QPointF(self.x0 + px2 * x1, self.y0 + py2 * y1)
 
         self.draw()
 
     def draw(self):
-        self.painter.drawLine(*self.p1, *self.p2)
+        self.painter.drawLine(self.p1, self.p2)
 
 
 class Ruler(object):
@@ -274,8 +274,8 @@ class Ruler(object):
         return
 
     def draw_ruler(self, x, y, string):
-        p1 = QPoint(self.x0 + x - 15, self.y0 + y - 15)
-        p2 = QPoint(self.x0 + x + 15, self.y0 + y + 15)
+        p1 = QPointF(self.x0 + x - 15, self.y0 + y - 15)
+        p2 = QPointF(self.x0 + x + 15, self.y0 + y + 15)
         if len(string) > 1:
             cx = self.painter.device().width() / 2
             offset = self.painter.font().pixelSize() / 1.3
@@ -283,7 +283,7 @@ class Ruler(object):
                 p1.setX(p1.x() - offset)
             if self.x0 + x > cx:
                 p2.setX(p2.x() + offset)
-        self.painter.drawText(QRect(p1, p2), Qt.AlignCenter, string)
+        self.painter.drawText(QRectF(p1, p2), Qt.AlignCenter, string)
 
     def draw(self):
         pass
@@ -335,7 +335,7 @@ class HRuler(Ruler):
 
     def draw_dash(self, x, y):
         width = int(self.w * self.y1 * self.zoom)
-        return QLine(self.x0 + x, self.y0 + width,
+        return QLineF(self.x0 + x, self.y0 + width,
                      self.x0 + x, self.y0 - width)
 
 
@@ -364,7 +364,7 @@ class VRuler(Ruler):
 
     def draw_dash(self, x, y):
         width = int(self.w * self.x1 * self.zoom)
-        return QLine(self.x0 + width, self.y0 + y,
+        return QLineF(self.x0 + width, self.y0 + y,
                      self.x0 - width, self.y0 + y)
 
 TYPES = {
