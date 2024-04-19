@@ -20,23 +20,23 @@
         <line id="dash_v_0.3" x1="320" y1="317.8" x2="320" y2="322.2" stroke="black" stroke-width="0.3"/>
         <line id="dash_v_0.3half" x1="320" y1="317.8" x2="320" y2="320" stroke="black" stroke-width="0.3"/>
 
-        <g id="dashes_v_0.46">
-            <use href="#dash_v_0.46" x="20"/>
-            <use href="#dash_v_0.46" x="40"/>
-            <use href="#dash_v_0.46" x="60"/>
-            <use href="#dash_v_0.46" x="80"/>
-            <use href="#dash_v_0.46" x="100"/>
-            <use href="#dash_v_0.46" x="120"/>
-            <use href="#dash_v_0.46" x="140"/>
-            <use href="#dash_v_0.46" x="160"/>
-            <use href="#dash_v_0.46" x="180"/>
-            <use href="#dash_v_0.46" x="200"/>
-            <use href="#dash_v_0.46" x="220"/>
-            <use href="#dash_v_0.46" x="240"/>
-            <use href="#dash_v_0.46" x="260"/>
-            <use href="#dash_v_0.46" x="280"/>
-            <use href="#dash_v_0.46" x="300"/>
-        </g>
+<!--        <g id="dashes_v_0.46">-->
+<!--            <use href="#dash_v_0.46" x="20"/>-->
+<!--            <use href="#dash_v_0.46" x="40"/>-->
+<!--            <use href="#dash_v_0.46" x="60"/>-->
+<!--            <use href="#dash_v_0.46" x="80"/>-->
+<!--            <use href="#dash_v_0.46" x="100"/>-->
+<!--            <use href="#dash_v_0.46" x="120"/>-->
+<!--            <use href="#dash_v_0.46" x="140"/>-->
+<!--            <use href="#dash_v_0.46" x="160"/>-->
+<!--            <use href="#dash_v_0.46" x="180"/>-->
+<!--            <use href="#dash_v_0.46" x="200"/>-->
+<!--            <use href="#dash_v_0.46" x="220"/>-->
+<!--            <use href="#dash_v_0.46" x="240"/>-->
+<!--            <use href="#dash_v_0.46" x="260"/>-->
+<!--            <use href="#dash_v_0.46" x="280"/>-->
+<!--            <use href="#dash_v_0.46" x="300"/>-->
+<!--        </g>-->
         <g id="dashes_v_0.3">
             <use href="#dash_h_0.3" y="4"/>
             <use href="#dash_h_0.3" y="8"/>
@@ -77,11 +77,12 @@
             </g>
         </g>
 
-        <circle id="d03" r="0.3" cx="0" cy="0"/>
-        <circle id="d05" r="0.5" cx="0" cy="0"/>
-        <circle id="d1" r="1" cx="0" cy="0"/>
+        <circle id="d0.3" r="0.3" cx="0" cy="0"/>
+        <circle id="d0.5" r="0.5" cx="0" cy="0"/>
+        <circle id="d1.0" r="1" cx="0" cy="0"/>
         <line id="A-v-b-cross-line" x1="0" y1="1.25" x2="0" y2="18.75"/>
-        <line id="dash-h1.0" x1="-1" y1="0" x2="1" y2="0"/>
+        <line id="A-dash-h0.2" x1="-1" y1="0" x2="1" y2="0" stroke="black" stroke-width="0.15"/>
+        <line id="A-dash_v1.0" x1="0" y1="-2.5" x2="0" y2="2.5" stroke="black" stroke-width="0.46"/>
 
         <g id="A-h-cross-line" stroke="black" stroke-width="1.2">
             <line x1="1.25" y1="0" x2="150" y2="0"/>
@@ -101,16 +102,16 @@
             <use href="#A-v-b-cross-line" y="140"/>
         </g>
 
-        <g id="A-lr-ruler" stroke="black" stroke-width="0.3">
-            <use href="#dash-h1.0" y="-11"/>
-            <use href="#dash-h1.0" y="-12"/>
-            <use href="#dash-h1.0" y="-13"/>
-            <use href="#dash-h1.0" y="-14"/>
-            <use href="#dash-h1.0" y="-15"/>
-            <use href="#dash-h1.0" y="-16"/>
-            <use href="#dash-h1.0" y="-17"/>
-            <use href="#dash-h1.0" y="-18"/>
-            <use href="#dash-h1.0" y="-19"/>
+        <g id="A-lr-ruler">
+            <use href="#A-dash-h0.2" y="-11" x="-2"/>
+            <use href="#A-dash-h0.2" y="-12"/>
+            <use href="#A-dash-h0.2" y="-13" x="2"/>
+            <use href="#A-dash-h0.2" y="-14"/>
+            <use href="#A-dash-h0.2" y="-15" x="-2" stroke-width="0.23"/>
+            <use href="#A-dash-h0.2" y="-16"/>
+            <use href="#A-dash-h0.2" y="-17" x="2"/>
+            <use href="#A-dash-h0.2" y="-18"/>
+            <use href="#A-dash-h0.2" y="-19" x="-2"/>
         </g>
 
         <g id="A-grid-lines"  stroke="black" stroke-width="0.46">
@@ -138,27 +139,46 @@
             <use href="#hline-10h" y="140"/>
             <use href="#hline-10" y="150"/>
         </g>
+        
+        <g id="A-ruler_v1.0">
+            <use href="#A-dash_v1.0" x="10"/>
+            <use href="#A-dash_v1.0" x="20"/>
+            <use href="#A-dash_v1.0" x="30"/>
+            <use href="#A-dash_v1.0" x="40"/>
+            <use href="#A-dash_v1.0" x="50"/>
+            <use href="#A-dash_v1.0" x="60"/>
+            <use href="#A-dash_v1.0" x="70"/>
+            <use href="#A-dash_v1.0" x="80"/>
+            <use href="#A-dash_v1.0" x="90"/>
+            <use href="#A-dash_v1.0" x="100"/>
+            <use href="#A-dash_v1.0" x="110"/>
+            <use href="#A-dash_v1.0" x="120"/>
+            <use href="#A-dash_v1.0" x="130"/>
+            <use href="#A-dash_v1.0" x="140"/>
+            <use href="#A-dash_v1.0" x="140"/>
+            <use href="#A-dash_v1.0" x="150"/>
+        </g>
 
         <g id="A-cross-dots">
-            <use href="#d03" y="0"/>
-            <use href="#d03" y="20"/>
-            <use href="#d03" y="40"/>
-            <use href="#d03" y="60"/>
-            <use href="#d03" y="80"/>
-            <use href="#d03" y="100"/>
-            <use href="#d03" y="120"/>
-            <use href="#d03" y="140"/>
+            <use href="d0.3" y="0"/>
+            <use href="d0.3" y="20"/>
+            <use href="d0.3" y="40"/>
+            <use href="d0.3" y="60"/>
+            <use href="d0.3" y="80"/>
+            <use href="d0.3" y="100"/>
+            <use href="d0.3" y="120"/>
+            <use href="d0.3" y="140"/>
         </g>
 
         <g id="A-0.5_dots" fill="black">
             <g id="0.5_dots" transform="translate(0, 5)">
-                <use href="#d03" x="1.429"/>
-                <use href="#d03" x="2.8575"/>
-                <use href="#d03" x="4.286"/>
-                <use href="#d03" x="5.7145"/>
-                <use href="#d03" x="7.143"/>
-                <use href="#d03" x="8.5715"/>
-                <use href="#d03" x="10"/>
+                <use href="d0.3" x="1.429"/>
+                <use href="d0.3" x="2.8575"/>
+                <use href="d0.3" x="4.286"/>
+                <use href="d0.3" x="5.7145"/>
+                <use href="d0.3" x="7.143"/>
+                <use href="d0.3" x="8.5715"/>
+                <use href="d0.3" x="10"/>
             </g>
         </g>
         <g id="A-1_dots" fill="black" transform="translate(0, 11)">
@@ -254,27 +274,25 @@
         <use href="#A-v-b-cross-lines"/>
         <use href="#A-cross-dots"/>
         <use href="#A-lr-ruler"/>
-        <use href="#A-lr-ruler" transform="scale(-1, 1)"/>
         <use href="#A-grid-lines"/>
         <use href="#A-grid-lines" transform="scale(-1, 1)"/>
-        <defs>
-            <g id="dots_">
-                <g id="right_dots">
-                    <use href="#A-0.5_dots"/>
-                    <use href="#A-1_dots"/>
-                    <use href="#A-2_dots"/>
-                    <use href="#A-3_dots"/>
-                    <use href="#A-4_dots"/>
-                    <use href="#A-5_dots"/>
-                    <use href="#A-6_dots"/>
-                    <use href="#A-7_dots"/>
-                    <use href="#A-8_dots"/>
-                    <use href="#A-9_dots"/>
-                </g>
-                <use href="#right_dots" transform="scale(-1, 1)"/>
-            </g>
-        </defs>
-        <use href="#dots_"/>
+
+        <use href="#A-ruler_v1.0"/>
+        <use href="#A-ruler_v1.0" transform="scale(-1, 1)"/>
+
+        <g id="right_dots">
+            <use href="#A-0.5_dots"/>
+            <use href="#A-1_dots"/>
+            <use href="#A-2_dots"/>
+            <use href="#A-3_dots"/>
+            <use href="#A-4_dots"/>
+            <use href="#A-5_dots"/>
+            <use href="#A-6_dots"/>
+            <use href="#A-7_dots"/>
+            <use href="#A-8_dots"/>
+            <use href="#A-9_dots"/>
+        </g>
+        <use href="#right_dots" transform="scale(-1, 1)"/>
     </g>
 
     <g id="reticle_">
