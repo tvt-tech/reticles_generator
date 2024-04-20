@@ -1,12 +1,12 @@
 <?xml version="1.0" standalone="no"?>
-<svg viewBox="0 0 640 640" version="1.1"
+<svg height="640" width="640" viewBox="-320 -320 640 640" version="1.1"
      xmlns="http://www.w3.org/2000/svg">
     <desc>Four separate rectangles
         <reticle scale="10"/>
     </desc>
 
     Show outline of viewport using 'rect' element
-    <rect x="0" y="0" width="640" height="640"
+    <rect x="-320" y="-320" width="640" height="640"
           fill="white" stroke="blue" stroke-width="0.5"/>
 
 
@@ -14,27 +14,27 @@
         <circle id="d0.3" r="0.3" cx="0" cy="0"/>
         <circle id="d0.5" r="0.5" cx="0" cy="0"/>
         <circle id="d1.0" r="1" cx="0" cy="0"/>
-        <line id="A-hline-cross" x1="1.25" y1="0" x2="150" y2="0"  stroke="black" stroke-width="0.6"/>
-        <line id="A-vline-cross-bot" x1="0" y1="1.25" x2="0" y2="18.75" stroke="black" stroke-width="0.6"/>
-        <line id="A-hdash-0.2mil-0.15w" x1="-1.1" y1="0" x2="1.1" y2="0" stroke="black" stroke-width="0.15"/>
-        <line id="A-hdash-0.2mil-0.23w" x1="-1.1" y1="0" x2="1.1" y2="0" stroke="black" stroke-width="0.23"/>
-        <line id="A-vdash-0.2mil-0.15w" x1="0" y1="-1.1" x2="0" y2="1.1" stroke="black" stroke-width="0.15"/>
-        <line id="A-vdash-0.2mil-half" x1="0" y1="-1.1" x2="0" y2="0" stroke="black" stroke-width="0.15"/>
-        <line id="A-vdash-1.0mil-0.23w" x1="0" y1="-2.5" x2="0" y2="2.5" stroke="black" stroke-width="0.23"/>
-        <line id="A-vdash-1.0mil-0.23w-half" x1="0" y1="-2.5" x2="0" y2="0" stroke="black" stroke-width="0.23"/>
-        <line id="A-hdash_1.0mil-0.23w" x1="-2.5" y1="0" x2="2.5" y2="0" stroke="black" stroke-width="0.23"/>
-        <line id="A-hdash-0.7mil-0.23w" x1="-1.75" y1="0" x2="1.75" y2="0" stroke="black" stroke-width="0.23"/>
+        <line id="A-hline-cross" x1="1.25" x2="150"  stroke="black" stroke-width="0.6"/>
+        <line id="A-vline-cross-bot" y1="1.25" y2="18.75" stroke="black" stroke-width="0.6"/>
+        <line id="A-hdash-0.2mil-0.15w" x1="-1.1" x2="1.1" stroke="black" stroke-width="0.15"/>
+        <line id="A-hdash-0.2mil-0.23w" x1="-1.1" x2="1.1" stroke="black" stroke-width="0.23"/>
+        <line id="A-vdash-0.2mil-0.15w" y1="-1.1" y2="1.1" stroke="black" stroke-width="0.15"/>
+        <line id="A-vdash-0.2mil-half" y1="-1.1" stroke="black" stroke-width="0.15"/>
+        <line id="A-vdash-1.0mil-0.23w" y1="-2.5" y2="2.5" stroke="black" stroke-width="0.23"/>
+        <line id="A-vdash-1.0mil-0.23w-half" y1="-2.5" stroke="black" stroke-width="0.23"/>
+        <line id="A-hdash_1.0mil-0.23w" x1="-2.5" x2="2.5" stroke="black" stroke-width="0.23"/>
+        <line id="A-hdash-0.7mil-0.23w" x1="-1.75" x2="1.75" stroke="black" stroke-width="0.23"/>
 
-        <line id="A-hline-6mil" y1="0" x1="0" y2="0" x2="30"/>
-        <line id="A-hline-6mil-half" y1="0" x1="1.25" y2="0" x2="30"/>
-        <line id="A-hline-8mil" y1="0" x1="0" y2="0" x2="40"/>
-        <line id="A-hline-8mil-half" y1="0" x1="1.25" y2="0" x2="40"/>
-        <line id="A-hline-10mil" y1="0" x1="0" y2="0" x2="50"/>
-        <line id="A-hline-10mil-half" y1="0" x1="1.25" y2="0" x2="50"/>
+        <line id="A-hline-6mil" x2="30"/>
+        <line id="A-hline-6mil-half" x1="1.25" x2="30"/>
+        <line id="A-hline-8mil" x2="40"/>
+        <line id="A-hline-8mil-half" x1="1.25" x2="40"/>
+        <line id="A-hline-10mil" x2="50"/>
+        <line id="A-hline-10mil-half" x1="1.25" x2="50"/>
         
         <g id="A-v-t-cross-lines" stroke="black" stroke-width="0.6">
-            <line x1="0" y1="-10" x2="0" y2="-1.25"/>
-            <line x1="0" y1="-100" x2="0" y2="-20"/>
+            <line y1="-10" y2="-1.25"/>
+            <line y1="-100" y2="-20"/>
         </g>
 
         <g id="A-v-b-cross-lines">
@@ -361,7 +361,7 @@
 
     </defs>
 
-    <g id="reticle" transform="translate(320, 320) scale(2)">
+    <g id="reticle" transform="scale(2)">
         <use href="#A-hline-cross"/>
         <use href="#A-hline-cross" transform="scale(-1, 1)"/>
         <use href="#A-v-t-cross-lines"/>

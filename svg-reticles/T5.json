@@ -1,0 +1,46 @@
+{
+  "name": "Tremor5",
+  "desc": "",
+  "reticle": {
+    "units": "mil",
+    "multiplier": 10,
+    "defs": {
+      "dot0.3": {
+        "tag": "circle",
+        "attrs": {
+          "r": 0.3
+        }
+      },
+      "dot0.5": {
+        "tag": "circle",
+        "attrs": {
+          "r": 0.5
+        }
+      },
+      "dot1.0": {
+        "tag": "circle",
+        "attrs": {
+          "r": 1.0
+        }
+      },
+      "hDash_1.0_0.23": {
+        "tag": "line",
+        "x1": -2.5,
+        "x2": 2.5,
+        "stroke": "black",
+        "stroke-width": 0.15
+      },
+      "hLine_1.25x150_0.6": {
+        "tag": "line",
+        "x1": 1.25,
+        "x2": 150,
+        "stroke": "black",
+        "stroke-width": 0.6
+      }
+    },
+    "elements": [
+    ],
+    "layers": [
+    ]
+  }
+}
